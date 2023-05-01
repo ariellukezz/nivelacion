@@ -1,7 +1,8 @@
 <template>
-  <aside class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: white; color: black; width: 230px; border-right: 1px solid #00000010;">
+  <aside class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: #3E5F8A; color: #FFFFFF; width: 230px; border-right: 1px solid #00000010;">
+ 
     <div class="text-gray-200">
-      <Link class="text-lg font-bold text-gray-800" :href="route('dashboard')">
+      <Link class="text-lg font-bold text-gray-100" :href="route('dashboard')">
         <div class="flex" style="align-items: center; margin-left: 20px; margin-top: 5px;">
             <div style="margin-top: 6px;">
               <img src="../../assets/imagenes/logotiny.png" width="30"/>
@@ -27,7 +28,7 @@
       <div style="border-bottom: 1px solid #f4f4f443; margin-top: 10px;">
       </div> -->
 
-      <ul class="mt-6" style="color: #0000009E;">
+      <ul class="mt-6 text-gray-100 " style="color: ;">
         <div class="ml-6" style="margin-top: 40px; margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> INICIO </span> </div>
         <li class="relative px-6 py-3" :class="[route().current('dashboard')? 'activado':'']">
           <NavLink :href="route('dashboard')" :class="[route().current('dashboard')? 'borderlef':'']">
@@ -141,6 +142,8 @@ export default {
 <style scoped>
 .activado{
   background: #5f08d131;
+  background-color: var(--primary-color);
+  color: white;   
 }
 .borderlef{
   border-left: 3px solid rgb(221, 24, 2);

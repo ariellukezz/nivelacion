@@ -1,7 +1,7 @@
 <template>
 <Head title="Usuarios"/>
 <AuthenticatedLayout>
-<div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
+<div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); ">
     
     <div>
       <div class="flex" style="justify-content: space-between;">
@@ -9,7 +9,7 @@
       
         <span class="p-input-icon-left ">
             <i class="pi pi-search" />
-            <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
+            <InputText v-model="buscar" class="lt" style="padding-left: 40px; height: 40px;" placeholder="Search" />
         </span>
       </div>
     </div>
@@ -28,7 +28,7 @@
         <div class="flex justify-content-center mb-4">
             <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
         </div>
-        <DataTable :value="usuarios" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem">
+        <DataTable :value="usuarios" :class="'p-datatable-sm lt'"  tableStyle="min-width: 50rem">
             <Column field="nombres" header="Nombres"></Column>
             <Column field="apellidos" header="Apellidos"></Column>
             <Column field="programa" header="Programa"></Column>
@@ -306,3 +306,8 @@ getProgramas()
 getRoles()
 
 </script>
+<style scoped>
+.lt{
+  font-size: 0.9rem;
+}
+</style>

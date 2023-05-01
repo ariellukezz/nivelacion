@@ -1,8 +1,10 @@
 <template>
-    <Head title="Usuarios"/>
+    <Head title="Alumnos"/>
     <AuthenticatedLayout>
     <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
         
+        <!-- <pre>{{ config }}</pre> -->
+
         <div>
           <div class="flex" style="justify-content: space-between;">
             <Button label="Nuevo" @click="visible = true" size="small" style="height: 40px;"/>
@@ -10,7 +12,11 @@
             <span class="p-input-icon-left ">
                 <i class="pi pi-search" />
                 <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
+                <Button label="Nuevo" @click="toggle" size="small" style="height: 40px;">
+                    <i class="pi pi-cog" />
+                </Button>
             </span>
+
           </div>
         </div>
         <Toast />
@@ -28,24 +34,37 @@
             <div class="flex justify-content-center mb-4">
                 <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
             </div>
-            <DataTable :value="usuarios" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem">
-                <Column field="nombres" header="Nombres"></Column>
-                <Column field="apellidos" header="Apellidos"></Column>
-                <Column field="programa" header="Programa"></Column>
-                <Column field="rol" header="Rol"></Column>
-                <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
-                  <template #body="{ data }">
-                    <div class="flex" style="justify-content: center;">
-                      <div v-if="data.estado === 1">
-                          <Tag severity="info" value="Activo"></Tag>
-                      </div>
-                      <div v-if="data.estado === 0">
-                          <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
-                      </div>
-                    </div>
-                  </template>
+            <DataTable :value="usuarios" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
+                <Column field="dni" header="Dni"></Column>
+                <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
+                <Column field="nombres" header="Nombres">
+                    <template #body="{ data }">
+                        <div class="flex" style="justify-content: flex-start;">
+                            <div>
+                                {{ data.nombres }} {{ data.paterno }} {{ data.materno }}
+                            </div>
+                        </div>
+                    </template>
                 </Column>
-                <Column field="id_programa" header="Acciones" width="90px"> 
+                <Column field="sexo" header="Sexo"></Column>
+                <Column field="tipo_examen" header="Tipo Examen"></Column>
+                <Column field="programa" header="Programa">
+                    <template #body="{ data }">
+                        <div class="flex" style="justify-content: flex-start;">
+                            <div style=" width: 230px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                <span> {{ data.programa }} </span>
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+                <Column v-if="conf_telefono === true" field="telefono" header="Telefono"></Column>
+                <Column v-if="conf_colegio === true" field="colegio" header="Colegio"></Column>
+                <Column v-if="conf_tipo_colegio === true" field="tipo_colegio" header="Tipo Colegio"></Column>
+                <Column v-if="conf_estado_civil === true" field="estado_civil" header="Estado civil"></Column>
+                <Column v-if="conf_area === true" field="area" header="Area"></Column>
+                <Column v-if="conf_modalidad === true" field="modalidad" header="Modalidad"></Column>
+
+                <!-- <Column field="id_programa" header="Acciones" width="90px"> 
                   <template #body="{ data }">
                     <div class="flex">
                       <div class="mr-2">
@@ -54,7 +73,7 @@
                       <Button icon="pi pi-trash" severity="danger" aria-label="Submit" @click="confirm2($event, data)"  size="small"  style="width: 25px; height: 25px;"/>
                     </div>
                   </template>
-                </Column>
+                </Column> -->
             </DataTable>
           </div>
         </div>
@@ -131,6 +150,18 @@
           </template>
     
         </Dialog>
+
+        <OverlayPanel ref="op">
+            <div class="card">
+                <div class="flex mt-1" style="justify-content: flex-end;">Codigo: <InputSwitch v-model="conf_codigo" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">telefono: <InputSwitch v-model="conf_telefono" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">Colegio: <InputSwitch v-model="conf_colegio" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">Tipo colegio: <InputSwitch v-model="conf_tipo_colegio" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">Estado civil: <InputSwitch v-model="conf_estado_civil" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">area: <InputSwitch v-model="conf_area" /></div>
+                <div class="flex mt-1" style="justify-content: flex-end;">modalidad: <InputSwitch v-model="conf_modalidad" /></div>
+            </div>
+        </OverlayPanel>
     
     </div>
     </AuthenticatedLayout>
@@ -152,6 +183,7 @@
     import { useConfirm } from "primevue/useconfirm";
     import ConfirmPopup from 'primevue/confirmpopup';
     import Tag from 'primevue/tag';
+    import OverlayPanel from 'primevue/overlaypanel';
     
     const toast = useToast();
     const confirm = useConfirm();
@@ -166,6 +198,20 @@
     const visible = ref(false);
     
     
+
+    const conf_telefono = ref(true);
+    const conf_codigo = ref(false);
+    const conf_colegio = ref(false);
+    const conf_tipo_colegio = ref(false);
+    const conf_estado_civil = ref(false);
+    const conf_area = ref(true);
+    const conf_modalidad = ref(false);
+
+    const op = ref();
+    const toggle = (event) => {
+        op.value.toggle(event);
+    }
+
     const usuario = ref({
       id: null,
       nombres:"",
@@ -177,10 +223,19 @@
       estado:true
     })
     
-    const getUsuarios =  async (event) => {
+    const getAlumnos =  async (event) => {
       let res = await axios.post(
-      "get-usuarios?page=" + pagina.value,
-      { term: buscar.value }
+      "get-alumnos?page=" + pagina.value,
+      { 
+        term: buscar.value,
+        telefono: conf_telefono.value,
+        codigo: conf_codigo.value,
+        colegio: conf_colegio.value,
+        tipo_colegio: conf_tipo_colegio.value,
+        estado_civil: conf_estado_civil.value,
+        area: conf_area.value,
+        modalidad: conf_modalidad.value
+     }
       );
       usuarios.value = res.data.datos.data;
       totalpaginas.value = res.data.datos.total;
@@ -218,7 +273,7 @@
       );
     
       showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-      getUsuarios()  
+      getAlumnos()  
       visible.value = false
       limpiar()
       // roles.value = res.data.datos.data;
@@ -228,7 +283,7 @@
       let res = await axios.get(
       "delete-usuario/"+id);
       showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-      getUsuarios() 
+      getAlumnos() 
     }
     
     
@@ -248,7 +303,7 @@
     }
     
     watch(buscar, ( newValue, oldValue ) => {
-        getUsuarios()
+        getAlumnos()
     })
     
     
@@ -289,10 +344,13 @@
       usuario.value.estado = true
     }
     
-    
-    // watch(rol, ( newValue, oldValue ) => {
-    //     getRoles()
-    // })
+    watch(conf_codigo, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_telefono, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_colegio, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_tipo_colegio, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_estado_civil, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_area, ( newValue, oldValue ) => { getAlumnos()})
+    watch(conf_modalidad, ( newValue, oldValue ) => { getAlumnos()})
     
     // watch(programa, ( newValue, oldValue ) => {
     //     getRoles()
@@ -300,7 +358,7 @@
     
     
     
-    getUsuarios()
+    getAlumnos()
     getProgramas()
     getRoles()
     

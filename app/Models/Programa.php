@@ -16,6 +16,5 @@ class Programa extends Model
         'escuela',
         'facultad',
         'area'
-
     ];
 }

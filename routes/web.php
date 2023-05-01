@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
 
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
-
+    Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
 
     //TUTORES
     Route::get('tutores', [TutorController::class, 'index'])->name('tutor-index');
