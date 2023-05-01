@@ -1,6 +1,7 @@
 <template>
-  <aside class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: #3E5F8A; color: #FFFFFF; width: 230px; border-right: 1px solid #00000010;">
+  <aside  class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: #3E5F8A; color: #FFFFFF; width: 230px; border-right: 1px solid #00000010;">
  
+
     <div class="text-gray-200">
       <Link class="text-lg font-bold text-gray-100" :href="route('dashboard')">
         <div class="flex" style="align-items: center; margin-left: 20px; margin-top: 5px;">

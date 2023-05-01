@@ -17,20 +17,13 @@
       <Toast />
       <ConfirmPopup></ConfirmPopup>
   
-  <!-- 
-      <pre>{{ programas }}</pre> -->
-      <!-- <pre>{{ buscar }}</pre>  -->
-      <!-- <AutoComplete v-model="buscar" optionLabel="label" :suggestions="programas" @complete="getProgramas" /> -->
-      
-      <!-- <pre>{{ usuarios }}</pre> -->
-  
       <div>
         <div class="card">
           <div class="flex justify-content-center mb-4">
               <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
           </div>
-          <DataTable :value="usuarios" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
-              <Column field="dni" header="Dni"></Column>
+          <DataTable :value="docentes" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
+              <Column field="nro_doc" header="N° Documento"></Column>
               <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
               <Column field="nombres" header="Nombres">
                   <template #body="{ data }">
@@ -40,16 +33,22 @@
                           </div>
                       </div>
                   </template>
-              </Column>
+              </Column> 
               <Column field="sexo" header="Sexo"></Column>
-              <Column field="tipo_examen" header="Tipo Examen"></Column>
-              <Column field="programa" header="Programa"></Column>
-              <Column v-if="conf_telefono === true" field="telefono" header="Telefono"></Column>
-              <Column v-if="conf_colegio === true" field="colegio" header="Colegio"></Column>
-              <Column v-if="conf_tipo_colegio === true" field="tipo_colegio" header="Tipo Colegio"></Column>
-              <Column v-if="conf_estado_civil === true" field="estado_civil" header="Estado civil"></Column>
-              <Column v-if="conf_area === true" field="area" header="Area"></Column>
-              <Column v-if="conf_modalidad === true" field="modalidad" header="Modalidad"></Column>
+              <Column field="telefono" header="Celular"></Column>
+              <Column field="email" header="Correo"></Column>
+              <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
+              <template #body="{ data }">
+                <div class="flex" style="justify-content: center;">
+                  <div v-if="data.estado === 1">
+                      <Tag severity="info" value="Activo"></Tag>
+                  </div>
+                  <div v-if="data.estado === 0">
+                      <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
+                  </div>
+                </div>
+              </template>
+            </Column>
 
               <Column field="id_programa" header="Acciones" width="90px"> 
                 <template #body="{ data }">
@@ -66,20 +65,18 @@
       </div>
   
       <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '60vw' }">
-  
-        <!-- <pre>{{ usuario }}</pre> -->
-  
-        <div class="flex mt-2 align-items-center" style="justify-content: flex-end;" >
+        <!-- <pre>{{ docente }}</pre> -->
+        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <div class="flex flex-wrap mr-0">
                 <div>
                   <div class="mr-2"> <label>Tipo doc </label> </div>  
                   <div class="flex">
                     <div class="flex align-items-center mr-2">
-                        <RadioButton v-model="ingredient" name="pizza" value="M" />
+                        <RadioButton v-model="docente.tipo_doc" name="pizza" :value="1" />
                         <label for="ingredient1" class="ml-2">DNI</label>
                     </div>
                     <div class="flex align-items-center">
-                        <RadioButton v-model="ingredient" name="pizza" value="F" />
+                        <RadioButton v-model="docente.tipo_doc" name="pizza" :value="2" />
                         <label for="ingredient2" class="ml-2">C. Ext</label>
                     </div>
 
@@ -93,11 +90,11 @@
                   <div class="mr-2"> <label>Sexo </label> </div>  
                   <div class="flex">
                     <div class="flex align-items-center mr-2">
-                        <RadioButton v-model="ingredient" name="pizza" value="M" />
+                        <RadioButton v-model="docente.sexo" name="pizza" value="M" />
                         <label for="ingredient1" class="ml-2">M</label>
                     </div>
                     <div class="flex align-items-center">
-                        <RadioButton v-model="ingredient" name="pizza" value="F" />
+                        <RadioButton v-model="docente.sexo" name="pizza" value="F" />
                         <label for="ingredient2" class="ml-2">F</label>
                     </div>
 
@@ -107,7 +104,7 @@
             <Divider layout="vertical" />  
           <div class="mr-3"> 
             <label>Estado</label> 
-            <div> <InputSwitch v-model="usuario.estado" /></div>
+            <div> <InputSwitch v-model="docente.estado" /></div>
           </div>  
 
         </div>
@@ -120,49 +117,49 @@
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
               <div><label>Nro documento</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.nombres" />
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nro_doc" />
             </div>
     
             <div class="mb-2" style="width: 48%;">
               <div><label>Nombres</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.apellidos" />
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nombres" />
             </div>
           </div>
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
               <div><label>Primer apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.nombres" />
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.primer_apellido" />
             </div>
     
             <div class="mb-2" style="width: 48%;">
               <div><label>Segundo apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.apellidos" />
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.segundo_apellido" />
             </div>
           </div>
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 23%;">
-              <div><label>Primer apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.nombres" />
+              <div><label>Celular</label></div>  
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.celular" />
             </div>
     
             <div class="mb-2" style="width: 73%;">
-              <div><label>Segundo apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.apellidos" />
+              <div><label>Correo</label></div>  
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.correo" />
             </div>
           </div>
 
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 73%;">
-              <div><label>Primer apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.nombres" />
+              <div><label>Dirección</label></div>  
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
             </div>
     
             <div class="mb-2" style="width: 23%;">
-              <div><label>Segundo apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.apellidos" />
+              <div><label>Fecha nacimiento</label></div>  
+              <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
             </div>
           </div>
  
@@ -180,18 +177,6 @@
         
   
       </Dialog>
-
-      <!-- <OverlayPanel ref="op">
-          <div class="card">
-              <div class="flex mt-1" style="justify-content: flex-end;">Codigo: <InputSwitch v-model="conf_codigo" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">telefono: <InputSwitch v-model="conf_telefono" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">Colegio: <InputSwitch v-model="conf_colegio" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">Tipo colegio: <InputSwitch v-model="conf_tipo_colegio" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">Estado civil: <InputSwitch v-model="conf_estado_civil" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">area: <InputSwitch v-model="conf_area" /></div>
-              <div class="flex mt-1" style="justify-content: flex-end;">modalidad: <InputSwitch v-model="conf_modalidad" /></div>
-          </div>
-      </OverlayPanel> -->
   
   </div>
   </AuthenticatedLayout>
@@ -214,9 +199,8 @@
   import ConfirmPopup from 'primevue/confirmpopup';
   import RadioButton from 'primevue/radiobutton';
   import Divider from 'primevue/divider';
+  import Calendar from 'primevue/calendar';
   import Tag from 'primevue/tag';
-  import OverlayPanel from 'primevue/overlaypanel';
- 
   
   const toast = useToast();
   const confirm = useConfirm();
@@ -226,51 +210,39 @@
   const pagina = ref(1)
   const buscar = ref("")
   
-  const roles = ref([])
-  const usuarios = ref([]) 
+  const docentes = ref([]) 
   const visible = ref(false);
+  const temp = ref("");
   
-  
-
-  const conf_telefono = ref(true);
-  const conf_codigo = ref(false);
-  const conf_colegio = ref(false);
-  const conf_tipo_colegio = ref(false);
-  const conf_estado_civil = ref(false);
-  const conf_area = ref(true);
-  const conf_modalidad = ref(false);
 
   const op = ref();
   const toggle = (event) => {
       op.value.toggle(event);
   }
 
-  const usuario = ref({
+  const docente = ref({
     id: null,
+    tipo_doc:1,
+    nro_doc:"",
     nombres:"",
-    apellidos:"",
-    rol:2,
-    programa:3,
-    email:"",
-    password:"",
+    primer_apellido:"",
+    segundo_apellido:"",
+    celular:"",
+    correo:"",
+    direccion:"",
+    fecha:"",
+    sexo:"M",
     estado:true
   })
   
-  const getAlumnos =  async (event) => {
+  const getDocentes =  async (event) => {
     let res = await axios.post(
-    "get-alumnos?page=" + pagina.value,
+    "get-docentes?page=" + pagina.value,
     { 
       term: buscar.value,
-      telefono: conf_telefono.value,
-      codigo: conf_codigo.value,
-      colegio: conf_colegio.value,
-      tipo_colegio: conf_tipo_colegio.value,
-      estado_civil: conf_estado_civil.value,
-      area: conf_area.value,
-      modalidad: conf_modalidad.value
    }
     );
-    usuarios.value = res.data.datos.data;
+    docentes.value = res.data.datos.data;
     totalpaginas.value = res.data.datos.total;
   }
   
@@ -282,31 +254,38 @@
     programas.value = res.data.datos.data;
   }
   
-  const getRoles =  async (term = "") => {
-    let res = await axios.post(
-    "get-roles?page=",
-    { term: "" }
-    );
-    roles.value = res.data.datos.data;
-  }
-  
+
   const guardar =  async () => {
+    let fec = null;
+    if(docente.value.fecha != null && docente.value.fecha !== temp.value ){
+      fec = docente.value.fecha.toISOString().substring(0, 10);
+    }
+    else {
+      fec = docente.value.fecha
+    }
+
+
     let res = await axios.post(
-      "save-usuario",
+      "save-docente",
       { 
-        id: usuario.value.id,
-        nombres : usuario.value.nombres,
-        apellidos : usuario.value.apellidos,
-        email : usuario.value.email,
-        password : usuario.value.password,
-        programa : usuario.value.programa,
-        estado : usuario.value.estado,
-        rol : usuario.value.rol
+        id: docente.value.id,
+        tipo_doc: docente.value.tipo_doc,
+        nro_doc: docente.value.nro_doc,
+        nombres: docente.value.nombres,
+        primer_apellido: docente.value.primer_apellido,
+        segundo_apellido: docente.value.segundo_apellido,
+        celular: docente.value.celular,
+        correo: docente.value.correo,
+        direccion: docente.value.direccion,
+        fecha: fec,
+        sexo : docente.value.sexo,
+        estado : docente.value.estado
+        
       }
     );
   
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getAlumnos()  
+    getDocentes()  
     visible.value = false
     limpiar()
     // roles.value = res.data.datos.data;
@@ -314,29 +293,55 @@
   
   const eliminar =  async (id) => {
     let res = await axios.get(
-    "delete-usuario/"+id);
+    "delete-docente/"+id);
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getAlumnos() 
+    getDocentes() 
   }
   
   
+  const emod = ref(false);
+
   const editar =  async (item) => {
     visible.value = true;
-    usuario.value.id = item.id
-    usuario.value.nombres = item.nombres
-    usuario.value.apellidos = item.apellidos
-    usuario.value.email = item.email
-    usuario.value.programa = item.id_programa
-    usuario.value.rol = item.id_rol
-    console.log(item);
+    emod.value = true;
+    docente.value.id = item.id
+    docente.value.tipo_doc = item.tipo_doc
+    docente.value.nro_doc = item.nro_doc
+    docente.value.nombres = item.nombres
+    docente.value.primer_apellido = item.paterno
+    docente.value.segundo_apellido = item.materno
+    docente.value.celular = item.telefono
+    docente.value.correo = item.email
+    docente.value.direccion = item.direccion
+    docente.value.fecha = item.f_nac
+    temp.value = item.f_nac
+    docente.value.sexo = item.sexo
+    if(item.estado === 1) { docente.value.estado = true } else { docente.value.estado = false }
+
   }
-  
-  const changeRol = (event) => {
-    console.log("::ROL::",event);
-  }
+
+  watch(visible, ( newValue, oldValue ) => {
+      if(emod.value == true  && visible.value == false ){
+        visible.value = false
+        docente.value.id = null
+        docente.value.tipo_doc = 1
+        docente.value.nro_doc = null
+        docente.value.nombres = null
+        docente.value.primer_apellido = null
+        docente.value.segundo_apellido = null
+        docente.value.celular = null
+        docente.value.correo = null
+        docente.value.direccion = null
+        docente.value.fecha = null
+        temp.value = null
+        docente.value.sexo = 'M'
+        docente.value.estado = true
+      }
+  })
+
   
   watch(buscar, ( newValue, oldValue ) => {
-      getAlumnos()
+      getDocentes()
   })
   
   
@@ -344,50 +349,23 @@
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
   };
   
-  const confirm2 = (event,user) => {
+  const confirm2 = (event,doc) => {
       confirm.require({
           target: event.currentTarget,
-          message: '¿Estas seguro de eliminar al usuario '+ user.nombres+'?',
+          message: '¿Estas seguro de eliminar al docente '+ doc.nombres+'?',
           icon: 'pi pi-info-circle',
           acceptClass: 'p-button-danger',
           accept: () => {
-            eliminar(user.id)
+            eliminar(doc.id)
           },
           reject: () => {
-              toast.add({ severity: 'error', summary: 'Elimación cancelada', detail: 'Se ha cancelado la eliminación del usuario'+user.nombres, life: 3000 });
+              toast.add({ severity: 'error', summary: 'Elimación cancelada', detail: 'Se ha cancelado la eliminación del docente '+doc.nombres, life: 3000 });
           }
       });
   };
-  
-  watch(visible, ( newValue, oldValue ) => {
-    if(visible.value == false && usuario.value.id != null ){
-      limpiar()
-    }  
-  
-  })
-  
-  const limpiar = () => { 
-    usuario.value.id= null,
-    usuario.value.nombres = "",
-    usuario.value.apellidos = "",
-    usuario.value.rol = 2,
-    usuario.value.programa = 3,
-    usuario.value.email = "",
-    usuario.value.password = "",
-    usuario.value.estado = true
-  }
-  
-  watch(conf_codigo, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_telefono, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_colegio, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_tipo_colegio, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_estado_civil, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_area, ( newValue, oldValue ) => { getAlumnos()})
-  watch(conf_modalidad, ( newValue, oldValue ) => { getAlumnos()})
-  
-  getAlumnos()
+
+  getDocentes()
   getProgramas()
-  getRoles()
-  
+
   </script>
   

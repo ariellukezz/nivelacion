@@ -51,7 +51,7 @@
                 <Column field="programa" header="Programa">
                     <template #body="{ data }">
                         <div class="flex" style="justify-content: flex-start;">
-                            <div style=" width: 230px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                            <div style=" width: 200px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                                 <span> {{ data.programa }} </span>
                             </div>
                         </div>
@@ -60,7 +60,7 @@
                 <Column v-if="conf_telefono === true" field="telefono" header="Telefono"></Column>
                 <Column v-if="conf_colegio === true" field="colegio" header="Colegio"></Column>
                 <Column v-if="conf_tipo_colegio === true" field="tipo_colegio" header="Tipo Colegio"></Column>
-                <Column v-if="conf_estado_civil === true" field="estado_civil" header="Estado civil"></Column>
+                <Column v-if="conf_estado_civil === true" field="estado_civil" header="Est civ"></Column>
                 <Column v-if="conf_area === true" field="area" header="Area"></Column>
                 <Column v-if="conf_modalidad === true" field="modalidad" header="Modalidad"></Column>
 

@@ -3,7 +3,7 @@
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AlumnoController;
-use App\Http\Controllers\TutorController;
+use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\AsignacionController;
@@ -57,9 +57,13 @@ Route::middleware('auth')->group(function () {
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
     Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
+    
 
     //TUTORES
-    Route::get('tutores', [TutorController::class, 'index'])->name('tutor-index');
+    Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
+    Route::post('save-docente', [DocenteController::class, 'save']);
+    Route::post('get-docentes', [DocenteController::class, 'getDocentes']);
+    Route::get('delete-docente/{id}', [DocenteController::class, 'delete']);
 
 
     //ASIGNACIÓN

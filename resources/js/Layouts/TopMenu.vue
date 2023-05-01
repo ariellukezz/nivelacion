@@ -10,9 +10,9 @@
 
         <Dropdown>
           <template #trigger>
-            <button class="align-middle rounded-full focus:shadow-outline-purple focus:outline-none" aria-label="Account" aria-haspopup="true">
-              {{ $page.props.auth.user.name }}
-            </button>
+            <Button class="" severity="text" style="height: 37px;">
+                {{ $page.props.auth.user.nombres }}
+            </Button>
           </template>
 
           <template #content>
@@ -44,4 +44,7 @@
 <script setup>
 import Dropdown from '@/Components/Dropdown.vue'
 import DropdownLink from '@/Components/DropdownLink.vue'
+import Button from 'primevue/button';
+import SplitButton from 'primevue/splitbutton';
+//import Dropdown from 'primevue/dropdown';
 </script>
