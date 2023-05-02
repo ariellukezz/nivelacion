@@ -73,7 +73,7 @@ Route::middleware('auth')->group(function () {
     //GET DATA
     Route::post('get-programas', [DataController::class, 'getProgramas']);
     Route::post('get-roles', [DataController::class, 'getRoles']);
-
+    Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     
 
 });

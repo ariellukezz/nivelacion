@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Programa;
 use App\Models\Rol;
+use App\Models\Competencia;
 
 
 use Inertia\Inertia;
@@ -47,5 +48,29 @@ class DataController extends Controller
     return response()->json($this->response, 200);
   
   }
+
+  public function getCompetencias(Request $request){
+      
+    $query_where = [];
+    $res = Competencia::select(
+        'id as value', 'nombre as label' 
+    )
+    ->where($query_where)
+    ->where(function ($query) use ($request) {
+        return $query
+            ->orWhere('nombre', 'LIKE', '%' . $request->term . '%');
+    })->orderBy('id', 'ASC')
+    ->paginate(20);
+
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+    return response()->json($this->response, 200);
+  
+  }
+
+
+
+
+
 
 }
