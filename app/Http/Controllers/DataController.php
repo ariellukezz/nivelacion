@@ -49,6 +49,20 @@ class DataController extends Controller
   
   }
 
+  public function getEscuelas(Request $request){
+    $res = Programa::select('escuela', 'facultad', 'area')
+    ->where(function ($query) use ($request) {
+        return $query
+            ->orWhere('escuela', 'LIKE', '%' . $request->term . '%');
+    })->distinct()
+    ->paginate(1000);
+
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+    return response()->json($this->response, 200);
+  
+  }
+
   public function getCompetencias(Request $request){
       
     $query_where = [];
@@ -67,6 +81,8 @@ class DataController extends Controller
     return response()->json($this->response, 200);
   
   }
+
+  
 
 
 

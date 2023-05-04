@@ -11,17 +11,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -50,32 +39,28 @@ Route::middleware('auth')->group(function () {
     Route::post('save-usuario', [UsuarioController::class, 'save']);
     Route::get('delete-usuario/{id}', [UsuarioController::class, 'delete']);
 
-
-    
-
-
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
     Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
     
-
     //TUTORES
     Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
     Route::post('save-docente', [DocenteController::class, 'save']);
     Route::post('get-docentes', [DocenteController::class, 'getDocentes']);
     Route::get('delete-docente/{id}', [DocenteController::class, 'delete']);
 
-
     //ASIGNACIÓN
     Route::get('asignacion', [AsignacionController::class, 'index'])->name('asignacion-index');
-
+    Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
+    Route::post('save-curso', [AsignacionController::class, 'save']);
+    Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
 
     //GET DATA
     Route::post('get-programas', [DataController::class, 'getProgramas']);
     Route::post('get-roles', [DataController::class, 'getRoles']);
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
+    Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
     
-
 });
 
 require __DIR__.'/auth.php';

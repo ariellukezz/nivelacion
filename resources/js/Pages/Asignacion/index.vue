@@ -2,61 +2,126 @@
   <Head title="Nivelación"/>
   <AuthenticatedLayout>
 
-  <div class="flex justify-content-center mb-3" style="align-items:center;">
-      <Button severity="secondary" text>EDUC. SEC.: MATEMATI... </Button>
-      <i class="pi pi-angle-right " />
-      <Button severity="secondary" text>Competencia 1... </Button>
-  </div>
+  <!-- <pre>{{ cursos }}</pre> -->
 
-  <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
+  <div class="flex mb-0" style="justify-content: space-between; align-items:center; margin-top:0px; border-bottom:solid 1px #cdcdcd9D; height:50px; background:white; ">
 
-      <div>
-        <div class="flex" style="justify-content: space-between;">
-          <Dropdown v-model="competencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:325px;" class="w-full md:w-11rem">            
-            <template #option="slotProps">
-                <div class="flex align-items-center" style="width: 280px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    <div>{{ slotProps.option.label }}</div>
-                </div>
-            </template>
-          </Dropdown>
-        
-          <span class="p-input-icon-left ">
-              <i class="pi pi-search" />
-              <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
-          </span>
+      <div class="flex">
+        <Button severity="secondary" style="font-size: 0.9rem"  text @click="Inicio"> Inicio </Button>
+        <div v-if="escuela !== null" class="flex justify-content-center" style="align-items:center;">
+          <i class="pi pi-angle-right " />
+          <Button  severity="secondary" style="font-size: 0.9rem" text> 
+            <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                <span> {{ escuela.escuela }} </span>
+            </div>
+          </Button>
+        </div>
 
+        <div v-if="cursoseleccionado !== null" class="flex justify-content-center" style="align-items:center;">
+          <i class="pi pi-angle-right " />
+          <Button  severity="secondary" style="font-size: 0.9rem" text> 
+            <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                <span> {{ cursoseleccionado.nombre }} </span>
+            </div>
+          </Button>
         </div>
       </div>
-      <Toast />
-      <ConfirmPopup></ConfirmPopup>
 
-      <!-- <div style="width: 250px; height:50px; background: var(--primary-color); border-radius: 14px; display:flex; justify-content:space-between; align-items:center"> -->
-      <div style="width: 250px; height:50px; background: #cccdcd82; border-radius: 8px; display:flex; justify-content:space-between; align-items:center">        
-        <div style="width:30px; display:flex; justify-content:flex-end;" > <i class="pi pi-bookmark-fill" style="font-size: 1rem; color:gray;"></i></div>
-        <div style="width:180px;  font-size:0.9rem; color:black; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"> EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA </div>
-        <div style="width:25px"></div>
+      <div v-if="escuela === null">
+        <div class="flex mr-4" style="justify-content: flex-end;">
+          <span class="p-input-icon-left">
+              <i class="pi pi-search" />
+              <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
+          </span>
+        </div>
       </div>
 
+
+      <div v-if="escuela !== null && cursoseleccionado === null">
+        <Dropdown 
+          v-model="competencia" 
+          :options="competencias"
+          severity="primary" 
+          optionLabel="label" 
+          optionValue="value"  
+          placeholder="Selecciona una competencia" 
+          style="width:325px; height:38px" 
+          class="w-full md:w-11rem mr-4">            
+          <template #option="slotProps">
+              <div class="flex align-items-center" style="width: 280px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                  <div>{{ slotProps.option.label }}</div>
+              </div>
+          </template>
+        </Dropdown>
+      </div>
+
+  </div>
+  
+
+  <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 140px); font-family: Arial, Helvetica, sans-serif;">
+
+      <!--- PASO 1-->
       <div>
-        <div class="card">
-          <div class="flex justify-content-center mb-4">
-              <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
+        <div v-if="escuela === null" class="card">
+          <DataTable 
+            v-model:selection="escuela"
+            selectionMode="single"
+            :value="escuelas" 
+            :class="'p-datatable-sm'"  
+            tableStyle="min-width: 50rem" 
+            style="font-size: .9rem;"
+            :paginator="true" :rows="10" :filters="filters"
+            >
+              <Column field="escuela" header="Escuela"></Column>
+              <Column field="facultad" header="Facultad"></Column>
+              <Column field="area" header="Area"></Column>              
+          </DataTable>
+        </div>
+      </div>
+      <!--- END PASO 1-->
+
+
+
+      <!--- PASO 2 -->
+      <div v-if="escuela !== null && cursoseleccionado === null"> 
+
+        <div class="flex" style="justify-content: space-between;">
+          <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo </Button>
+          <div>
+            <div class="flex mb-3" style="justify-content: flex-end;">
+              <span class="p-input-icon-left">
+                  <i class="pi pi-search" />
+                  <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
+              </span>
+            </div>
           </div>
-          <DataTable :value="docentes" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
-              <Column field="nro_doc" header="N° Documento"></Column>
-              <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
-              <Column field="nombres" header="Nombres">
+    
+        </div>
+
+        <!-- {{ cursoseleccionado }} -->
+        <div class="mt-3" >
+        <DataTable 
+          v-model:selection="cursoseleccionado"
+          selectionMode="single" 
+          :value="cursos" 
+          :class="'p-datatable-sm'"  
+          tableStyle="min-width: 50rem" 
+          style="font-size: .9rem;"
+          :paginator="true" :rows="9"
+          >
+              <Column field="nombre" header="N° Documento"></Column>
+              <Column field="competencia" header="Competencia"></Column>
+              <Column field="docente" header="Docente">
                   <template #body="{ data }">
                       <div class="flex" style="justify-content: flex-start;">
                           <div>
-                              {{ data.nombres }} {{ data.paterno }} {{ data.materno }}
+                              {{ data.docente }}
                           </div>
                       </div>
                   </template>
               </Column> 
-              <Column field="sexo" header="Sexo"></Column>
-              <Column field="telefono" header="Celular"></Column>
-              <Column field="email" header="Correo"></Column>
+              <Column field="grupo" header="Grupo"></Column>
+              <Column field="escuela" header="Escuela Prof."></Column>
               <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
               <template #body="{ data }">
                 <div class="flex" style="justify-content: center;">
@@ -80,106 +145,70 @@
                   </div>
                 </template>
               </Column>
-          </DataTable>
-        </div>
+          </DataTable> 
       </div>
+
+
+      </div>
+
+      <Toast />
+      <ConfirmPopup></ConfirmPopup>
+
+
+
+
   
-      <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '60vw' }">
+
+      
+      <!--- MODAL -->
+      <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '500px' }">
         <!-- <pre>{{ docente }}</pre> -->
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
-            <div class="flex flex-wrap mr-0">
-                <div>
-                  <div class="mr-2"> <label>Tipo doc </label> </div>  
-                  <div class="flex">
-                    <div class="flex align-items-center mr-2">
-                        <RadioButton v-model="docente.tipo_doc" name="pizza" :value="1" />
-                        <label for="ingredient1" class="ml-2">DNI</label>
-                    </div>
-                    <div class="flex align-items-center">
-                        <RadioButton v-model="docente.tipo_doc" name="pizza" :value="2" />
-                        <label for="ingredient2" class="ml-2">C. Ext</label>
-                    </div>
-
-                  </div>
-                </div>
-            </div>
-            <Divider layout="vertical"/>  
-
-            <div class="flex flex-wrap mr-0">
-                <div>
-                  <div class="mr-2"> <label>Sexo </label> </div>  
-                  <div class="flex">
-                    <div class="flex align-items-center mr-2">
-                        <RadioButton v-model="docente.sexo" name="pizza" value="M" />
-                        <label for="ingredient1" class="ml-2">M</label>
-                    </div>
-                    <div class="flex align-items-center">
-                        <RadioButton v-model="docente.sexo" name="pizza" value="F" />
-                        <label for="ingredient2" class="ml-2">F</label>
-                    </div>
-
-                  </div>
-                </div>
-            </div>
-            <Divider layout="vertical" />  
-          <div class="mr-3"> 
             <label>Estado</label> 
-            <div> <InputSwitch v-model="docente.estado" /></div>
-          </div>  
-
+            <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>  
         </div>
  
-       
-      
-        
-
-
-          <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-2" style="width: 48%;">
-              <div><label>Nro documento</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nro_doc" />
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+            <div class="mb-3" style="width: 68%;">
+              <div><label>Nombre</label></div>  
+              <InputText style="width: 100%; height: 40px;"  type="text" v-model="curso.nombre" />
             </div>
     
-            <div class="mb-2" style="width: 48%;">
-              <div><label>Nombres</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nombres" />
+            <div class="mb-3" style="width: 28%;">
+              <div><label>Grupo</label></div>  
+              <Dropdown v-model="curso.grupo" :options="grupos" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+                <template #option="slotProps">
+                    <div class="flex align-items-center" style=" font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                        <div>{{ slotProps.option.label }}</div>
+                    </div>
+                </template>
+              </Dropdown>
             </div>
-          </div>
+        </div>
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+            <div class="mb-3" style="width: 100%;">
+              <div><label>Competencia</label></div>  
+              <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+                <template #option="slotProps">
+                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                        <div>{{ slotProps.option.label }}</div>
+                    </div>
+                </template>
+              </Dropdown>
+            </div>
+        </div>
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-2" style="width: 48%;">
-              <div><label>Primer apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.primer_apellido" />
-            </div>
-    
-            <div class="mb-2" style="width: 48%;">
-              <div><label>Segundo apellido</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.segundo_apellido" />
-            </div>
-          </div>
-
-          <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-2" style="width: 23%;">
-              <div><label>Celular</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.celular" />
-            </div>
-    
-            <div class="mb-2" style="width: 73%;">
-              <div><label>Correo</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.correo" />
-            </div>
-          </div>
-
-
-          <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-2" style="width: 73%;">
-              <div><label>Dirección</label></div>  
-              <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
-            </div>
-    
-            <div class="mb-2" style="width: 23%;">
-              <div><label>Fecha nacimiento</label></div>  
-              <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
+            <div class="mb-3" style="width: 100%;">
+            <div><label>Docente</label></div>  
+              <Dropdown v-model="curso.id_docente" :options="docentes2" optionLabel="nombres" optionValue="id"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+                  <template #option="slotProps">
+                      <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                          <div>{{ slotProps.option.nombres }}</div>
+                      </div>
+                  </template>
+              </Dropdown>
             </div>
           </div>
  
@@ -192,12 +221,10 @@
             </div>
           </template>
 
-
-  
-        
-  
       </Dialog>
   
+      <!--- END MODAL -->
+
   </div>
   </AuthenticatedLayout>
   </template>
@@ -222,9 +249,16 @@
   import Calendar from 'primevue/calendar';
   import Tag from 'primevue/tag';
   import Breadcrumb from 'primevue/breadcrumb';
+  import AutoComplete from 'primevue/autocomplete';
+
+  const escuela = ref(null);
   
   const toast = useToast();
   const confirm = useConfirm();
+
+
+  const cursos = ref([]);
+  const cursoseleccionado = ref(null);
 
   const competencias = ref([])
   const programas = ref([])
@@ -238,37 +272,34 @@
   const visible = ref(false);
   const temp = ref("");
   
-
-
-
+  const grupo = ref('A');
+  const grupos = ref([
+    {value:"A", label:"Grupo A"},
+    {value:"B", label:"Grupo B"},
+    {value:"C", label:"Grupo C"}
+  ])
 
   const items = ref([
-    {label: 'Computer'},
-    {label: 'Notebook'},
-]);
+      {label: 'Computer'},
+      {label: 'Notebook'},
+  ]);
 
 
-
-
-
+  const docentes2 = ref([])
+  const docente2 = ref(null)
+  const escuelas = ref([])
 
   const op = ref();
   const toggle = (event) => {
       op.value.toggle(event);
   }
 
-  const docente = ref({
+  const cursocompetencia = ref(null)
+  const curso = ref({
     id: null,
-    tipo_doc:1,
-    nro_doc:"",
-    nombres:"",
-    primer_apellido:"",
-    segundo_apellido:"",
-    celular:"",
-    correo:"",
-    direccion:"",
-    fecha:"",
-    sexo:"M",
+    nombre:"",
+    id_docente:"",
+    grupo:"A",
     estado:true
   })
   
@@ -290,6 +321,13 @@
     );
     programas.value = res.data.datos.data;
   }
+
+  const getEscuelas =  async () => {
+    let res = await axios.post(
+    "get-escuelas", { term: "" }
+    );
+    escuelas.value = res.data.datos.data;
+  }
   
   const getCompetencias =  async () => {
     let res = await axios.post(
@@ -297,34 +335,34 @@
     );
     competencias.value = res.data.datos.data;
   }
+
+  const getDocenteXcompetencia =  async () => {
+    let res = await axios.post(
+    "get-docente-competencia?page=",{ term: "", competencia:cursocompetencia.value }
+    );
+    docentes2.value = res.data.datos.data;
+    docente2.value = res.data.datos.data[0].id;
+  }
   
 
+  const getCursos =  async () => {
+    let res = await axios.post(
+    "get-cursos?page=",{ term: "", competencia:competencia.value, escuela:escuela.value.escuela}
+    );
+    cursos.value = res.data.datos.data;
+  }
 
   const guardar =  async () => {
-    let fec = null;
-    if(docente.value.fecha != null && docente.value.fecha !== temp.value ){
-      fec = docente.value.fecha.toISOString().substring(0, 10);
-    }
-    else {
-      fec = docente.value.fecha
-    }
-
-
     let res = await axios.post(
-      "save-docente",
+      "save-curso",
       { 
-        id: docente.value.id,
-        tipo_doc: docente.value.tipo_doc,
-        nro_doc: docente.value.nro_doc,
-        nombres: docente.value.nombres,
-        primer_apellido: docente.value.primer_apellido,
-        segundo_apellido: docente.value.segundo_apellido,
-        celular: docente.value.celular,
-        correo: docente.value.correo,
-        direccion: docente.value.direccion,
-        fecha: fec,
-        sexo : docente.value.sexo,
-        estado : docente.value.estado
+        id: curso.value.id,
+        nombre: curso.value.nombre,
+        id_competencia: cursocompetencia.value,
+        id_docente: curso.value.id_docente,
+        escuela: escuela.value.escuela,
+        grupo: curso.value.grupo,
+        estado: curso.value.estado
         
       }
     );
@@ -388,6 +426,18 @@
   watch(buscar, ( newValue, oldValue ) => {
       getDocentes()
   })
+
+  watch(cursocompetencia, ( newValue, oldValue ) => {
+      getDocenteXcompetencia()
+  })
+  
+  watch(competencia, ( newValue, oldValue ) => {
+      getCursos()
+  })
+
+  watch(escuela, ( newValue, oldValue ) => {
+      getCursos()
+  })
   
   
   const showToast = (tipo, titulo, detalle) => {
@@ -409,9 +459,16 @@
       });
   };
 
+
+
+  const Inicio = () => { escuela.value = null  }
+
+
   getDocentes()
   getProgramas()
   getCompetencias()
+  getEscuelas()
+
 
   </script>
   
