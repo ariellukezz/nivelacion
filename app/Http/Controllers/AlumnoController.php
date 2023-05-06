@@ -42,6 +42,7 @@ class AlumnoController extends Controller
                 ->orWhere('estudiante.materno', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('programa.programa', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('datos_ingreso.t_examen', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('programa.area', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.id', 'DESC')
         ->paginate(10);
@@ -51,6 +52,35 @@ class AlumnoController extends Controller
         return response()->json($this->response, 200);
       
     }
+
+
+
+    public function getAlumnosRegistro(Request $request){
+
+        $res = Alumno::select(
+            'estudiante.id',
+            'estudiante.dni',
+            'estudiante.nombres',
+            'estudiante.paterno',
+            'estudiante.materno'
+        )
+        ->where(function ($query) use ($request) {
+            return $query
+                ->orWhere('estudiante.nombres', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('estudiante.paterno', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('estudiante.materno', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%');
+        })->orderBy('estudiante.id', 'DESC')
+        ->paginate(10);
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+      
+    }
+
+
+
 
 
 

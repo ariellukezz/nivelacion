@@ -2,7 +2,7 @@
   <Head title="Nivelación"/>
   <AuthenticatedLayout>
 
-  <!-- <pre>{{ cursos }}</pre> -->
+  <!-- <pre>{{ alumnosregistro }}</pre> -->
 
   <div class="flex mb-0" style="justify-content: space-between; align-items:center; margin-top:0px; border-bottom:solid 1px #cdcdcd9D; height:50px; background:white; ">
 
@@ -10,7 +10,7 @@
         <Button severity="secondary" style="font-size: 0.9rem"  text @click="Inicio"> Inicio </Button>
         <div v-if="escuela !== null" class="flex justify-content-center" style="align-items:center;">
           <i class="pi pi-angle-right " />
-          <Button  severity="secondary" style="font-size: 0.9rem" text> 
+          <Button  severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text> 
             <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                 <span> {{ escuela.escuela }} </span>
             </div>
@@ -151,6 +151,91 @@
 
       </div>
 
+      <!-- END PASO 2 -->
+
+
+
+      <!--- PASO 3 -->
+
+      <div v-if="escuela !== null && cursoseleccionado !== null"> 
+
+        <div class="flex" style="justify-content: space-between;">
+          <Button severity="primary" @click="modal_registro = true" style="height:40px"> Nuevo </Button>
+          <div>
+            <div class="flex mb-3" style="justify-content: flex-end;">
+              <span class="p-input-icon-left">
+                  <i class="pi pi-search" />
+                  <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- {{ cursoseleccionado }} -->
+        <div class="mt-3" >
+
+        <DataTable 
+          selectionMode="single" 
+          :value="detalle_curso" 
+          :class="'p-datatable-sm'"  
+          tableStyle="min-width: 50rem" 
+          style="font-size: .9rem;"
+          :paginator="true" :rows="9"
+          >
+        
+              <Column field="dni" header="DNI"></Column>
+              <Column field="nombres" header="Nombres"></Column>
+              <Column field="paterno" header="Paterno"></Column>
+              <Column field="materno" header="Materno"></Column>
+              <Column field="curso" header="Curso"></Column>
+              <Column field="nota" header="Nota"></Column>
+              <Column field="estado" style=" justify-content: center; display: flex;" header="Condición" width="70px"> 
+              <template #body="{ data }">
+                <div class="flex" style="justify-content: center;">
+                  <div v-if="data.nota >= 10.50">
+                      <Tag severity="info" value="Aprobado"></Tag>
+                  </div>
+                  <div v-if="data.nota <= 10.49">
+                      <Tag severity="danger" value="Desprobado"></Tag>
+                  </div>
+                </div>
+              </template>
+              </Column>
+          </DataTable> 
+        </div>
+
+
+        </div>
+
+        <!-- END PASO 3 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
       <Toast />
       <ConfirmPopup></ConfirmPopup>
 
@@ -225,6 +310,36 @@
   
       <!--- END MODAL -->
 
+
+      <!--- MODAL ASIGNACION -->
+
+            <!--- MODAL -->
+      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
+
+        <!-- <pre> {{ cursoseleccionado }}</pre>
+        <pre> {{ alumnos_seleccionados_registro }}</pre> -->
+        <DataTable 
+          v-model:selection="alumnos_seleccionados_registro"
+          :row-selection="rowSelection"
+          :value="alumnosregistro" 
+          :class="'p-datatable-sm'"  
+          tableStyle="min-width: 50rem" 
+          style="font-size: .9rem;"
+          :paginator="true" :rows="9"
+        >
+            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+            <Column field="dni" header="DNI"></Column>
+            <Column field="nombres" header="Nombres"></Column>
+            <Column field="paterno" header="Paterno"></Column>
+            <Column field="materno" header="Materno"></Column>
+        </DataTable> 
+    
+        <div class="flex" style="width: 100%; justify-content: flex-end;">
+          <Button severity="primary" style="font-size: 0.9rem"  text @click="asignar"> Asignar </Button>
+        </div>
+
+      </Dialog>
+
   </div>
   </AuthenticatedLayout>
   </template>
@@ -256,6 +371,9 @@
   const toast = useToast();
   const confirm = useConfirm();
 
+  const modal_registro = ref(null)
+  const alumnos_seleccionados_registro = ref([])
+
 
   const cursos = ref([]);
   const cursoseleccionado = ref(null);
@@ -279,6 +397,8 @@
     {value:"C", label:"Grupo C"}
   ])
 
+  const alumnosregistro = ref([])
+
   const items = ref([
       {label: 'Computer'},
       {label: 'Notebook'},
@@ -288,6 +408,7 @@
   const docentes2 = ref([])
   const docente2 = ref(null)
   const escuelas = ref([])
+  const detalle_curso = ref([])
 
   const op = ref();
   const toggle = (event) => {
@@ -373,12 +494,42 @@
     limpiar()
     // roles.value = res.data.datos.data;
   }
+
+  const getDetalleCurso =  async () => {
+    let res = await axios.post(
+    "get-detalle-curso?page=",{ term: "", curso: cursoseleccionado.value.id, }
+    );
+    detalle_curso.value = res.data.datos.data;
+  }
+
+
+  const asignar =  async () => {
+    let res = await axios.post(
+      "asignar-curso-nivelacion",
+      { 
+        curso: cursoseleccionado.value.id,
+        alumnos: alumnos_seleccionados_registro.value,
+      }
+    );
+  
+    showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
+    getDetalleCurso()  
+    modal_registro.value = false
+    //limpiar()
+  }
   
   const eliminar =  async (id) => {
     let res = await axios.get(
     "delete-docente/"+id);
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
     getDocentes() 
+  }
+
+  const getAlumnosRegistros =  async () => {
+    let res = await axios.post(
+    "get-alumnos-registro?page=",{ term: ""}
+    );
+    alumnosregistro.value = res.data.datos.data;
   }
   
   
@@ -422,6 +573,9 @@
       }
   })
 
+
+
+
   
   watch(buscar, ( newValue, oldValue ) => {
       getDocentes()
@@ -437,6 +591,10 @@
 
   watch(escuela, ( newValue, oldValue ) => {
       getCursos()
+  })
+
+  watch(cursoseleccionado, ( newValue, oldValue ) => {
+    getDetalleCurso()
   })
   
   
@@ -460,15 +618,24 @@
   };
 
 
+  const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
 
-  const Inicio = () => { escuela.value = null  }
+  const resEsuela = () => { cursoseleccionado.value = null }
+
+
 
 
   getDocentes()
   getProgramas()
   getCompetencias()
   getEscuelas()
+  getAlumnosRegistros()
+
+
+
+
 
 
   </script>
   
+

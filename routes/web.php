@@ -6,9 +6,12 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DataController;
+
 use App\Http\Controllers\AsignacionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\Docente\DashboardController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -20,11 +23,12 @@ Route::get('/', function () {
     ]);
 });
 
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified','admin',])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth','admin')->group(function () {
     Route::get('/about', fn () => Inertia::render('About'))->name('about');
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
@@ -42,6 +46,7 @@ Route::middleware('auth')->group(function () {
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
     Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
+    Route::post('get-alumnos-registro', [AlumnoController::class, 'getAlumnosRegistro']);
     
     //TUTORES
     Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
@@ -54,6 +59,8 @@ Route::middleware('auth')->group(function () {
     Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
     Route::post('save-curso', [AsignacionController::class, 'save']);
     Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
+    Route::post('asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
+    Route::post('get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
 
     //GET DATA
     Route::post('get-programas', [DataController::class, 'getProgramas']);
@@ -61,6 +68,13 @@ Route::middleware('auth')->group(function () {
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
     
+});
+
+Route::middleware('auth','docente')->group(function () {
+
+    //DOCENTE
+    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('d-docente-index');
+
 });
 
 require __DIR__.'/auth.php';

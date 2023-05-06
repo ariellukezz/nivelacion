@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Tutor;
 use App\Models\Docente;
+use App\Models\CursoDetalle;
 use App\Models\Curso;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,35 @@ class AsignacionController extends Controller
         return response()->json($this->response, 200);
       
     }
+
+    public function getDetalleCurso(Request $request){
+
+        $query_where = [];
+        //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
+        
+        $res = CursoDetalle::select(
+            'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'curso.nombre as curso',  
+            'curso_detalle.nota'
+        )
+        ->join('curso','curso_detalle.id_curso','curso.id')
+        ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+        ->where('curso.id',"=",$request->curso)
+        ->where($query_where)
+        ->where(function ($query) use ($request) {
+            return $query
+                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+        })->orderBy('curso.id', 'DESC')
+        ->paginate(10);
+    
+
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+      
+    }
+
+
 
     
 
@@ -117,6 +147,33 @@ class AsignacionController extends Controller
         return response()->json($this->response, 200);
       
     }
+
+
+    public function asignarCursoNivelacion(Request $request){
+
+        foreach ($request->alumnos as $alumno) {
+            $this->asignarCurso($request->curso, $alumno['id']);
+        }
+
+            $this->response['tipo'] = 'success';
+            $this->response['titulo'] = '!REGISTROS NUEVOS!';
+            $this->response['mensaje'] = 'ALUMNOS REGISTRADOS CON EXITOS';
+            $this->response['estado'] = true;
+            // $this->response['datos'] = $curso;
+
+        return response()->json($this->response, 200);
+      
+    }
+
+    public function asignarCurso($id_curso, $id_alumno){
+
+        $curso = CursoDetalle::create([
+            'id_curso' => $id_curso,
+            'id_alumno' => $id_alumno,
+        ]);
+
+    }
+
 
 
 }

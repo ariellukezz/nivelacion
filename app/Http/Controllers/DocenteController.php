@@ -16,7 +16,6 @@ class DocenteController extends Controller
         return Inertia::render('Tutores/index');
     }
 
-
     public function getDocentes(Request $request){
 
         $res = Docente::select('id', 'tipo_doc','nro_doc', 'nombres', 'paterno', 'materno', 'telefono', 'email', 'direccion', 'f_nac', 'sexo', 'estado')
@@ -86,18 +85,26 @@ class DocenteController extends Controller
     }
 
     
-  public function delete($id){
-    $docente = Docente::find($id);
-    $p = $docente;
-    $docente->delete();
+    public function delete($id){
+        $docente = Docente::find($id);
+        $p = $docente;
+        $docente->delete();
 
-    $this->response['tipo'] = 'error';
-    $this->response['titulo'] = '!REGISTRO ELIMINADO!';
-    $this->response['mensaje'] = 'El Docente '.$p->nombre.' acaba de ser eliminado.';
-    $this->response['estado'] = true;
-    $this->response['datos'] = $p;
-    return response()->json($this->response, 200);
-  }
+        $this->response['tipo'] = 'error';
+        $this->response['titulo'] = '!REGISTRO ELIMINADO!';
+        $this->response['mensaje'] = 'El Docente '.$p->nombre.' acaba de ser eliminado.';
+        $this->response['estado'] = true;
+        $this->response['datos'] = $p;
+        return response()->json($this->response, 200);
+    }
+
+
+
+    // DOCENTE 
+    public function dashboardDocente()
+    {
+        return Inertia::render('Docente/Dashboard/index');
+    }
 
 
 }
