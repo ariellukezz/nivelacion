@@ -6,7 +6,7 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DataController;
-
+use App\Http\Controllers\CursoController;
 use App\Http\Controllers\AsignacionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -73,7 +73,13 @@ Route::middleware('auth','admin')->group(function () {
 Route::middleware('auth','docente')->group(function () {
 
     //DOCENTE
-    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('d-docente-index');
+    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-index');
+    Route::get('/inicio', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
+    Route::get('docente/curso', [CursoController::class, 'cursoDocente'])->name('docente-curso');
+    Route::post('docente/get-cursos', [CursoController::class, 'getCursos']);
+    Route::post('docente/get-alumnos-curso', [CursoController::class, 'getAlumnosXCurso']);
+
+    Route::post('docente/update-nota', [CursoController::class, 'updateNota']);
 
 });
 

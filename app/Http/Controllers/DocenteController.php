@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Docente;
+use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 
 
 
@@ -40,6 +42,16 @@ class DocenteController extends Controller
 
         $docente = null;
         if (!$request->id) {
+
+            $usuario = Usuario::create([
+                'email' => $request->correo,
+                'password' => Hash::make($request->nro_doc),
+                'rol' => 4,
+                'estado' => 1,
+                'estado_contraseña' => 1,
+                'id_usuario' => auth()->id()
+            ]);
+
             $docente = Docente::create([
                 'tipo_doc' => $request->tipo_doc,
                 'nro_doc' => $request->nro_doc,
@@ -52,6 +64,7 @@ class DocenteController extends Controller
                 'f_nac' => $request->fecha,
                 'sexo' => $request->sexo,
                 'estado' => $request->estado,
+                'usuario_id' => $usuario->id, 
                 'id_usuario' => auth()->id()
 
             ]);

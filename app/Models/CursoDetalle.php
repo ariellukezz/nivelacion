@@ -14,6 +14,7 @@ class CursoDetalle extends Model
     protected $fillable = [
         'id_curso',
         'id_alumno',
-        'nota'
+        'nota',
+        'condicion'
     ];
 }

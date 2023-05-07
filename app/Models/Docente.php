@@ -24,6 +24,7 @@ class Docente extends Model
         'email',
         'estado',
         'id_usuario',
+        'usuario_id'
     ];
 
 }

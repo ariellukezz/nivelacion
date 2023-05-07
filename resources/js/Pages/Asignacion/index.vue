@@ -109,7 +109,7 @@
           style="font-size: .9rem;"
           :paginator="true" :rows="9"
           >
-              <Column field="nombre" header="N° Documento"></Column>
+              <Column field="nombre" header="Nombre"></Column>
               <Column field="competencia" header="Competencia"></Column>
               <Column field="docente" header="Docente">
                   <template #body="{ data }">
@@ -209,32 +209,6 @@
         </div>
 
         <!-- END PASO 3 -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
 
       <Toast />
       <ConfirmPopup></ConfirmPopup>

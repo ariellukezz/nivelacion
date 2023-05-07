@@ -19,8 +19,8 @@
 
       <ul class="mt-6 text-gray-100 " style="color: ;">
         <div class="ml-6" style="margin-top: 40px; margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> INICIO </span> </div>
-        <li class="relative px-6 py-3" :class="[route().current('dashboard')? 'activado':'']">
-          <NavLink :href="route('dashboard')" :class="[route().current('dashboard')? 'borderlef':'']">
+        <li class="relative px-6 py-3" :class="[route().current('docente-inicio')? 'activado':'']">
+          <NavLink :href="route('docente-inicio')" :class="[route().current('docente-inicio')? 'borderlef':'']">
             <template #icon>
               <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                    stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +35,7 @@
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('alumno-index')? 'activado':'']">
+        <!-- <li class="relative px-6 py-3" :class="[route().current('alumno-index')? 'activado':'']">
           <NavLink :href="route('alumno-index')" :active="route().current('alumno-index')">
             <template #icon>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -44,12 +44,25 @@
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
               </svg>
             </template>
-            Estudiantes nivelación
+            Alumnos
+          </NavLink>
+        </li> -->
+
+        <li class="relative px-6 py-3" :class="[route().current('docente-curso')? 'activado':'']">
+          <NavLink :href="route('docente-curso')" :active="route().current('docente-curso')">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            Cursos
           </NavLink>
         </li>
 
         <div style="border-bottom: 1px solid #f4f4f433; margin-top: 10px; margin-bottom: 20PX;"></div>
-        <div class="ml-6" style="margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> CONFIGURACIÓN </span> </div>
+        <!-- <div class="ml-6" style="margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> CONFIGURACIÓN </span> </div>
  
         <li class="relative px-6 py-3" :class="[route().current('about')? 'activado':'']">
           <NavLink :href="route('about')" :active="route().current('about')">
@@ -62,7 +75,7 @@
             </template>
             Revisar Documentos
           </NavLink>
-        </li>
+        </li> -->
         
       </ul>
     </div>

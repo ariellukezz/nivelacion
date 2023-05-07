@@ -1,5 +1,5 @@
 <template>
-    <Head title="Usuarios"/>
+    <Head title="Dashboard"/>
     <AuthenticatedLayout>
         <h1> DASHBOARD DOCENTE </h1>
     </AuthenticatedLayout>

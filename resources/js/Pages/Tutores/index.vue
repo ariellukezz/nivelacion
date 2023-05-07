@@ -64,7 +64,13 @@
         </div>
       </div>
   
-      <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '60vw' }">
+      <Dialog v-model:visible="visible" header="Docente Nuevo" :style="{ width: '60vw', height:'600px' }">
+
+        <div style="">
+        <TabView>
+            <TabPanel header="Datos Docente" >
+
+
         <!-- <pre>{{ docente }}</pre> -->
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <div class="flex flex-wrap mr-0">
@@ -109,11 +115,6 @@
 
         </div>
  
-       
-      
-        
-
-
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
               <div><label>Nro documento</label></div>  
@@ -151,19 +152,71 @@
           </div>
 
 
-          <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-2" style="width: 73%;">
+          <div class="flex" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
+            <div class="" style="width: 73%;">
               <div><label>Dirección</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
             </div>
     
-            <div class="mb-2" style="width: 23%;">
+            <div class="" style="width: 23%;">
               <div><label>Fecha nacimiento</label></div>  
               <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
             </div>
           </div>
  
-          <template #footer>
+
+
+        </TabPanel>
+        <TabPanel header="Docente usuario">
+          <div style="height:340px;">
+            
+            <div class="flex mb-3" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
+              <div class="mb-3" style="width: 48%;">
+                <div><label>email</label></div>  
+                <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
+              </div>
+      
+              <div class="" style="width: 48%;">
+                  <div><label>Contraseña</label></div>  
+                  <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
+                </div>
+              </div>
+
+            <div class="flex mt-5" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
+              <div class="" style="width: 100%;">
+                <div class="mb-2"><h2>Habilidades</h2></div>  
+                  <div style="column-count: 2;">
+                  <div v-for="category of categories" :key="category.key" class="mb-2" style="font-size: .9rem" >
+
+                        <div v-if="category.value % 2 === 0" class="flex">
+                          <Checkbox v-model="selectedCategories" :inputId="category.key" class="mr-2" name="category" :value="category.value" />
+                          <div style=" max-width: 230px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                            <label :for="category.key">{{ category.name }}</label>
+                          </div>
+                        </div>
+
+                        <div v-else class="flex">
+                          <Checkbox v-model="selectedCategories" :inputId="category.key" class="mr-2" name="category" :value="category.value" />
+                          <div style=" max-width: 230px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                            <label :for="category.key">{{ category.name }}</label>
+                          </div>
+                        </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+          </div>
+        </TabPanel>
+      
+      </TabView> 
+      </div>
+
+        
+
+        <template #footer style="margin-top: -10px">
             <div class="flex" style="justify-content: flex-end;">
               <div>
                 <Button label="Cancelar" outlined="" @click="visible = false" size="small" />
@@ -172,10 +225,6 @@
             </div>
           </template>
 
-
-  
-        
-  
       </Dialog>
   
   </div>
@@ -201,6 +250,10 @@
   import Divider from 'primevue/divider';
   import Calendar from 'primevue/calendar';
   import Tag from 'primevue/tag';
+  import TabView from 'primevue/tabview';
+  import TabPanel from 'primevue/tabpanel';
+  import Checkbox from 'primevue/checkbox';
+
   
   const toast = useToast();
   const confirm = useConfirm();
@@ -296,8 +349,7 @@
     "delete-docente/"+id);
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
     getDocentes() 
-  }
-  
+  }  
   
   const emod = ref(false);
 
@@ -339,11 +391,9 @@
       }
   })
 
-  
   watch(buscar, ( newValue, oldValue ) => {
       getDocentes()
   })
-  
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
@@ -366,6 +416,22 @@
 
   getDocentes()
   getProgramas()
+
+
+  const categories = ref([
+    {value:1, name: "EDUCACION CIVICA"},
+    {value:2, name: "HISTORIA Y GEOGRAFÍA"},
+    {value:3, name: "EDUCACIÓN FISICA"},
+    {value:4, name: "ARTE Y CULTURA"},
+    {value:5, name: "LENGUAJE: LITERATURA, RAZONAMIENTO VERBAL, INGLES, QUECHUA Y AIMARA"},
+    {value:6, name: "FISICA, QUIMICA Y BIOLOGÍA"},
+    {value:7, name: "MATEMÁTICA"},
+    {value:8, name: "EDUCACIÓN PARA EL TRABAJO, ECONOMÍA"},
+    {value:9, name: "TIC"},
+    {value:10, name: "ESTRATEGIA DE APRENDIZAJE"},
+    {value:11, name: "RELIGIÓN"}
+  ]);
+  const selectedCategories = ref([1,2,4]);
 
   </script>
   
