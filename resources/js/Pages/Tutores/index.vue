@@ -23,7 +23,7 @@
               <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
           </div>
           <DataTable :value="docentes" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
-              <Column field="nro_doc" header="N° Documento"></Column>
+              <Column field="nro_doc" header="N° Doc"></Column>
               <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
               <Column field="nombres" header="Nombres">
                   <template #body="{ data }">

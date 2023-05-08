@@ -7,6 +7,7 @@ use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\CursoController;
+use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AsignacionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -68,7 +69,17 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
     
+
+    //DOCUMENTOS
+    Route::post('documento/resolucion', [DocumentoController::class, 'resolucion']);
+    Route::post('documento/plan', [DocumentoController::class, 'plan']);
+    Route::post('documento/informe', [DocumentoController::class, 'informe']);
+    Route::post('get-resoluciones', [DocumentoController::class, 'getResoluciones']);
+    Route::post('get-planes', [DocumentoController::class, 'getPlanes']);
+    Route::post('get-informes', [DocumentoController::class, 'getInformes']);
+
 });
+
 
 Route::middleware('auth','docente')->group(function () {
 

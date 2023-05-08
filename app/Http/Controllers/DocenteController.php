@@ -111,8 +111,6 @@ class DocenteController extends Controller
         return response()->json($this->response, 200);
     }
 
-
-
     // DOCENTE 
     public function dashboardDocente()
     {
