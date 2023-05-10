@@ -84,7 +84,9 @@ Route::middleware('auth','admin')->group(function () {
 Route::middleware('auth','docente')->group(function () {
 
     //DOCENTE
-    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-index');
+
+//    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-inicio');
+    Route::get('/docente', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
     Route::get('/inicio', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
     Route::get('docente/curso', [CursoController::class, 'cursoDocente'])->name('docente-curso');
     Route::post('docente/get-cursos', [CursoController::class, 'getCursos']);

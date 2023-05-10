@@ -111,6 +111,7 @@ class DocumentoController extends Controller
       
         $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo')
         ->where('tipo','=','Resolucion')
+        ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('nombre', 'LIKE', '%' . $request->term . '%')
@@ -129,6 +130,7 @@ class DocumentoController extends Controller
       
         $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo')
         ->where('tipo','=','Plan')
+        ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('nombre', 'LIKE', '%' . $request->term . '%')
@@ -147,6 +149,7 @@ class DocumentoController extends Controller
       
         $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo')
         ->where('tipo','=','Informe')
+        ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('nombre', 'LIKE', '%' . $request->term . '%')

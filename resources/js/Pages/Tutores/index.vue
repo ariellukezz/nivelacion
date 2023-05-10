@@ -170,17 +170,6 @@
         <TabPanel header="Docente usuario">
           <div style="height:340px;">
             
-            <div class="flex mb-3" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
-              <div class="mb-3" style="width: 48%;">
-                <div><label>email</label></div>  
-                <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
-              </div>
-      
-              <div class="" style="width: 48%;">
-                  <div><label>Contraseña</label></div>  
-                  <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
-                </div>
-              </div>
 
             <div class="flex mt-5" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
               <div class="" style="width: 100%;">
