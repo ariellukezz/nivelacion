@@ -42,6 +42,9 @@ class AuthenticatedSessionController extends Controller
             return redirect('/docente');
         }
 
+        if( auth()->user()->rol == 5){
+            return redirect('/estudiante/inicio');
+        }
 
 
         return redirect()->intended(RouteServiceProvider::HOME);

@@ -15,14 +15,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Docente\DashboardController;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
 
 
 Route::get('/dashboard', function () {
@@ -30,6 +22,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified','admin',])->name('dashboard');
 
 Route::middleware('auth','admin')->group(function () {
+    Route::get('/', fn () => Inertia::render('Inicio/index'))->name('inicio');
     Route::get('/about', fn () => Inertia::render('About'))->name('about');
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
@@ -43,6 +36,8 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-usuarios', [UsuarioController::class, 'getUsuarios']);
     Route::post('save-usuario', [UsuarioController::class, 'save']);
     Route::get('delete-usuario/{id}', [UsuarioController::class, 'delete']);
+    Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioAdministrador']);
+
 
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
@@ -69,7 +64,6 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
     
-
     //DOCUMENTOS
     Route::post('documento/resolucion', [DocumentoController::class, 'resolucion']);
     Route::post('documento/plan', [DocumentoController::class, 'plan']);
@@ -82,17 +76,27 @@ Route::middleware('auth','admin')->group(function () {
 
 
 Route::middleware('auth','docente')->group(function () {
-
-    //DOCENTE
-
 //    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-inicio');
     Route::get('/docente', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
-    Route::get('/inicio', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
+    Route::get('/docente', fn () => Inertia::render('Docente/Inicio/inicio'))->name('docente-inicio');
     Route::get('docente/curso', [CursoController::class, 'cursoDocente'])->name('docente-curso');
     Route::post('docente/get-cursos', [CursoController::class, 'getCursos']);
     Route::post('docente/get-alumnos-curso', [CursoController::class, 'getAlumnosXCurso']);
-
     Route::post('docente/update-nota', [CursoController::class, 'updateNota']);
+    
+    Route::post('/docente/get-usuario', [UsuarioController::class, 'getUsuarioDocente']);
+
+});
+
+Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () {
+    Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioEstudiante']);
+
+    //ESTUDIANTE
+//    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-inicio');
+    Route::get('/inicio', fn () => Inertia::render('Estudiante/Inicio/index'))->name('estudiante-inicio');
+    Route::get('/notas', fn () => Inertia::render('Estudiante/Notas/index'))->name('estudiante-notas');
+    Route::get('/encuestas', fn () => Inertia::render('Estudiante/Encuestas/index'))->name('estudiante-encuestas');
+    Route::post('/get-notas', [CursoController::class, 'getNotasByAlumno']);
 
 });
 

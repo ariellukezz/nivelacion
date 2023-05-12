@@ -7,7 +7,7 @@ use Inertia\Inertia;
 use App\Models\Docente;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
-
+use DB;
 
 
 class DocenteController extends Controller
@@ -35,7 +35,6 @@ class DocenteController extends Controller
         return response()->json($this->response, 200);
       
     }
-
 
 
     public function save(Request $request ) {

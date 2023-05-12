@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Curso;
 use App\Models\CursoDetalle;
+use App\Models\Alumno;
 use Inertia\Inertia;
 
 class CursoController extends Controller
@@ -83,6 +84,31 @@ class CursoController extends Controller
 
     //END DOCENTE
     
+
+
+    //ALUMNO 
+
+    public function getNotasByAlumno(Request $request ) {
+
+        $res = Alumno::select('estudiante.id', 'curso.nombre','curso.grupo', 'curso.escuela', 'curso_detalle.nota')
+        ->join('curso_detalle','curso_detalle.id_alumno','estudiante.id')
+        ->join('curso','curso.id','curso_detalle.id_curso')
+        ->join('users','users.id','estudiante.usuario_id')
+        ->where('curso.estado',"=",1)
+        ->where('estudiante.usuario_id',"=", auth()->user()->id)
+        ->where(function ($query) use ($request) {
+            return $query
+                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+        })->orderBy('curso.id', 'DESC')
+        ->paginate(10);
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+    }
+
+    //
+
 
 
 

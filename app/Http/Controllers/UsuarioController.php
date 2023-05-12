@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Usuario;
+use App\Models\Alumno;
+use App\Models\Docente;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
@@ -14,6 +17,7 @@ class UsuarioController extends Controller
     {
         return Inertia::render('Usuarios/index');
     }
+
 
     public function getUsuarios(Request $request){
       
@@ -95,7 +99,46 @@ class UsuarioController extends Controller
     return response()->json($this->response, 200);
   }
 
+  
+    public function getUsuarioAdministrador(Request $request){
 
+        $res = DB::select('SELECT users.nombres, programa.escuela  FROM users
+        JOIN programa ON programa.id = users.programa_id
+        WHERE users.id = '. auth()->user()->id);
+
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+
+    }
+
+    public function getUsuarioDocente(Request $request){
+
+        $res = DB::select('SELECT docente.nombres, docente.paterno, docente.materno, programa.escuela FROM docente
+        JOIN users ON users.id = docente.usuario_id
+        JOIN programa ON programa.id IN (SELECT users.programa_id FROM users WHERE users.id = docente.id_usuario)
+        WHERE users.id = '. auth()->user()->id);
+
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+
+    }
+
+  //GET USUARIO ESTUDIANTE
+    public function getUsuarioEstudiante(Request $request){
+
+        $res = Alumno::select('estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'programa.escuela')
+        ->join('users','users.id','estudiante.usuario_id')
+        ->join('datos_ingreso','datos_ingreso.dni','estudiante.dni')
+        ->join('programa','datos_ingreso.id_programa','programa.id')
+        ->where('users.id','=', auth()->user()->id)->get();
+
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+    
+    }
 
 
 }

@@ -7,19 +7,20 @@
             <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
           </svg>
         </button>  
+
       </div>
 
       <NavigationMobile />
       <Navigation :style="{ 'width': sidewidth }" style="transition: all 0.3s ease;" />
       <div class="flex flex-col flex-1 w-full">
         <TopMenu :usuario="usu"/>
-        
+
         <main class="h-full overflow-y-auto">
           <div class="container px-4 mx-auto grid">
             <h2 class="my-2 text-2xl font-semibold text-gray-700">
               <slot name="header" />
-            </h2>
 
+            </h2>
             <slot />
           </div>
         </main>
@@ -29,11 +30,12 @@
 </template>
 
 <script setup>
-import Navigation from './Navigation.vue';
+import Navigation from './NavigationEstudiante.vue';
 import TopMenu from "./TopMenu.vue";
 import NavigationMobile from './NavigationMobile.vue';
 import {ref, onMounted} from 'vue'
 
+const estado = ref(true)
 const sidewidth = ref('230px')
 
 const sidechange = () => {
@@ -42,7 +44,6 @@ const sidechange = () => {
   }else{
     sidewidth.value = '0px';
   }
-
 }
 
 onMounted(() => {
@@ -51,10 +52,12 @@ onMounted(() => {
 
 const usu = ref(null) 
 const getUsuario =  async () => {
-  let res = await axios.post("/get-usuario");
+  let res = await axios.post("/estudiante/get-usuario");
   usu.value = res.data.datos[0];
+
   console.log(usu.value)
 }
+
 
 
 </script>

@@ -12,7 +12,7 @@
       <NavigationMobile />
       <Navigation :style="{ 'width': sidewidth }" style="transition: all 0.3s ease;" />
       <div class="flex flex-col flex-1 w-full">
-        <TopMenu />
+        <TopMenu :usuario="usu"/>
 
         <main class="h-full overflow-y-auto">
           <div class="container px-4 mx-auto grid">
@@ -31,7 +31,7 @@
 import Navigation from './NavigationDocente.vue';
 import TopMenu from "./TopMenu.vue";
 import NavigationMobile from './NavigationMobile.vue';
-import {ref} from 'vue'
+import {ref, onMounted} from 'vue'
 
 const sidewidth = ref('230px')
 
@@ -41,8 +41,20 @@ const sidechange = () => {
   }else{
     sidewidth.value = '0px';
   }
-
 }
+
+onMounted(() => {
+  getUsuario()
+});
+
+const usu = ref(null) 
+const getUsuario =  async () => {
+  let res = await axios.post("/docente/get-usuario");
+  usu.value = res.data.datos[0];
+
+  console.log(usu.value)
+}
+
 
 </script>
 <style scoped>
