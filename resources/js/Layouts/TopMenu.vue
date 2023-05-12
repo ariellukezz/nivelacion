@@ -8,7 +8,7 @@
           </svg>
         </button>
 
-        <Dropdown v-if="usuario.usuario != null" >
+        <Dropdown v-if="usuario.usuario != null" style="cursor: pointer;" >
           <template #trigger >
             <div class="flex" style="align-items: center; height: 37px; color: #000000D9;">
             <div style="text-align: end;  margin-top: 0px;">
