@@ -389,7 +389,7 @@
   
   const getDocentes =  async () => {
     let res = await axios.post(
-    "coordinador/get-docentes?page=" + pagina.value,
+    "/coordinador/get-docentes?page=" + pagina.value,
     { 
       term: buscar.value,
    }
@@ -415,9 +415,9 @@
   
   const getCompetencias =  async () => {
     let res = await axios.post(
-    "/get-competencias?page=",{ term: "" }
+    "/coordinador/get-competencias?page=",{ term: "" }
     );
-    competencias.value = res.data.datos.data;
+    competencias.value = res.data.datos;
   }
 
   const getDocenteXcompetencia =  async () => {
@@ -583,8 +583,6 @@
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
 
   const resEsuela = () => { cursoseleccionado.value = null }
-
-
 
 
   getDocentes()

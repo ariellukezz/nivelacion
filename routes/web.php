@@ -63,6 +63,7 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
         Route::post('/get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
 
+        Route::post('/get-competencias', [CoordinadorController::class, 'compes']);
     });
 
 
@@ -98,6 +99,8 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-resoluciones', [DocumentoController::class, 'getResoluciones']);
     Route::post('get-planes', [DocumentoController::class, 'getPlanes']);
     Route::post('get-informes', [DocumentoController::class, 'getInformes']);
+
+    
 
 });
 

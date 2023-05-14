@@ -22,6 +22,7 @@ class DocenteController extends Controller
 
         $res = Docente::select('id', 'tipo_doc','nro_doc', 'nombres', 'paterno', 'materno', 'telefono', 'email', 'direccion', 'f_nac', 'sexo', 'estado')
         ->where('docente.id_usuario','=',auth()->id())
+        
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('docente.nombres', 'LIKE', '%' . $request->term . '%')

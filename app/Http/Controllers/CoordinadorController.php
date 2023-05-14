@@ -185,6 +185,43 @@ class CoordinadorController extends Controller
         return response()->json($this->response, 200);
     }
 
+    public function compes(Request $request){
+
+        $res = DB::select('SELECT id_competencia FROM competencia_programa
+        JOIN programa ON programa.id = competencia_programa.id_programa
+        JOIN escuela ON programa.id_escuela = escuela.id
+        WHERE escuela.id = 26 AND  competencia_programa.estado = 1');
+        
+        $competencias_lista = [];
+        foreach($res as $item) {
+            if( $this->contar($item->id_competencia) > 0){           
+                array_push($competencias_lista, $item->id_competencia);
+            }
+        }
+
+        $idsString = '(' . implode(',', $competencias_lista) . ')';
+
+        $competencias = DB::select('SELECT id as value, nombre as label from competencia where id in ' .$idsString);
+        $this->response['datos'] = $competencias;
+        return response()->json($this->response, 200);
+    }
+
+    // SELECT COUNT(*) AS reg FROM matriz
+    // JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
+    // JOIN programa ON programa.id = datos_ingreso.id_programa
+    // JOIN escuela ON programa.id_escuela = escuela.id
+    // WHERE escuela.id = 26 AND matriz.C11_R <= 10.49
+
+    private function contar( $id){
+        $res = DB::select(' SELECT COUNT(*) AS reg FROM matriz
+        JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
+        JOIN programa ON programa.id = datos_ingreso.id_programa
+        JOIN escuela ON programa.id_escuela = escuela.id
+        WHERE escuela.id = '.auth()->user()->id_escuela.' AND matriz.C'.$id.'_R <= 10.49');
+
+        return $res[0]->reg;
+    }
+
     // DOCENTE 
     public function dashboardDocente()
     {
