@@ -47,8 +47,8 @@
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('usuario-index')? 'activado':'']">
-          <NavLink :href="route('usuario-index')" :active="route().current('usuario-index')">
+        <li class="relative px-6 py-3" :class="[route().current('coordinador')? 'activado':'']">
+          <NavLink :href="route('coordinador')">
             <template #icon>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                    xmlns="http://www.w3.org/2000/svg">
@@ -56,12 +56,12 @@
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
               </svg>
             </template>
-            Usuarios
+            Coordinadores
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('alumno-index')? 'activado':'']">
-          <NavLink :href="route('alumno-index')" :active="route().current('alumno-index')">
+        <li class="relative px-6 py-3" :class="[route().current('coordinador-estudiante')? 'activado':'']">
+          <NavLink :href="route('coordinador-estudiante')">
             <template #icon>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                    xmlns="http://www.w3.org/2000/svg">
@@ -69,12 +69,12 @@
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
               </svg>
             </template>
-            Estudiantes nivelación
+            Estudiantes
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('tutor-index')? 'activado':'']">
-          <NavLink :href="route('tutor-index')" style="border-left: 2px solid red !important;">
+        <li class="relative px-6 py-3" :class="[route().current('coordinador-docente')? 'activado':'']">
+          <NavLink :href="route('coordinador-docente')">
             <template #icon>
               <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                    stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,14 +82,14 @@
                     d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
               </svg>
             </template>
-            Docentes nivelación
+            Docentes
           </NavLink>
         </li>
 
         <div style="border-bottom: 1px solid #f4f4f433; margin-top: 10px; margin-bottom: 20PX;"></div>
         <div class="ml-6" style="margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> CONFIGURACIÓN </span> </div>
-        <li class="relative px-6 py-3" :class="[route().current('asignacion-index')? 'activado':'']">
-          <NavLink :href="route('asignacion-index')" :active="route().current('asignacion-index')">
+        <li class="relative px-6 py-3" :class="[route().current('coordinador-asignacion')? 'activado':'']">
+          <NavLink :href="route('coordinador-asignacion')">
             <template #icon>
               <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                    stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +102,7 @@
         </li>
 
         <li class="relative px-6 py-3" :class="[route().current('about')? 'activado':'']">
-          <NavLink :href="route('about')" :active="route().current('about')">
+          <NavLink :href="route('about')">
             <template #icon>
               <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                    stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">

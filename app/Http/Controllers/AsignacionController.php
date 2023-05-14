@@ -17,7 +17,6 @@ class AsignacionController extends Controller
         return Inertia::render('Asignacion/index');
     }
 
-
     public function getCursos(Request $request){
 
         $query_where = [];
@@ -33,14 +32,14 @@ class AsignacionController extends Controller
         ->join('docente','docente.id','curso.id_docente')
         ->join('competencia','competencia.id','curso.id_competencia')
         ->where('curso.escuela',"=",$request->escuela)
+        ->where('curso.id_usuario',"=",auth()->id())
         ->where($query_where)
         ->where(function ($query) use ($request) {
             return $query
-                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('competencia.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
-        ->paginate(10);
-    
-
+        ->paginate(100);
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
@@ -67,10 +66,24 @@ class AsignacionController extends Controller
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
         ->paginate(10);
+
+        $registrados = CursoDetalle::select(
+            'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+        ->join('curso','curso_detalle.id_curso','curso.id')
+        ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+        ->where('curso.id',"=",$request->curso)
+        ->where($query_where)
+        ->where(function ($query) use ($request) {
+            return $query
+                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+        })->orderBy('curso.id', 'DESC')
+        ->paginate(10);
     
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
+        $this->response['registrados'] = $registrados;
+
         return response()->json($this->response, 200);
       
     }
@@ -118,8 +131,6 @@ class AsignacionController extends Controller
 
         return response()->json($this->response, 200);
     }
-
-
 
 
     public function getDocentesXcompetencia(Request $request){

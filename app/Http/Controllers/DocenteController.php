@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Docente;
 use App\Models\Usuario;
+use App\Models\DocenteCompetencia;
 use Illuminate\Support\Facades\Hash;
 use DB;
-
 
 class DocenteController extends Controller
 {
@@ -21,6 +21,7 @@ class DocenteController extends Controller
     public function getDocentes(Request $request){
 
         $res = Docente::select('id', 'tipo_doc','nro_doc', 'nombres', 'paterno', 'materno', 'telefono', 'email', 'direccion', 'f_nac', 'sexo', 'estado')
+        ->where('docente.id_usuario','=',auth()->id())
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('docente.nombres', 'LIKE', '%' . $request->term . '%')
@@ -48,6 +49,7 @@ class DocenteController extends Controller
                 'rol' => 4,
                 'estado' => 1,
                 'estado_contraseña' => 1,
+                'id_escuela' => auth()->user()->id_escuela,
                 'id_usuario' => auth()->id()
             ]);
 
@@ -65,14 +67,32 @@ class DocenteController extends Controller
                 'estado' => $request->estado,
                 'usuario_id' => $usuario->id, 
                 'id_usuario' => auth()->id()
-
             ]);
+
+            foreach($request->competencias as $item){
+                $this->saveCompetencias($docente->id, $item);
+            }
             $this->response['tipo'] = 'success';
             $this->response['titulo'] = 'REGISTRO NUEVO';
             $this->response['mensaje'] = 'Docente '.$docente->nombres.' registrado con exito';
             $this->response['estado'] = true;
             $this->response['datos'] = $docente;
         } else {
+
+            $docente_competencias = DB::select('SELECT id_competencia as c FROM docente_competencia 
+            WHERE id_docente = '. $request->id);
+            // $docente_competencia = $this->convert($docente_competencias);
+            $opciones_eliminadas=array_diff($this->convert($docente_competencias), $request->competencias);
+            $opciones_nuevas=array_diff($request->competencias, $this->convert($docente_competencias));
+            foreach($opciones_nuevas as $item){        
+                $this->saveCompetencias($request->id, $item);
+            }
+            
+            foreach($opciones_eliminadas as $item){
+                $competencia = DB::select('SELECT id FROM docente_competencia WHERE id_docente = '. $request->id.' AND id_competencia = '.$item );
+                $this->deletedocentecompetencia($competencia[0]->id);
+            }
+
 
             $docente = Docente::find($request->id);
             $docente->tipo_doc = $request->tipo_doc;
@@ -85,6 +105,12 @@ class DocenteController extends Controller
             $docente->f_nac = $request->fecha;
             $docente->sexo = $request->sexo;
             $docente->estado = $request->estado;
+
+            // foreach($request->competencias as $item){
+            //     if($this->buscarCompetencias($docente_competencias, $item) ){}
+            //     $this->saveEditCompetencias($docente->id, $item);
+            // }
+
             $docente->save();
             $this->response['tipo'] = 'info';
             $this->response['titulo'] = '!REGISTRO MODIFICADO!';
@@ -109,6 +135,63 @@ class DocenteController extends Controller
         $this->response['datos'] = $p;
         return response()->json($this->response, 200);
     }
+
+    public function saveCompetencias($docente, $competencia){
+        $docente_competencia = DocenteCompetencia::create([
+            'id_competencia' => $competencia,
+            'id_docente' => $docente
+        ]);
+    }
+
+    public function saveEditCompetencias($docente, $competencia){
+
+        $competencias = DB::select('SELECT id, id_competencia, id_docente FROM docente_competencia 
+        WHERE id_competencia =' .$competencia.' AND id_docente = '.$docente);
+
+        $docente_competencia = DocenteCompetencia::find($competencias[0]->id);
+        $docente_competencia->id_competencia = $competencia;
+        $docente_competencia->id_docente = $docente;
+        $docente_competencia->save();
+    }
+
+    public function getCompetenciasByDocente(Request $request){
+
+        $res = DocenteCompetencia::select('docente_competencia.id_competencia')
+        ->join('docente','docente_competencia.id_docente','docente.id')
+        ->where('docente_competencia.id_docente','=',$request->id_docente)
+        ->paginate(10);
+
+        $competencia = [];
+
+        foreach($res as $item ){
+            array_push($competencia,$item->id_competencia);            
+        }
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $competencia;
+        return response()->json($this->response, 200);
+      
+    }
+
+    public function convert($ar){
+        $arr = [];
+        foreach($ar as $item ){
+            array_push($arr,$item->c);            
+        }
+        return $arr;
+    }
+
+    public function deletedocentecompetencia($id){
+        $docente_compe = DocenteCompetencia::find($id);
+        $docente_compe->delete();
+    }
+
+
+    
+
+
+
+
 
     // DOCENTE 
     public function dashboardDocente()

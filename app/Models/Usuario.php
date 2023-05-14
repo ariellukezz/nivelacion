@@ -17,6 +17,7 @@ class Usuario extends Model
         'password',
         'estado',
         'programa_id',
+        'id_escuela',
         'rol',
         'id_usuario',
         'estado_contraseña'

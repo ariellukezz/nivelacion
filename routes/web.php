@@ -7,6 +7,7 @@ use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\CursoController;
+use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AsignacionController;
 use Illuminate\Foundation\Application;
@@ -37,6 +38,32 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('save-usuario', [UsuarioController::class, 'save']);
     Route::get('delete-usuario/{id}', [UsuarioController::class, 'delete']);
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioAdministrador']);
+
+    //COORDINADOR
+    Route::prefix('coordinador')->group(function () {
+        Route::get('/', fn () => Inertia::render('Admin/Coordinador/index'))->name('coordinador');    
+        Route::post('/save-coordinador', [CoordinadorController::class, 'save']); #-->
+        Route::post('/get-coordinadores', [CoordinadorController::class, 'getCoordinadores']);
+        Route::get('/delete-coordinador/{id}', [CoordinadorController::class, 'delete']);
+        Route::post('/get-escuelas', [CoordinadorController::class, 'getEscuelas']); #-->
+
+        Route::get('/estudiante', fn () => Inertia::render('Admin/Estudiante/index'))->name('coordinador-estudiante');    
+        Route::post('/get-alumnos', [CoordinadorController::class, 'getAlumnos']);
+
+        Route::get('/docente', fn () => Inertia::render('Admin/Docente/index'))->name('coordinador-docente');    
+        Route::post('/get-docentes', [DocenteController::class, 'getDocentes']);
+        Route::post('/save-docente', [DocenteController::class, 'save']);
+        Route::post('/get-competencia-x-docente', [DocenteController::class, 'getCompetenciasByDocente']);
+        Route::get('/delete-docente/{id}', [DocenteController::class, 'delete']);
+
+        Route::get('/asignacion', fn () => Inertia::render('Admin/Asignacion/index'))->name('coordinador-asignacion');
+        Route::post('/get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
+        Route::post('/save-curso', [AsignacionController::class, 'save']);
+        Route::post('/get-cursos', [AsignacionController::class, 'getCursos']);
+        Route::post('/asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
+        Route::post('/get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
+
+    });
 
 
     //ALUMNO
@@ -83,7 +110,6 @@ Route::middleware('auth','docente')->group(function () {
     Route::post('docente/get-cursos', [CursoController::class, 'getCursos']);
     Route::post('docente/get-alumnos-curso', [CursoController::class, 'getAlumnosXCurso']);
     Route::post('docente/update-nota', [CursoController::class, 'updateNota']);
-    
     Route::post('/docente/get-usuario', [UsuarioController::class, 'getUsuarioDocente']);
 
 });

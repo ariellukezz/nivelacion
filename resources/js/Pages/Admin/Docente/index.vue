@@ -166,7 +166,7 @@
 
 
         </TabPanel>
-        <TabPanel header="Docente usuario">
+        <TabPanel header="Competencias">
           <div style="height:340px;">
             
 
@@ -278,7 +278,7 @@
   
   const getDocentes =  async (event) => {
     let res = await axios.post(
-    "get-docentes?page=" + pagina.value,
+    "/coordinador/get-docentes?page=" + pagina.value,
     { 
       term: buscar.value,
    }
@@ -286,13 +286,10 @@
     docentes.value = res.data.datos.data;
     totalpaginas.value = res.data.datos.total;
   }
-  
-  const getProgramas =  async () => {
-    let res = await axios.post(
-    "get-programas?page=" + pagina.value,
-    { term: "" }
-    );
-    programas.value = res.data.datos.data;
+
+  const getCompetenciaDocente =  async (idd) => {
+    let res = await axios.post( "/coordinador/get-competencia-x-docente?page=" + pagina.value, { id_docente: idd});
+    selectedCategories.value = res.data.datos;
   }
   
 
@@ -307,7 +304,7 @@
 
 
     let res = await axios.post(
-      "save-docentex",
+      "/coordinador/save-docente",
       { 
         id: docente.value.id,
         tipo_doc: docente.value.tipo_doc,
@@ -342,6 +339,7 @@
   const emod = ref(false);
 
   const editar =  async (item) => {
+    getCompetenciaDocente(item.id)
     visible.value = true;
     emod.value = true;
     docente.value.id = item.id
@@ -403,7 +401,7 @@
   };
 
   getDocentes()
-  getProgramas()
+  // getProgramas()
 
 
   const categories = ref([

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Programa;
+use App\Models\Escuela;
 use App\Models\Rol;
 use App\Models\Competencia;
 
@@ -12,7 +13,7 @@ class DataController extends Controller
 {
     
   public function getProgramas(Request $request){
-      
+
     $query_where = [];
     $res = Programa::select(
         'id as value', 'programa as label' 
@@ -50,12 +51,14 @@ class DataController extends Controller
   }
 
   public function getEscuelas(Request $request){
-    $res = Programa::select('escuela', 'facultad', 'area')
+    $res = Escuela::select('escuela.id','escuela.nombre as escuela', 'programa.facultad', 'programa.area')
+    ->join('programa','programa.id_escuela','escuela.id')
+    ->where('escuela.id','=',auth()->user()->id_escuela)
     ->where(function ($query) use ($request) {
         return $query
-            ->orWhere('escuela', 'LIKE', '%' . $request->term . '%');
+            ->orWhere('escuela.nombre', 'LIKE', '%' . $request->term . '%');
     })->distinct()
-    ->paginate(1000);
+    ->paginate(100);
 
     $this->response['estado'] = true;
     $this->response['datos'] = $res;

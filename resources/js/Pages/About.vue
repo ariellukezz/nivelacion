@@ -12,7 +12,7 @@
                   <form @submit.prevent="submit">
                     <div class="flex justify-between">
                       <input type="file" @change="onChange"/>
-                      <Button label="Submit" style="height:38px;" @click="submit"/>              
+                      <Button label="Subir" style="height:38px;" @click="submit"/>              
                     </div>
                   </form>
                 </div>
@@ -41,7 +41,7 @@
                   <form @submit.prevent="submit">
                     <div class="flex justify-between">
                       <input type="file" @change="onChange2"/>
-                      <Button label="Submit" style="height:38px;" @click="submit2"/>              
+                      <Button label="Subir" style="height:38px;" @click="submit2"/>              
                     </div>
                   </form>
                 </div>
@@ -69,7 +69,7 @@
                   <form @submit.prevent="submit">
                     <div class="flex justify-between">
                       <input type="file" @change="onChange3"/>
-                      <Button label="Submit" style="height:38px;" @click="submit3"/>              
+                      <Button label="Subir" style="height:38px;" @click="submit3"/>              
                     </div>
                   </form>
                 </div>
@@ -85,7 +85,7 @@
                           <!-- <div class="mr-2">
                             <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                           </div> -->
-                          <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"  size="small"  style="width: 25px; height: 25px;"/>
+                          <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)"  size="small"  style="width: 25px; height: 25px;"/>
                         </div>
                       </template>
                     </Column>
