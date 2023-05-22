@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -89,6 +88,7 @@ class AlumnoController extends Controller
         return response()->json($this->response, 200);
     
     }
+    
 
     public function getAlumnosRegistroSSSS(Request $request){
 

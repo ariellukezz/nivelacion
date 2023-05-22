@@ -92,9 +92,8 @@
 
         <div class="card p-fluid">
 
-            <DataTable :value="alumnosCurso"               :class="'p-datatable-sm mt-4'"   selectionMode="single" v-model:selection="alumnoseleccionado" editMode="cell" @cell-edit-complete="onCellEditComplete"  tableStyle="min-width: 50rem">
+            <DataTable :value="alumnosCurso" :class="'p-datatable-sm mt-4'"   selectionMode="single" v-model:selection="alumnoseleccionado" editMode="cell" @cell-edit-complete="onCellEditComplete"  tableStyle="min-width: 50rem">
                 <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header" style="width: 25%"></Column>
-
 
                 <Column field="nota" header="Nota" width="120"> 
                   <template #editor="{ data, field }">
@@ -220,8 +219,6 @@ const isPositiveInteger = (val) => {
 
 const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
-  };
+};
   
-
-
 </script>
