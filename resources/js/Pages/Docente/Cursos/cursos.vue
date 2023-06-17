@@ -190,7 +190,8 @@ getCursos()
 const columns = ref([
     { field: 'dni', header: 'DNI' },
     { field: 'nombres', header: 'Nombres' },
-    { field: 'paterno', header: 'Paterno' }
+    { field: 'paterno', header: 'Paterno' },
+    { field: 'materno', header: 'Materno' }
 ]);
 
 const onCellEditComplete = (event) => {
