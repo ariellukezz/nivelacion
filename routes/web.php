@@ -100,8 +100,6 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-planes', [DocumentoController::class, 'getPlanes']);
     Route::post('get-informes', [DocumentoController::class, 'getInformes']);
 
-    
-
 });
 
 
@@ -114,8 +112,13 @@ Route::middleware('auth','docente')->group(function () {
     Route::post('docente/get-alumnos-curso', [CursoController::class, 'getAlumnosXCurso']);
     Route::post('docente/update-nota', [CursoController::class, 'updateNota']);
     Route::post('/docente/get-usuario', [UsuarioController::class, 'getUsuarioDocente']);
+    Route::get('/docente/generar-pdf/{id}', [DocenteController::class, 'pdf']);
+    
+
+    
 
 });
+
 
 Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () {
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioEstudiante']);
@@ -128,5 +131,8 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::post('/get-notas', [CursoController::class, 'getNotasByAlumno']);
 
 });
+
+
+
 
 require __DIR__.'/auth.php';

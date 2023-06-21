@@ -6,8 +6,11 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Docente;
 use App\Models\Usuario;
+use App\Models\Curso;
+use App\Models\CursoDetalle;
 use App\Models\DocenteCompetencia;
 use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 
 class DocenteController extends Controller
@@ -187,6 +190,43 @@ class DocenteController extends Controller
         $docente_compe->delete();
     }
 
+
+
+    public function pdf($curso){
+
+        $res = Curso::select(
+            'curso.id AS id_curso',
+            'curso.nombre AS curso',
+            'curso.ciclo',
+            'competencia.id AS id_competencia',
+            'competencia.nombre AS competencia',
+            'docente.nro_doc AS dni_docente', 
+            'docente.nombres AS nombre',
+            'docente.paterno as paterno',
+            'docente.materno as materno',
+            'curso.grupo',
+            'curso.escuela'
+        )
+        ->join('competencia','competencia.id','curso.id_competencia')
+        ->join('docente','curso.id_docente','docente.id')
+        ->where('curso.id','=',$curso)
+        ->get();
+
+        $estudiantes = CursoDetalle::select(
+            'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'curso_detalle.nota', 'curso_detalle.condicion' 
+        )
+        ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
+        ->where('curso_detalle.id_curso','=',$curso)
+        ->get();
+
+        
+        $data = $res[0];
+        $pdf = Pdf::loadView('RepCursoPDF/index', compact('data','estudiantes'));
+        
+        return $pdf->download('Reporte.pdf');
+            
+    }
 
     
 

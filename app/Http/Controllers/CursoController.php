@@ -53,7 +53,7 @@ class CursoController extends Controller
                 ->orWhere('estudiante.nombres', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.paterno', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.paterno', 'ASC')
-        ->paginate(10);
+        ->paginate(200);
     
         $this->response['estado'] = true;
         $this->response['datos'] = $res;

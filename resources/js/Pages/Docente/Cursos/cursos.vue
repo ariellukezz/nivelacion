@@ -15,7 +15,6 @@
       </div>
 
     </div>
-      
     <!-- END HEADER BODY -->
 
   <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
@@ -75,8 +74,10 @@
   
     <div v-if="cursoseleccionado != null">
         <div>
-          <div class="flex mb-3" style="justify-content: flex-end;">
-            
+          <div class="flex mb-3" style="justify-content: space-between;">
+            <div>
+              <Button @click="descargarPDF()" label="Generar PDF" />
+            </div>
             <span class="p-input-icon-left ">
                 <i class="pi pi-search" />
                 <InputText v-model="buscarAlumno" style="padding-left: 40px; height: 40px;" placeholder="Search" />
@@ -84,7 +85,6 @@
 
           </div>
         </div>
-
 
         <!-- <pre>{{ alumnosCurso }}</pre> -->
         <!-- {{ alumnoseleccionado }} -->
@@ -120,9 +120,6 @@
     </div>
 
     <!-- END PASO 2-->
-
-
-
   </div>
 </AuthenticatedLayout>
 
@@ -179,6 +176,13 @@ const getAlumnosXcurso =  async () => {
 const Inicio = () => {
   cursoseleccionado.value = null;
 }
+
+
+const descargarPDF =  async ( ) => {
+
+  window.open("/docente/generar-pdf/"+cursoseleccionado.value.id, '_blank');
+}
+
 
 watch(buscar, ( newValue, oldValue ) => { getCursos() })
 watch(cursoseleccionado, ( newValue, oldValue ) => { getAlumnosXcurso() })
