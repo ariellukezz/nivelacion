@@ -206,12 +206,6 @@ class CoordinadorController extends Controller
         return response()->json($this->response, 200);
     }
 
-    // SELECT COUNT(*) AS reg FROM matriz
-    // JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
-    // JOIN programa ON programa.id = datos_ingreso.id_programa
-    // JOIN escuela ON programa.id_escuela = escuela.id
-    // WHERE escuela.id = 26 AND matriz.C11_R <= 10.49
-
     private function contar( $id){
         $res = DB::select(' SELECT COUNT(*) AS reg FROM matriz
         JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni

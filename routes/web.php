@@ -10,6 +10,7 @@ use App\Http\Controllers\CursoController;
 use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AsignacionController;
+use App\Http\Controllers\TeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,12 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('save-usuario', [UsuarioController::class, 'save']);
     Route::get('delete-usuario/{id}', [UsuarioController::class, 'delete']);
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioAdministrador']);
+
+
+
+    Route::get('/prueba2', [TeController::class, 'getTest']);
+    Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'));
+
 
     //COORDINADOR
     Route::prefix('coordinador')->group(function () {
@@ -114,9 +121,6 @@ Route::middleware('auth','docente')->group(function () {
     Route::post('/docente/get-usuario', [UsuarioController::class, 'getUsuarioDocente']);
     Route::get('/docente/generar-pdf/{id}', [DocenteController::class, 'pdf']);
     
-
-    
-
 });
 
 
@@ -131,7 +135,6 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::post('/get-notas', [CursoController::class, 'getNotasByAlumno']);
 
 });
-
 
 
 
