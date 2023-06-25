@@ -11,6 +11,7 @@ use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TeController;
+use App\Http\Controllers\AvanceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
@@ -136,6 +137,9 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 
 });
 
+
+Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'));
+Route::get('/get-avance', [AvanceController::class, 'getAvance']);
 
 
 require __DIR__.'/auth.php';

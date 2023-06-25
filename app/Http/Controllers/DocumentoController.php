@@ -36,6 +36,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/resoluciones/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Resolucion',
+                    'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
                 return response()->json(['menssje'=>'file upload success'], 200);
@@ -65,6 +66,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/planes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Plan',
+                    'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
                 return response()->json(['menssje'=>'Plan Guardado'], 200);
@@ -94,6 +96,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/informes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Informe',
+                    'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
                 return response()->json(['menssje'=>'file upload success'], 200);

@@ -16,6 +16,7 @@ class Documento extends Model
         'url',
         'fecha_subida',
         'id_usuario',
+        'id_escuela',
         'tipo'
     ];
 }
