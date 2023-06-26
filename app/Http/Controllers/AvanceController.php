@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
-use DB;
 
 class AvanceController extends Controller {
     
@@ -37,10 +36,11 @@ class AvanceController extends Controller {
           $resultado[$escuela] = 0;
       }
   
-      if (isset($resultado[$escuela])) {
+      // Si el tipo de documento existe en los montos, se suma el valor correspondiente
+      if (isset($montos[$tipo])) {
           $resultado[$escuela] += $montos[$tipo];
       }
-    }
+  }
     
       $this->response['estado'] = true;
       $this->response['datos'] = $resultado;

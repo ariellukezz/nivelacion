@@ -1,6 +1,6 @@
 <template>
 <Head title="Avance"/>
-<AuthenticatedLayout>
+<AuthenticatedLayout>   
     <div class="gallery">
       <CardComponent v-for="item, in escuelas" :key="item.id" :titulo="item.nombre_corto" :id_escuela="item.id_escuela" :data="data"/>
     </div>

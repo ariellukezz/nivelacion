@@ -15,6 +15,7 @@ class CursoDetalle extends Model
         'id_curso',
         'id_alumno',
         'nota',
-        'condicion'
+        'condicion',
+        'encuesta'
     ];
 }

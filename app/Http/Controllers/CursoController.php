@@ -6,6 +6,8 @@ use App\Models\Curso;
 use App\Models\CursoDetalle;
 use App\Models\Alumno;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+
 
 class CursoController extends Controller
 {
@@ -107,6 +109,29 @@ class CursoController extends Controller
         return response()->json($this->response, 200);
     }
 
+
+    // SELECT curso_detalle.encuesta, curso.id, curso.nombre FROM curso
+    // JOIN curso_detalle ON curso_detalle.id_curso = curso.id
+    // WHERE curso_detalle.id_alumno = 1000
+    
+
+    public function getCursosEncuesta() {
+
+        $alumno = DB::select('SELECT id from estudiante where usuario_id = '.auth()->user()->id );
+
+        $res = Curso::select('curso_detalle.encuesta', 'curso.id', 'curso.nombre')
+        ->join('curso_detalle','curso_detalle.id_curso','curso.id')
+        ->where('curso.estado',"=",1)
+        ->where('curso_detalle.id_alumno',"=", $alumno[0]->id)
+        ->get();
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+    }
+
+
+    
     //
 
 
