@@ -127,9 +127,8 @@ Route::middleware('auth','docente')->group(function () {
 
 Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () {
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioEstudiante']);
-
     //ESTUDIANTE
-//    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-inicio');
+    //    Route::get('docente', [DocenteController::class, 'dashboardDocente'])->name('docente-inicio');
     Route::get('/inicio', fn () => Inertia::render('Estudiante/Inicio/index'))->name('estudiante-inicio');
     Route::get('/notas', fn () => Inertia::render('Estudiante/Notas/index'))->name('estudiante-notas');
     Route::get('/encuestas', fn () => Inertia::render('Estudiante/Encuestas/index'))->name('estudiante-encuestas');
