@@ -61,7 +61,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;"> {{ $data->ciclo}} </span>
+                            <span style="font-size:10pt;"> 2023-II {{ $data->ciclo}} </span>
                         </div>
                     </td>
                 </tr>
@@ -97,7 +97,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt; font-weight:bold">{{ $data->paterno}} {{$data->materno}}, {{ $data->nombre }}</span>
+                            <span style="font-size:10pt; font-weight:bold; text-transform:uppercase;">{{ $data->paterno}} {{$data->materno}}, {{ $data->nombre }}</span>
                         </div>
                     </td>
                 </tr>

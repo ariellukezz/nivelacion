@@ -11,10 +11,10 @@ use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TeController;
+use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\AvanceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use DB;
 use App\Http\Controllers\Docente\DashboardController;
 use Inertia\Inertia;
 
@@ -41,10 +41,8 @@ Route::middleware('auth','admin')->group(function () {
     Route::get('delete-usuario/{id}', [UsuarioController::class, 'delete']);
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioAdministrador']);
 
-
-
     Route::get('/prueba2', [TeController::class, 'getTest']);
-    Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'));
+    Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
 
 
     //COORDINADOR
@@ -134,6 +132,9 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::get('/encuestas', fn () => Inertia::render('Estudiante/Encuestas/index'))->name('estudiante-encuestas');
     Route::post('/get-notas', [CursoController::class, 'getNotasByAlumno']);
     Route::get('/cursos-encuesta', [CursoController::class, 'getCursosEncuesta']);
+
+    Route::get('/get-preguntas/{encuesta}', [PreguntaController::class, 'getPreguntas']);
+    Route::post('/save-encuesta-estudiante', [PreguntaController::class, 'saveRepuestasPostulante']);
 });
 
 

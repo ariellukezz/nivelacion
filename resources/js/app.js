@@ -48,19 +48,6 @@ import PrimeVue from 'primevue/config';
 // import "primevue/resources/themes/arya-orange/theme.css";
 // import "primevue/resources/themes/arya-purple/theme.css";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import 'primeicons/primeicons.css';
 
 //core
