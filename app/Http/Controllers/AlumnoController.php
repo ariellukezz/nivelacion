@@ -71,10 +71,11 @@ class AlumnoController extends Controller
         if( $id_competencia === 10 ) { $competencia = 'C10_R';}
         if( $id_competencia === 11 ) { $competencia = 'C11_R';}
             
-        $res = DB::select("SELECT estudiante.id, estudiante.dni, estudiante.nombres, estudiante.paterno, estudiante.materno from matriz
+        $res = DB::select("SELECT estudiante.id, programa.programa, estudiante.dni, estudiante.nombres, estudiante.paterno, estudiante.materno from matriz
         JOIN datos_ingreso ON matriz.dni = datos_ingreso.dni
         JOIN competencia_programa ON datos_ingreso.id_programa = competencia_programa.id_programa
         jOIN estudiante ON estudiante.dni = datos_ingreso.dni
+        JOIN programa ON programa.id = datos_ingreso.id_programa
         WHERE datos_ingreso.dni  IN  (
         SELECT estudiante.dni FROM estudiante
         JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni

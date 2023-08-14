@@ -290,7 +290,7 @@
       <!--- MODAL ASIGNACION -->
 
             <!--- MODAL -->
-      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
+      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnossssss" :style="{ width: '900px' }">
 
         <!-- <pre> {{ cursoseleccionado }}</pre> -->
         <!-- <pre> {{ alumnos_seleccionados_registro }}</pre> -->
@@ -304,6 +304,7 @@
           :paginator="true" :rows="9"
         >
             <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+            <Column field="programa" header="Programa"></Column>
             <Column field="dni" header="DNI"></Column>
             <Column field="nombres" header="Nombres"></Column>
             <Column field="paterno" header="Paterno"></Column>
