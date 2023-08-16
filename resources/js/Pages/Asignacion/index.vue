@@ -30,7 +30,7 @@
       <div v-if="escuela === null">
         <div class="flex mr-4" style="justify-content: flex-end;">
           <span class="p-input-icon-left">
-              <i class="pi pi-search" />
+              <i class="pi pi-search" /> 
               <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
           </span>
         </div>
@@ -214,11 +214,6 @@
       <ConfirmPopup></ConfirmPopup>
 
 
-
-
-  
-
-      
       <!--- MODAL -->
       <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '500px' }">
         <!-- <pre>{{ docente }}</pre> -->
@@ -457,8 +452,7 @@
         id_docente: curso.value.id_docente,
         escuela: escuela.value.escuela,
         grupo: curso.value.grupo,
-        estado: curso.value.estado
-        
+        estado: curso.value.estado        
       }
     );
   

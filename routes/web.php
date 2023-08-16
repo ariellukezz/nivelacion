@@ -44,6 +44,8 @@ Route::middleware('auth','admin')->group(function () {
     Route::get('/prueba2', [TeController::class, 'getTest']);
     Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
 
+    
+
 
     //COORDINADOR
     Route::prefix('coordinador')->group(function () {
@@ -70,8 +72,13 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
 
         Route::post('/get-competencias', [CoordinadorController::class, 'compes']);
+
     });
 
+
+    Route::get('/alumnos-importar', fn () => Inertia::render('Admin/Alumnos/index'))->name('alumnos-importar');
+    Route::post('importar-excel-estudiante', [AlumnoController::class, 'excelEstudiante']); 
+    
 
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');

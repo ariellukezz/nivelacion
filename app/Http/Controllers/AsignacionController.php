@@ -111,14 +111,12 @@ class AsignacionController extends Controller
             $this->response['estado'] = true;
             $this->response['datos'] = $curso;
         } else {
-
             $curso = Curso::find($request->id);
             $curso->nombre= $request->nombre;
             $curso->id_competencia= $request->id_competencia;
             $curso->id_docente = $request->id_docente;
-            $curso->grupo = $request->correo;
-            $curso->escuela = $request->direccion;
-            $curso->id_usuario = $request->direccion;
+            $curso->grupo = $request->grupo;
+            $curso->escuela = $request->escuela;
             $curso->estado = $request->estado;
             $curso->save();
 

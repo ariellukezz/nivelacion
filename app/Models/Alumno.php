@@ -10,4 +10,26 @@ class Alumno extends Model
     use HasFactory;
 
     protected $table = 'estudiante';
+
+    protected $fillable = [
+        'codigo',
+        'dni',
+        'paterno',
+        'materno',
+        'nombres',
+        'sexo',
+        'email',
+        'f_nacimiento',
+        'ubigeo_nacimiento',
+        'estado_civil',
+        'anio_egreso',
+        'tipo_colegio',
+        'nombre_colegio',
+        'ubigeo_colegio',
+        'apto',
+        'direccion',
+        'telefono',
+    ];
+
+
 }

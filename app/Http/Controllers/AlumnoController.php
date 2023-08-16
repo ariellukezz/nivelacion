@@ -116,5 +116,41 @@ class AlumnoController extends Controller
     }
 
 
+    public function  excelEstudiante(Request $request){
+
+        foreach ( $request->datos as  $item) {
+
+            $alumno = new Alumno([
+                'codigo' => $item['codigo'],
+                'dni' => $item['dni'],
+                'paterno' => $item['paterno'],
+                'materno' => $item['materno'],
+                'nombres' => $item['nombres'],
+                'sexo' => $item['sexo'],
+                'email' => $item['email'],
+                // 'f_nacimiento' => $item['f_nacimiento'],
+                'ubigeo_nacimiento' => $item['ubigeo_nacimiento'],
+                'estado_civil' => $item['estado_civil'],
+                'anio_egreso' => $item['anio_egreso'],
+                'tipo_colegio' => $item['tipo_colegio'],
+                'nombre_colegio' => $item['nombre_colegio'],
+                'ubigeo_colegio' => $item['ubigeo_colegio'],
+                'apto' => $item['apto'],
+                'direccion' => $item['direccion'],
+                'telefono' => $item['telefono'],
+            ]);
+            $alumno->save();
+        }
+
+       $this->response['estado'] = true;
+       return response()->json($this->response, 200);
+      
+    }
+
+
+
+    
+
+
 
 }

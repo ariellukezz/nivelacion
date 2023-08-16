@@ -81,8 +81,6 @@
       </div>
       <!--- END PASO 1-->
 
-
-
       <!--- PASO 2 -->
       <div v-if="escuela !== null && cursoseleccionado === null"> 
 
@@ -131,6 +129,7 @@
                     </div>
                     <div v-if="data.estado === 0">
                         <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
+  
                     </div>
                   </div>
                 </template>
@@ -185,25 +184,24 @@
           style="font-size: .9rem;"
           :paginator="true" :rows="9"
           >
-        
-              <Column field="dni" header="DNI"></Column>
-              <Column field="nombres" header="Nombres"></Column>
-              <Column field="paterno" header="Paterno"></Column>
-              <Column field="materno" header="Materno"></Column>
-              <Column field="curso" header="Curso"></Column>
-              <Column field="nota" header="Nota"></Column>
-              <Column field="estado" style=" justify-content: center; display: flex;" header="Condición" width="70px"> 
-              <template #body="{ data }">
-                <div class="flex" style="justify-content: center;">
-                  <div v-if="data.nota >= 10.50">
-                      <Tag severity="info" value="Aprobado"></Tag>
-                  </div>
-                  <div v-if="data.nota <= 10.49">
-                      <Tag severity="danger" value="Desprobado"></Tag>
-                  </div>
+            <Column field="dni" header="DNI"></Column>
+            <Column field="nombres" header="Nombres"></Column>
+            <Column field="paterno" header="Paterno"></Column>
+            <Column field="materno" header="Materno"></Column>
+            <Column field="curso" header="Curso"></Column>
+            <Column field="nota" header="Nota"></Column>
+            <Column field="estado" style=" justify-content: center; display: flex;" header="Condición" width="70px"> 
+            <template #body="{ data }">
+              <div class="flex" style="justify-content: center;">
+                <div v-if="data.nota >= 10.50">
+                    <Tag severity="info" value="Aprobado"></Tag>
                 </div>
-              </template>
-              </Column>
+                <div v-if="data.nota <= 10.49">
+                    <Tag severity="danger" value="Desprobado"></Tag>
+                </div>
+              </div>
+            </template>
+            </Column>
           </DataTable> 
         </div>
 
@@ -222,7 +220,9 @@
 
       
       <!--- MODAL -->
-      <Dialog v-model:visible="visible" modal header="Registrar Docente" :style="{ width: '500px' }">
+      <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '500px' }">
+  
+        <!-- {{ curso }} {{ cursocompetencia }} -->
         <!-- <pre>{{ docente }}</pre> -->
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label> 
@@ -436,6 +436,21 @@
     cursos.value = res.data.datos.data;
   }
 
+  const emod = ref(false);
+
+  const editar =  async (item) => {
+    visible.value = true;
+    emod.value = true;
+    curso.value.id = item.id;
+    curso.value.nombre = item.nombre;
+    curso.value.grupo = item.grupo;
+    curso.value.id_docente = item.id_docente;
+    cursocompetencia.value = item.id_competencia;
+    curso.value.id = item.id;
+    if(item.estado === 1) { curso.value.estado = true } else { curso.value.estado = false }
+
+  }
+
   const guardar =  async () => {
     let res = await axios.post(
       "save-curso",
@@ -447,7 +462,6 @@
         escuela: escuela.value.escuela,
         grupo: curso.value.grupo,
         estado: curso.value.estado
-        
       }
     );
   
@@ -494,44 +508,16 @@
   }
   
   
-  const emod = ref(false);
 
-  const editar =  async (item) => {
-    visible.value = true;
-    emod.value = true;
-    docente.value.id = item.id
-    docente.value.tipo_doc = item.tipo_doc
-    docente.value.nro_doc = item.nro_doc
-    docente.value.nombres = item.nombres
-    docente.value.primer_apellido = item.paterno
-    docente.value.segundo_apellido = item.materno
-    docente.value.celular = item.telefono
-    docente.value.correo = item.email
-    docente.value.direccion = item.direccion
-    docente.value.fecha = item.f_nac
-    temp.value = item.f_nac
-    docente.value.sexo = item.sexo
-    if(item.estado === 1) { docente.value.estado = true } else { docente.value.estado = false }
-
-  }
 
   watch(visible, ( newValue, oldValue ) => {
       if(emod.value == true  && visible.value == false ){
         visible.value = false
-        docente.value.id = null
-        docente.value.tipo_doc = 1
-        docente.value.nro_doc = null
-        docente.value.nombres = null
-        docente.value.primer_apellido = null
-        docente.value.segundo_apellido = null
-        docente.value.celular = null
-        docente.value.correo = null
-        docente.value.direccion = null
-        docente.value.fecha = null
-        temp.value = null
-        docente.value.sexo = 'M'
-        docente.value.estado = true
-      }
+        curso.value.id = null;
+        curso.value.nombre = null;
+        curso.value.grupo = null;
+        curso.value.estado = true
+     }
 })
 
     
@@ -555,6 +541,7 @@
   })
 
   watch(cursoseleccionado, ( newValue, oldValue ) => {
+    curso.value = cursoseleccionado.value
     getDetalleCurso()
     getAlumnosRegistros()
 
