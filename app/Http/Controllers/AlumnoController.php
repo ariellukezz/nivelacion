@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Usuario;
 use App\Models\Alumno;
+use Illuminate\Support\Facades\Hash;
 use DB;
 
 class AlumnoController extends Controller
@@ -120,6 +122,16 @@ class AlumnoController extends Controller
 
         foreach ( $request->datos as  $item) {
 
+            $usuario = Usuario::create([
+                'email' => $item['email'],
+                'password' => Hash::make($item['dni']),
+                'rol' => 5,
+                'estado' => 1,
+                'estado_contraseña' => 1,
+                'programa_id' => $item['id_programa'],
+                'id_escuela' => $item['id_escuela']
+            ]);
+
             $alumno = new Alumno([
                 'codigo' => $item['codigo'],
                 'dni' => $item['dni'],
@@ -138,6 +150,7 @@ class AlumnoController extends Controller
                 'apto' => $item['apto'],
                 'direccion' => $item['direccion'],
                 'telefono' => $item['telefono'],
+                'usuario_id' => $usuario->id  
             ]);
             $alumno->save();
         }
