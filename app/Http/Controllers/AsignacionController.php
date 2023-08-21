@@ -142,7 +142,7 @@ class AsignacionController extends Controller
         ->join('docente_competencia','docente.id','docente_competencia.id_docente')
         ->where('estado','=',1)
         ->where('docente_competencia.id_competencia',"=",$competencia)
-        ->where('docente.id_usuario','=',auth()->id())
+#        ->where('docente.id_usuario','=',auth()->id())
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('docente.nombres', 'LIKE', '%' . $request->term . '%')

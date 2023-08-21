@@ -53,7 +53,7 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/save-coordinador', [CoordinadorController::class, 'save']); #-->
         Route::post('/get-coordinadores', [CoordinadorController::class, 'getCoordinadores']);
         Route::get('/delete-coordinador/{id}', [CoordinadorController::class, 'delete']);
-        Route::post('/get-escuelas', [CoordinadorController::class, 'getEscuelas']); #-->
+        // Route::post('/get-escuelas', [CoordinadorController::class, 'getEscuelas']);
 
         Route::get('/estudiante', fn () => Inertia::render('Admin/Estudiante/index'))->name('coordinador-estudiante');    
         Route::post('/get-alumnos', [CoordinadorController::class, 'getAlumnos']);

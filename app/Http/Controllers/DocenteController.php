@@ -25,7 +25,6 @@ class DocenteController extends Controller
 
         $res = Docente::select('id', 'tipo_doc','nro_doc', 'nombres', 'paterno', 'materno', 'telefono', 'email', 'direccion', 'f_nac', 'sexo', 'estado')
         ->where('docente.id_usuario','=',auth()->id())
-        
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('docente.nombres', 'LIKE', '%' . $request->term . '%')
@@ -46,7 +45,6 @@ class DocenteController extends Controller
 
         $docente = null;
         if (!$request->id) {
-
             $usuario = Usuario::create([
                 'email' => $request->correo,
                 'password' => Hash::make($request->nro_doc),
@@ -56,7 +54,6 @@ class DocenteController extends Controller
                 'id_escuela' => auth()->user()->id_escuela,
                 'id_usuario' => auth()->id()
             ]);
-
             $docente = Docente::create([
                 'tipo_doc' => $request->tipo_doc,
                 'nro_doc' => $request->nro_doc,
@@ -229,10 +226,6 @@ class DocenteController extends Controller
     }
 
     
-
-
-
-
 
     // DOCENTE 
     public function dashboardDocente()

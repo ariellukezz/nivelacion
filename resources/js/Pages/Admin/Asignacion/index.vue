@@ -263,7 +263,7 @@
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
             <div><label>Docente</label></div>  
-              <Dropdown v-model="curso.id_docente" :options="docentes2" optionLabel="nombres" optionValue="id"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+              <Dropdown v-model="curso.id_docente" :options="docentes2" filter optionLabel="nombres" optionValue="id"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
                   <template #option="slotProps">
                       <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                           <div>{{ slotProps.option.nombres }}</div>

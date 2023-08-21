@@ -18,9 +18,7 @@ class CoordinadorController extends Controller
     
     public function getEscuelas(Request $request){
 
-        $res = Escuela::select(
-            'id as value', 'nombre as label' 
-        )
+        $res = Escuela::select( 'id as value', 'nombre as label')
         ->where('id','=',auth()->user()->id_escuela)
         ->where(function ($query) use ($request) {
             return $query
