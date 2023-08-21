@@ -186,8 +186,7 @@ class DocenteController extends Controller
         $docente_compe = DocenteCompetencia::find($id);
         $docente_compe->delete();
     }
-
-
+    
 
     public function pdf($curso){
 

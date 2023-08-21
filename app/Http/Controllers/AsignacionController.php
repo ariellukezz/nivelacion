@@ -53,6 +53,7 @@ class AsignacionController extends Controller
         $query_where = [];
         //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
         
+        
         $res = CursoDetalle::select(
             'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
             'curso.nombre as curso',  

@@ -10,43 +10,52 @@ class AvanceController extends Controller {
     
   public function getAvance(){
 
-    $escuelas = DB::select('SELECT 
-    distinct
-    documento.id_escuela,
-    escuela.nombre, escuela.nombre_corto
-    FROM documento
-    JOIN escuela ON documento.id_escuela = escuela.id');
 
-    $data = DB::select('SELECT id, id_escuela, tipo FROM documento
-    WHERE id_escuela IS NOT NULL;');
+    try {
+        DB::transaction(function () {
+            $escuelas = DB::select('SELECT 
+            distinct
+            documento.id_escuela,
+            escuela.nombre, escuela.nombre_corto
+            FROM documento
+            JOIN escuela ON documento.id_escuela = escuela.id');
 
-    $montos = [
-        'Resolucion' => 15,
-        'Plan' => 25,
-        'Informe' => 60
-    ];
+            $data = DB::select('SELECT id, id_escuela, tipo FROM documento
+            WHERE id_escuela IS NOT NULL;');
 
-    $resultado = [];
+            $montos = [
+                'Resolucion' => 15,
+                'Plan' => 25,
+                'Informe' => 60
+            ];
 
-    foreach ($data as $item) {
-      $escuela = $item->id_escuela;
-      $tipo = $item->tipo;
-  
-      if (!isset($resultado[$escuela])) {
-          $resultado[$escuela] = 0;
-      }
-  
-      // Si el tipo de documento existe en los montos, se suma el valor correspondiente
-      if (isset($montos[$tipo])) {
-          $resultado[$escuela] += $montos[$tipo];
-      }
-  }
+            $resultado = [];
+
+            foreach ($data as $item) {
+                $escuela = $item->id_escuela;
+                $tipo = $item->tipo;
+            
+                if (!isset($resultado[$escuela])) {
+                    $resultado[$escuela] = 0;
+                }
+            
+                if (isset($montos[$tipo])) {
+                    $resultado[$escuela] += $montos[$tipo];
+                }
+            }
+        
     
-      $this->response['estado'] = true;
-      $this->response['datos'] = $resultado;
-      $this->response['escuelas'] = $escuelas;
-      return response()->json($this->response, 200);
-    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $resultado;
+        $this->response['escuelas'] = $escuelas;
+        return response()->json($this->response, 200);
+        
+        });
+
+        } catch (\Throwable $e) {
+            echo "Error en la transacción: " . $e->getMessage();
+        }
+
     }
 
 }
