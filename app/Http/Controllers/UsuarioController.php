@@ -102,7 +102,7 @@ class UsuarioController extends Controller
   
     public function getUsuarioAdministrador(Request $request){
 
-        $res = DB::select('SELECT users.nombres, programa.escuela  FROM users
+        $res = DB::select('SELECT users.nombres, programa.escuela, users.estado_contraseña as e_contra  FROM users
         JOIN programa ON programa.id = users.programa_id
         WHERE users.id = '. auth()->user()->id);
 
@@ -114,7 +114,9 @@ class UsuarioController extends Controller
 
     public function getUsuarioDocente(Request $request){
 
-        $res = DB::select('SELECT docente.nombres, docente.paterno, docente.materno, programa.escuela FROM docente
+        $res = DB::select('SELECT docente.nombres, docente.paterno, docente.materno, programa.escuela,
+        users.estado_contraseña as e_contra 
+        FROM docente
         JOIN users ON users.id = docente.usuario_id
         JOIN programa ON programa.id IN (SELECT users.programa_id FROM users WHERE users.id = docente.id_usuario)
         WHERE users.id = '. auth()->user()->id);
@@ -127,8 +129,8 @@ class UsuarioController extends Controller
 
   //GET USUARIO ESTUDIANTE
     public function getUsuarioEstudiante(Request $request){
-
-        $res = Alumno::select('estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'programa.escuela')
+        
+        $res = Alumno::select('estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'programa.escuela', 'users.estado_contraseña as e_contra')
         ->join('users','users.id','estudiante.usuario_id')
         ->join('datos_ingreso','datos_ingreso.dni','estudiante.dni')
         ->join('programa','datos_ingreso.id_programa','programa.id')
@@ -138,6 +140,20 @@ class UsuarioController extends Controller
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
     
+    }
+
+    public function saveNewContra(Request $request){
+        $usuario = Usuario::find(auth()->user()->id);
+        $usuario->password = Hash::make($request->contra);
+        $usuario->estado_contraseña = 0;
+        $usuario->save();
+
+        $this->response['tipo'] = 'success';
+        $this->response['titulo'] = '!CONTRASEÑA ACTUALIZADA!';
+        $this->response['mensaje'] = '';
+        $this->response['estado'] = true;
+        return response()->json($this->response, 200);
+
     }
 
 

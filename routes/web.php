@@ -44,6 +44,8 @@ Route::middleware('auth','admin')->group(function () {
     Route::get('/prueba2', [TeController::class, 'getTest']);
     Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
 
+
+
     
 
 
@@ -79,7 +81,6 @@ Route::middleware('auth','admin')->group(function () {
     Route::get('/alumnos-importar', fn () => Inertia::render('Admin/Alumnos/index'))->name('alumnos-importar');
     Route::post('importar-excel-estudiante', [AlumnoController::class, 'excelEstudiante']); 
     
-
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
     Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
@@ -144,6 +145,7 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::post('/save-encuesta-estudiante', [PreguntaController::class, 'saveRepuestasPostulante']);
 });
 
+Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
 
 Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'));
 Route::get('/get-avance', [AvanceController::class, 'getAvance']);

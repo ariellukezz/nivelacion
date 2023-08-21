@@ -78,8 +78,7 @@ class AsignacionController extends Controller
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
         ->paginate(10);
-    
-
+        
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         $this->response['registrados'] = $registrados;

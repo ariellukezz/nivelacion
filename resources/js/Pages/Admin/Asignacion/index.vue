@@ -161,7 +161,7 @@
       <div v-if="escuela !== null && cursoseleccionado !== null"> 
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="modal_registro = true" style="height:40px"> Nuevo </Button>
+          <Button severity="primary" @click="abrirseleccionar()" style="height:40px"> Seleccionar </Button>
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -293,24 +293,30 @@
       <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnossssss" :style="{ width: '900px' }">
 
         <!-- <pre> {{ cursoseleccionado }}</pre> -->
-        <!-- <pre> {{ alumnos_seleccionados_registro }}</pre> -->
-        <DataTable 
-          v-model:selection="alumnos_seleccionados_registro"
-          :row-selection="rowSelection"
-          :value="alumnosregistro" 
-          :class="'p-datatable-sm'"  
-          tableStyle="min-width: 50rem" 
-          style="font-size: .9rem;"
-          :paginator="true" :rows="9"
-        >
-            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-            <Column field="programa" header="Programa"></Column>
-            <Column field="dni" header="DNI"></Column>
-            <Column field="nombres" header="Nombres"></Column>
-            <Column field="paterno" header="Paterno"></Column>
-            <Column field="materno" header="Materno"></Column>
-        </DataTable> 
-    
+        <!-- <pre> {{ alumnos_seleccionados_registro = alumnos_seleccionados_registro }}</pre> -->
+        <div v-if="alumnosregistro">
+        
+          <DataTable 
+            v-model:selection="alumnos_seleccionados_registro"
+            selectionMode="multiple" 
+            dataKey="id"
+            :metaKeySelection="false" 
+            :row-selection="false"
+            :value="alumnosregistro" 
+            :class="'p-datatable-sm'"  
+            tableStyle="min-width: 50rem" 
+            style="font-size: .9rem;"
+            :paginator="true" 
+            :rows="9"
+          >
+              <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+              <Column field="programa" header="Programa"></Column>
+              <Column field="dni" header="DNI"></Column>
+              <Column field="nombres" header="Nombres"></Column>
+              <Column field="paterno" header="Paterno"></Column>
+              <Column field="materno" header="Materno"></Column>
+          </DataTable> 
+        </div>    
         <div class="flex" style="width: 100%; justify-content: flex-end;">
           <Button severity="primary" style="font-size: 0.9rem"  text @click="asignar"> Asignar </Button>
         </div>
@@ -546,7 +552,10 @@
     getAlumnosRegistros()
 
   })
-  
+
+  const abrirseleccionar = () => { 
+    modal_registro.value = true 
+  }
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
@@ -567,6 +576,8 @@
       });
   };
 
+
+  
 
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
 
