@@ -157,24 +157,28 @@ class AsignacionController extends Controller
 
     public function asignarCursoNivelacion(Request $request){
 
-        //$diferencia = $request->anteriores->diff($request->alumnos);
-//        return $request->diferencia2; 
+      try {
+          DB::transaction(function () {
 
-        foreach ($request->diferencia as $alumno) {
-            $this->asignarCurso($request->curso, $alumno['id']);
-        }
+            foreach ($request->diferencia as $alumno) {
+                $this->asignarCurso($request->curso, $alumno['id']);
+            }
 
-        foreach ($request->diferencia2 as $alumno) {
-            $this->eliminarCurso($request->curso, $alumno['id']);
-        }
+            foreach ($request->diferencia2 as $alumno) {
+                $this->eliminarCurso($request->curso, $alumno['id']);
+            }
 
-            $this->response['tipo'] = 'success';
-            $this->response['titulo'] = '!REGISTROS NUEVOS!';
-            $this->response['mensaje'] = 'ALUMNOS REGISTRADOS CON EXITOS';
-            $this->response['estado'] = true;
-            // $this->response['datos'] = $curso;
-        return response()->json($this->response, 200);
-      
+                $this->response['tipo'] = 'success';
+                $this->response['titulo'] = '!REGISTROS NUEVOS!';
+                $this->response['mensaje'] = 'ALUMNOS REGISTRADOS CON EXITOS';
+                $this->response['estado'] = true;
+                // $this->response['datos'] = $curso;
+            return response()->json($this->response, 200);
+          });
+        } catch (\Throwable $e) {
+          echo "Error en la transacción: " . $e->getMessage();
+      }
+    
     }
 
     public function asignarCurso($id_curso, $id_alumno){

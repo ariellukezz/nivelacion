@@ -113,23 +113,6 @@ class CoordinadorController extends Controller
         return response()->json($this->response, 200);
     }
 
-
-// SELECT datos_ingreso.dni, datos_ingreso.id_programa, competencia_programa.id_competencia from matriz
-// JOIN datos_ingreso ON matriz.dni = datos_ingreso.dni
-// JOIN competencia_programa ON datos_ingreso.id_programa = competencia_programa.id_programa
-// WHERE datos_ingreso.dni  IN  (
-// SELECT estudiante.dni FROM estudiante
-// JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
-// JOIN programa ON programa.id = datos_ingreso.id_programa
-// JOIN escuela ON escuela.id = programa.id_escuela
-// WHERE escuela.id = 26) AND competencia_programa.id_competencia = 1 
-// AND matriz.C1_R <= 10.49
-
-// SELECT * FROM estudiante
-// JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
-// JOIN programa ON programa.id = datos_ingreso.id_programa
-// JOIN escuela ON escuela.id = programa.id_escuela
-// WHERE escuela.id = 26
     public function getAlumnos(Request $request){
 
         $consulta = ['estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
@@ -222,3 +205,22 @@ class CoordinadorController extends Controller
 
 
 }
+
+
+
+// SELECT datos_ingreso.dni, datos_ingreso.id_programa, competencia_programa.id_competencia from matriz
+// JOIN datos_ingreso ON matriz.dni = datos_ingreso.dni
+// JOIN competencia_programa ON datos_ingreso.id_programa = competencia_programa.id_programa
+// WHERE datos_ingreso.dni  IN  (
+// SELECT estudiante.dni FROM estudiante
+// JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
+// JOIN programa ON programa.id = datos_ingreso.id_programa
+// JOIN escuela ON escuela.id = programa.id_escuela
+// WHERE escuela.id = 26) AND competencia_programa.id_competencia = 1 
+// AND matriz.C1_R <= 10.49
+
+// SELECT * FROM estudiante
+// JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
+// JOIN programa ON programa.id = datos_ingreso.id_programa
+// JOIN escuela ON escuela.id = programa.id_escuela
+// WHERE escuela.id = 26
