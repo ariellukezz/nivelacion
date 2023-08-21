@@ -8,6 +8,7 @@ use App\Models\Docente;
 use App\Models\CursoDetalle;
 use App\Models\Curso;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class AsignacionController extends Controller
 {
@@ -88,9 +89,6 @@ class AsignacionController extends Controller
     }
 
 
-
-    
-
     public function save(Request $request ) {
 
         $curso = null;
@@ -157,11 +155,17 @@ class AsignacionController extends Controller
       
     }
 
-
     public function asignarCursoNivelacion(Request $request){
 
-        foreach ($request->alumnos as $alumno) {
+        //$diferencia = $request->anteriores->diff($request->alumnos);
+//        return $request->diferencia2; 
+
+        foreach ($request->diferencia as $alumno) {
             $this->asignarCurso($request->curso, $alumno['id']);
+        }
+
+        foreach ($request->diferencia2 as $alumno) {
+            $this->eliminarCurso($request->curso, $alumno['id']);
         }
 
             $this->response['tipo'] = 'success';
@@ -169,7 +173,6 @@ class AsignacionController extends Controller
             $this->response['mensaje'] = 'ALUMNOS REGISTRADOS CON EXITOS';
             $this->response['estado'] = true;
             // $this->response['datos'] = $curso;
-
         return response()->json($this->response, 200);
       
     }
@@ -181,6 +184,18 @@ class AsignacionController extends Controller
             'id_alumno' => $id_alumno,
         ]);
 
+    }
+
+    public function eliminarCurso($id_curso, $id_alumno) {
+        $cursoDetalle = CursoDetalle::where('id_curso', $id_curso)
+                                    ->where('id_alumno', $id_alumno)
+                                    ->first();
+        if ($cursoDetalle) {
+            $cursoDetalle->delete();
+            return response()->json(['message' => 'Registro eliminado con éxito']);
+        } else {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
     }
 
 

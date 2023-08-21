@@ -1,11 +1,9 @@
 <template>
   <Head title="Nivelación"/>
   <AuthenticatedLayout>
-
   <!-- <pre>{{ alumnosregistro }}</pre> -->
 
   <div class="flex mb-0" style="justify-content: space-between; align-items:center; margin-top:0px; border-bottom:solid 1px #cdcdcd9D; height:50px; background:white; ">
-
       <div class="flex">
         <Button severity="secondary" style="font-size: 0.9rem"  text @click="Inicio"> Inicio </Button>
         <div v-if="escuela !== null" class="flex justify-content-center" style="align-items:center;">
@@ -36,7 +34,6 @@
         </div>
       </div>
 
-
       <div v-if="escuela !== null && cursoseleccionado === null">
         <Dropdown 
           v-model="competencia" 
@@ -54,12 +51,9 @@
           </template>
         </Dropdown>
       </div>
-
   </div>
   
-
   <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 140px); font-family: Arial, Helvetica, sans-serif;">
-
       <!--- PASO 1-->
       <!-- {{ escuela }} -->
       <div>
@@ -148,15 +142,10 @@
           </DataTable> 
         </div>
 
-
       </div>
 
       <!-- END PASO 2 -->
-
-
-
       <!--- PASO 3 -->
-
       <!-- {{cursoseleccionado}} -->
       <div v-if="escuela !== null && cursoseleccionado !== null"> 
 
@@ -170,7 +159,6 @@
               </span>
             </div>
           </div>
-
         </div>
 
         <!-- {{ cursoseleccionado }} -->
@@ -204,20 +192,12 @@
             </Column>
           </DataTable> 
         </div>
-
-
         </div>
 
         <!-- END PASO 3 -->
 
       <Toast />
       <ConfirmPopup></ConfirmPopup>
-
-
-
-
-  
-
       
       <!--- MODAL -->
       <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '500px' }">
@@ -290,10 +270,8 @@
       <!--- MODAL ASIGNACION -->
 
             <!--- MODAL -->
-      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnossssss" :style="{ width: '900px' }">
+      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
 
-        <!-- <pre> {{ cursoseleccionado }}</pre> -->
-        <!-- <pre> {{ alumnos_seleccionados_registro = alumnos_seleccionados_registro }}</pre> -->
         <div v-if="alumnosregistro">
         
           <DataTable 
@@ -325,9 +303,9 @@
 
   </div>
   </AuthenticatedLayout>
-  </template>
+</template>
   
-  <script setup>
+<script setup>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
   import { Head } from '@inertiajs/vue3';
   import { ref, watch } from 'vue';
@@ -362,6 +340,7 @@
   const pagina = ref(1)
   const buscar = ref("")
   const buscarescuela = ref("")
+  const seleccionadosTemp = ref([])
 
   const competencia = ref(null)
   
@@ -395,50 +374,34 @@
   })
   
   const getDocentes =  async () => {
-    let res = await axios.post(
-    "/coordinador/get-docentes?page=" + pagina.value,
-    { 
-      term: buscar.value,
-   }
-    );
+    let res = await axios.post( "/coordinador/get-docentes?page=" + pagina.value, { term: buscar.value, } );
     docentes.value = res.data.datos.data;
     totalpaginas.value = res.data.datos.total;
   }
   
   const getProgramas =  async () => {
-    let res = await axios.post(
-    "/get-programas?page=" + pagina.value,
-    { term: "" }
-    );
+    let res = await axios.post( "/get-programas?page=" + pagina.value, { term: "" } );
     programas.value = res.data.datos.data;
   }
 
   const getEscuelas =  async () => {
-    let res = await axios.post(
-    "/get-escuelas", { term: buscarescuela.value }
-    );
+    let res = await axios.post( "/get-escuelas", { term: buscarescuela.value } );
     escuelas.value = res.data.datos.data;
   }
   
   const getCompetencias =  async () => {
-    let res = await axios.post(
-    "/coordinador/get-competencias?page=",{ term: "" }
-    );
+    let res = await axios.post( "/coordinador/get-competencias?page=",{ term: "" } );
     competencias.value = res.data.datos;
   }
 
   const getDocenteXcompetencia =  async () => {
-    let res = await axios.post(
-    "/get-docente-competencia?page=",{ term: "", competencia:cursocompetencia.value }
-    );
+    let res = await axios.post( "/get-docente-competencia?page=",{ term: "", competencia:cursocompetencia.value });
     docentes2.value = res.data.datos.data;
     docente2.value = res.data.datos.data[0].id;
   }  
 
   const getCursos =  async () => {
-    let res = await axios.post(
-    "get-cursos?page=",{ term: buscarcurso.value, competencia:competencia.value, escuela:escuela.value.escuela}
-    );
+    let res = await axios.post( "get-cursos?page=",{ term: buscarcurso.value, competencia:competencia.value, escuela:escuela.value.escuela} );
     cursos.value = res.data.datos.data;
   }
 
@@ -454,7 +417,6 @@
     cursocompetencia.value = item.id_competencia;
     curso.value.id = item.id;
     if(item.estado === 1) { curso.value.estado = true } else { curso.value.estado = false }
-
   }
 
   const guardar =  async () => {
@@ -479,19 +441,25 @@
   }
 
   const getDetalleCurso =  async () => {
-    let res = await axios.post(
-    "get-detalle-curso?page=",{ term: "", curso: cursoseleccionado.value.id, }
-    );
+    let res = await axios.post( "get-detalle-curso?page=",{ term: "", curso: cursoseleccionado.value.id, } );
     detalle_curso.value = res.data.datos.data;
-    alumnos_seleccionados_registro.value = res.data.registrados.data; 
+    alumnos_seleccionados_registro.value = res.data.registrados.data;
+    seleccionadosTemp.value = res.data.registrados.data ;
   }
+  const diferenciaAB = ref(null);
+  const diferenciaBA = ref(null);
 
   const asignar =  async () => {
+    compararArrays();
+    compararArrays2();
     let res = await axios.post(
       "asignar-curso-nivelacion",
-      { 
+      {
         curso: cursoseleccionado.value.id,
         alumnos: alumnos_seleccionados_registro.value,
+        anteriores: seleccionadosTemp.value,
+        diferencia: diferenciaAB.value,
+        diferencia2: diferenciaBA.value
       }
     );
   
@@ -500,10 +468,24 @@
     modal_registro.value = false
     //limpiar()
   }
+
+  const compararArrays = () => {
+    diferenciaAB.value = alumnos_seleccionados_registro.value.filter(objeto1 => {
+      return !seleccionadosTemp.value.some(objeto2 => objeto2.id === objeto1.id);
+    });
+    console.log('Elementos en array1 que no están en array2:', diferenciaAB.value);
+  };
+
+  const compararArrays2 = () => {
+    diferenciaBA.value = seleccionadosTemp.value.filter(objeto1 => {
+      return !alumnos_seleccionados_registro.value.some(objeto2 => objeto2.id === objeto1.id);
+    });
+    console.log('Elementos en array1 que no están en array2:', diferenciaBA.value);
+  };
+
   
   const eliminar =  async (id) => {
-    let res = await axios.get(
-    "delete-docente/"+id);
+    let res = await axios.get("delete-docente/"+id );
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
     getDocentes() 
   }
@@ -513,9 +495,6 @@
     alumnosregistro.value = res.data.datos;
   }
   
-  
-
-
   watch(visible, ( newValue, oldValue ) => {
       if(emod.value == true  && visible.value == false ){
         visible.value = false
@@ -528,34 +507,19 @@
 
     
   watch(buscarescuela, ( newValue, oldValue ) => { getEscuelas() })
-  watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })
-  
-  watch(buscar, ( newValue, oldValue ) => {
-      getDocentes()
-  })
-
-  watch(cursocompetencia, ( newValue, oldValue ) => {
-      getDocenteXcompetencia()
-  })
-  
-  watch(competencia, ( newValue, oldValue ) => {
-      getCursos()
-  })
-
-  watch(escuela, ( newValue, oldValue ) => {
-      getCursos()
-  })
+  watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })  
+  watch(buscar, ( newValue, oldValue ) => { getDocentes(); })
+  watch(cursocompetencia, ( newValue, oldValue ) => { getDocenteXcompetencia(); })  
+  watch(competencia, ( newValue, oldValue ) => { getCursos(); })
+  watch(escuela, ( newValue, oldValue ) => { getCursos(); })
 
   watch(cursoseleccionado, ( newValue, oldValue ) => {
     curso.value = cursoseleccionado.value
     getDetalleCurso()
     getAlumnosRegistros()
-
   })
 
-  const abrirseleccionar = () => { 
-    modal_registro.value = true 
-  }
+  const abrirseleccionar = () => {  modal_registro.value = true  }
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
@@ -575,13 +539,11 @@
           }
       });
   };
-
-
   
-
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
-
   const resEsuela = () => { cursoseleccionado.value = null }
+
+
 
 
   getDocentes()
@@ -590,11 +552,4 @@
   getEscuelas()
   // getAlumnosRegistros()
 
-
-
-
-
-
-  </script>
-  
-
+</script>
