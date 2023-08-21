@@ -47,7 +47,7 @@
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('coordinador')? 'activado':'']">
+        <!-- <li class="relative px-6 py-3" :class="[route().current('coordinador')? 'activado':'']">
           <NavLink :href="route('coordinador')">
             <template #icon>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -58,7 +58,7 @@
             </template>
             Coordinadores
           </NavLink>
-        </li>
+        </li> -->
 
         <li class="relative px-6 py-3" :class="[route().current('coordinador-estudiante')? 'activado':'']">
           <NavLink :href="route('coordinador-estudiante')">
