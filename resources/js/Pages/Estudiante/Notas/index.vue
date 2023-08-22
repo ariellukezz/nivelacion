@@ -11,9 +11,9 @@
             >
             <Column field="nombre" header="CURSO"></Column>
             <Column field="grupo" header="GRUPO"></Column>
-            <Column field="escuela" header="ESCUELA"></Column>
+            <Column field="escuela" header="PROGRAMA DE ESTUDIO"></Column>
             <Column field="nota" header="NOTA"></Column>
-            <Column field="id_programa" header="Condición" width="90px"> 
+            <Column field="id_programa" header="CONDICIÓN" width="90px"> 
                 <template #body="{ data }">
                     <div class="flex" v-if="data.nota >= 10.5 && data.nota <= 20 " >
                         <Tag severity="info" value="Aprobado"></Tag>

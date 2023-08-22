@@ -166,7 +166,7 @@
 
 
         </TabPanel>
-        <TabPanel header="Competencias">
+        <TabPanel header="Cursos que puede dictar">
           <div style="height:340px;">
             
 
@@ -405,17 +405,17 @@
 
 
   const categories = ref([
-    {value:1, name: "EDUCACION CIVICA"},
-    {value:2, name: "HISTORIA Y GEOGRAFÍA"},
-    {value:3, name: "EDUCACIÓN FISICA"},
-    {value:4, name: "ARTE Y CULTURA"},
-    {value:5, name: "LENGUAJE: LITERATURA, RAZONAMIENTO VERBAL, INGLES, QUECHUA Y AIMARA"},
-    {value:6, name: "FISICA, QUIMICA Y BIOLOGÍA"},
-    {value:7, name: "MATEMÁTICA"},
-    {value:8, name: "EDUCACIÓN PARA EL TRABAJO, ECONOMÍA"},
-    {value:9, name: "TIC"},
-    {value:10, name: "ESTRATEGIA DE APRENDIZAJE"},
-    {value:11, name: "RELIGIÓN"}
+    {value:1, name: "(C1) EDUCACION CIVICA"},
+    {value:2, name: "(C2) HISTORIA Y GEOGRAFÍA"},
+    {value:3, name: "(C3) EDUCACIÓN FISICA"},
+    {value:4, name: "(C4) ARTE Y CULTURA"},
+    {value:5, name: "(C5) LENGUAJE: LITERATURA, RAZONAMIENTO VERBAL, INGLES, QUECHUA Y AIMARA"},
+    {value:6, name: "(C6) FISICA, QUIMICA Y BIOLOGÍA"},
+    {value:7, name: "(C7) MATEMÁTICA"},
+    {value:8, name: "(C8) EDUCACIÓN PARA EL TRABAJO, ECONOMÍA"},
+    {value:9, name: "(C9) TIC"},
+    {value:10, name: "(C10) ESTRATEGIA DE APRENDIZAJE"},
+    {value:11, name: "(C11) RELIGIÓN"}
   ]);
   const selectedCategories = ref([]);
 

@@ -5,6 +5,7 @@
     <Toast />
     <div class="p-4 bg-white rounded-lg shadow-xs">
       
+
       <div class="card">
         <TabView>
           <TabPanel header="Resolución decanal">
@@ -41,7 +42,17 @@
                   <form @submit.prevent="submit">
                     <div class="flex justify-between">
                       <input type="file" @change="onChange2"/>
-                      <Button label="Subir" style="height:38px;" @click="submit2"/>              
+                      <div class="flex">
+                        <div class="mr-2">
+                          <Button label="Ejemplo" @click="descargar('ejemplo.docx')" outlined style="height:38px;" />              
+                        </div>
+                        <div class="mr-2">
+                          <Button label="Reglamento" @click="descargar('reglamento.pdf')" outlined style="height:38px;" />              
+                        </div>
+                        <div>
+                          <Button label="Subir" style="height:38px;" @click="submit2"/>                            
+                        </div> 
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -111,6 +122,8 @@ import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+const baseUrl = window.location.origin;
+
 
 const pagina = ref(1)
 const resoluciones = ref([])
@@ -193,9 +206,16 @@ const getInformes =  async () => {
 }
 
 const verdocumento = (data) => {
-  //console.log(data.url)
   window.open(data.url, '_blank', 'fullscreen=yes'); return false;
 }
+
+const descargar = (nombre) => {
+  // window.open(baseUrl+'/documentos/'+nombre, '_blank');
+  window.open(baseUrl+'/documentos/'+nombre);
+}
+
+
+
 
 getResoluciones()
 getPlanes()

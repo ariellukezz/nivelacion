@@ -43,11 +43,15 @@ class CursoController extends Controller
 
     public function getAlumnosXCurso(Request $request){
 
+        $comp = Curso::find($request->curso);
+
         $res = CursoDetalle::select(
             'curso_detalle.id','curso_detalle.nota', 'curso_detalle.condicion', 'curso_detalle.editable',
-            'estudiante.dni','estudiante.nombres', 'estudiante.paterno', 'estudiante.materno'
+            'estudiante.dni','estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'matriz.C'.$comp->id_competencia.'_R as ant'
             )
         ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+        ->join('matriz','matriz.dni','estudiante.dni')
+        ->join('curso','curso.id','curso_detalle.id_curso')
         ->where('curso_detalle.id_curso',"=", $request->curso)
         ->where(function ($query) use ($request) {
             return $query

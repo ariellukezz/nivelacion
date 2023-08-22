@@ -103,7 +103,7 @@
             :paginator="true" :rows="9"
             >
                 <Column field="nombre" header="Nombre"></Column>
-                <Column field="competencia" header="Competencia"></Column>
+                <Column field="competencia" header="Curso"></Column>
                 <Column field="docente" header="Docente">
                     <template #body="{ data }">
                         <div class="flex" style="justify-content: flex-start;">

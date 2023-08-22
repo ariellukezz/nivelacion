@@ -95,7 +95,14 @@
             <DataTable :value="alumnosCurso" :class="'p-datatable-sm mt-4'"   selectionMode="single" v-model:selection="alumnoseleccionado" editMode="cell" @cell-edit-complete="onCellEditComplete"  tableStyle="min-width: 50rem">
                 <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header" style="width: 25%"></Column>
 
-                <Column field="nota" header="Nota" width="120"> 
+                <Column field="ant" header="N_Ant" >
+                  <template #body="{ data }">
+                    <div class="flex justify-center" >
+                      {{ data.ant }}
+                    </div>
+                  </template>
+                </Column> 
+                <Column field="nota" header="Nota" > 
                   <template #editor="{ data, field }">
                     <InputNumber style="width:100px;" v-model="data[field]" inputId="minmaxfraction" :max="20" :min="0" :maxFractionDigits="2" autofocus />
                   </template>
@@ -104,12 +111,12 @@
                     <div v-else> {{ Number(data[field]).toFixed(2) }} </div>
                   </template>
                 </Column>
-                <Column field="id_programa" header="Condición" width="90px"> 
+                <Column field="id_programa" header="Condición" > 
                     <template #body="{ data }">
-                      <div class="flex" v-if="data.condicion === 1" >
+                      <div class="flex justify-center" v-if="data.condicion === 1" >
                         <Tag severity="info" value="Aprobado"></Tag>
                       </div>
-                      <div class="flex" v-if="data.condicion === 0" >
+                      <div class="flex justify-center" v-if="data.condicion === 0" >
                         <Tag severity="danger" value="Desaprobado"></Tag>
                       </div>
                     </template>
@@ -195,6 +202,7 @@ const columns = ref([
     { field: 'nombres', header: 'Nombres' },
     { field: 'paterno', header: 'Paterno' },
     { field: 'materno', header: 'Materno' }
+    
 ]);
 
 const onCellEditComplete = (event) => {

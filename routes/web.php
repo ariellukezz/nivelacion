@@ -13,6 +13,7 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TeController;
 use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\AvanceController;
+use App\Http\Controllers\ArchivoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Docente\DashboardController;
@@ -43,6 +44,8 @@ Route::middleware('auth','admin')->group(function () {
 
     Route::get('/prueba2', [TeController::class, 'getTest']);
     Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
+
+    Route::get('/descargar-archivo/{nombreArchivo}', [ArchivoController::class, 'descargarArchivo']);
 
 
 
