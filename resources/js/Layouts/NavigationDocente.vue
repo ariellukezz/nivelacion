@@ -10,7 +10,7 @@
             </div>
             <div style="width: 1px; background-color: gray; margin: 0px 10px; height: 30px; margin-top: 8px;"></div>
             <div style="margin-top: 12px;">
-                <span style="font-size: 1.2rem; font-weight: 700; letter-spacing: .430rem; font-family: Arial, Helvetica, sans-serif">VRACAD</span>
+              <span style="font-size: 1.2rem; font-weight: 700; letter-spacing: .300rem; font-family: Arial, Helvetica, sans-serif">VRA-UNA</span>
                 <div style="margin-top: -16px !important; "><span style="font-size: .63rem; letter-spacing: .38rem; font-weight: 500; font-family: Arial, Helvetica, sans-serif">NIVELACIÓN</span></div>
                 <!-- <div style=" margin-top: -12px; font-size: 0.9rem; letter-spacing: 0.03rem; font-weight: 500;">nivelación - académica</div> -->
             </div>
