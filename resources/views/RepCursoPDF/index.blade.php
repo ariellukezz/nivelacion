@@ -29,7 +29,7 @@
                     <td align="center" style="font-size:11pt; font-weight:700;">
                         <div style="margin-top:5px;"><span style="font-size: 14pt;">UNIVERSIDAD NACIONAL DEL ALTIPLANO</span></div>
                         <div>VICERECTORADO ACADÉMICO</div>
-                        <div>PROGRAMA DE NIVELACIÓN INGRESANTES UNA-PUNO</div>
+                        <div>NIVELACIÓN INGRESANTES UNA-PUNO</div>
                     </td>
                     <td align="center" rowspan="1"> <img src="{{ public_path('imagenes/vracad.png')}}"  width="105"></td>
                 </tr>
@@ -56,7 +56,7 @@
                 <tr>
                     <td align="left" style="width:200px;">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;">Semestre:</span>
+                            <span style="font-size:10pt;">Semestre académico:</span>
                         </div>
                     </td>
                     <td align="left">
@@ -65,6 +65,20 @@
                         </div>
                     </td>
                 </tr>
+
+                <tr>
+                    <td align="left" style="width:200px;">
+                        <div style="text-align: left">
+                            <span style="font-size:10pt;">Competencia:</span>
+                        </div>
+                    </td>
+                    <td align="left">
+                        <div style="text-align: left">
+                            <span style="font-size:10pt;"> {{ $data->ciclo}} </span>
+                        </div>
+                    </td>
+                </tr>
+
                 <tr>
                     <td align="left" style="width:200px;">
                         <div style="text-align: left">
