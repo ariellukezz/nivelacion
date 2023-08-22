@@ -74,7 +74,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;"> {{ $data->ciclo}} </span>
+                            <span style="font-size:10pt;"> {{ $data->competencia}} </span>
                         </div>
                     </td>
                 </tr>
