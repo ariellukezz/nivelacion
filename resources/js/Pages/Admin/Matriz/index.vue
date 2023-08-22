@@ -1,6 +1,11 @@
 <template>
 <AuthenticatedLayout>
     <div class="p-4" style="background: white;">
+
+        <div class="flex justify-end mb-2">
+            <Button label="Exportar excel" @click="exportarExcel" size="small" style="height: 40px;"/>
+        </div>
+
         <table style="border-radius: 4px; width: 100%; overflow: hidden;">
             <thead style="height: 30px; color: white; background-color: var(--primary-color); padding: 0px 10px;">
                 <tr style="font-size: .9rem;">
@@ -50,6 +55,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import {ref} from 'vue';
+import XLSX from 'xlsx';
+import Button from 'primevue/button';
+
 
 function buscarValor(array, valor) {
   for (var i = 0; i < array.length; i++) {
@@ -68,7 +76,43 @@ const getEstudiantes =  async () => {
     { term: "" }
     );
     estudiantes.value = res.data.datos;
+    generarObjetosEstudiantes();
 }
+
+
+
+const objetosEstudiantes = ref([]);
+
+const generarObjetosEstudiantes = () => {
+  objetosEstudiantes.value = estudiantes.value.map(item => {
+    const estudiante = {
+      dni: item.dni,
+      nombreCompleto: `${item.nombre} ${item.paterno} ${item.materno}`,
+    };
+
+    for (let i = 1; i <= 11; i++) {
+      const index = buscarValor(item.notas, i);
+      if (index !== null) {
+        estudiante[`C${i}`] = item.notas[index].nota;
+      } else {
+        estudiante[`C${i}`] = '--';
+      }
+    }
+
+    return estudiante;
+  });
+};
+
+
+const exportarExcel = () => {
+  const ws = XLSX.utils.json_to_sheet(objetosEstudiantes.value);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
+
+  XLSX.writeFile(wb, 'estudiantes.xlsx');
+};
+
+
 getEstudiantes()
 
 
