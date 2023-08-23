@@ -201,10 +201,12 @@ class DocenteController extends Controller
             'docente.paterno as paterno',
             'docente.materno as materno',
             'curso.grupo',
-            'curso.escuela'
+            'curso.escuela',
+            'programa.programa'
         )
         ->join('competencia','competencia.id','curso.id_competencia')
         ->join('docente','curso.id_docente','docente.id')
+        ->join('programa','curso.id_programa','programa.id')
         ->where('curso.id','=',$curso)
         ->get();
 

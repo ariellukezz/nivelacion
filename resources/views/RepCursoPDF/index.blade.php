@@ -49,7 +49,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;">{{ $data->escuela }}</span>
+                            <span style="font-size:10pt;">{{ $data->programa }}</span>
                         </div>
                     </td>
                 </tr>
