@@ -67,7 +67,7 @@ class AsignacionController extends Controller
             return $query
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
-        ->paginate(10);
+        ->paginate(200);
 
         $registrados = CursoDetalle::select(
             'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
@@ -79,7 +79,7 @@ class AsignacionController extends Controller
             return $query
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
-        ->paginate(10);
+        ->paginate(200);
         
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
