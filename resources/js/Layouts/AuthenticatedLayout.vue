@@ -9,7 +9,7 @@
         </button>  
       </div>
 
-      <NavigationMobile />
+      <!-- <NavigationMobile /> -->
       <Navigation :style="{ 'width': sidewidth }" style="transition: all 0.3s ease;" />
       <div class="flex flex-col flex-1 w-full">
         <TopMenu :usuario="usu"/>
@@ -31,7 +31,7 @@
 <script setup>
 import Navigation from './Navigation.vue';
 import TopMenu from "./TopMenu.vue";
-import NavigationMobile from './NavigationMobile.vue';
+// import NavigationMobile from './NavigationMobile.vue';
 import {ref, onMounted} from 'vue'
 
 const sidewidth = ref('230px')
