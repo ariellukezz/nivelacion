@@ -490,6 +490,12 @@
     getDocentes() 
   }
 
+  const eliminarcurso =  async (id) => {
+    let res = await axios.get("delete-curso/"+id );
+    showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
+    getCursos();
+  }
+
   const getAlumnosRegistros =  async () => {
     let res = await axios.post( "/get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia });
     alumnosregistro.value = res.data.datos;
@@ -528,11 +534,11 @@
   const confirm2 = (event,doc) => {
       confirm.require({
           target: event.currentTarget,
-          message: '¿Estas seguro de eliminar el curso '+ doc.nombres+'?',
+          message: '¿Estas seguro de eliminar el docente '+ doc.nombre+'?',
           icon: 'pi pi-info-circle',
           acceptClass: 'p-button-danger',
           accept: () => {
-            eliminar(doc.id)
+            eliminarcurso(doc.id)
           },
           reject: () => {
               toast.add({ severity: 'error', summary: 'Elimación cancelada', detail: 'Se ha cancelado la eliminación del docente '+doc.nombres, life: 3000 });

@@ -47,11 +47,6 @@ Route::middleware('auth','admin')->group(function () {
 
     Route::get('/descargar-archivo/{nombreArchivo}', [ArchivoController::class, 'descargarArchivo']);
 
-
-
-    
-
-
     //COORDINADOR
     Route::prefix('coordinador')->group(function () {
         Route::get('/', fn () => Inertia::render('Admin/Coordinador/index'))->name('coordinador');    
@@ -77,6 +72,8 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
 
         Route::post('/get-competencias', [CoordinadorController::class, 'compes']);
+
+        Route::get('delete-curso/{id}', [CursoController::class, 'delete']);
 
     });
 

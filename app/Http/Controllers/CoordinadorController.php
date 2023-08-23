@@ -59,6 +59,7 @@ class CoordinadorController extends Controller
 
     public function save(Request $request ) {
 
+    
         $coordinador = null;
         if (!$request->id) {
 

@@ -134,6 +134,19 @@ class CursoController extends Controller
         return response()->json($this->response, 200);
     }
 
+    public function delete($id){
+        $curso = Curso::find($id);
+        $p = $curso;
+        $curso->delete();
+
+        $this->response['tipo'] = 'error';
+        $this->response['titulo'] = '!REGISTRO ELIMINADO!';
+        $this->response['mensaje'] = 'El Curso '.$p->nombre.' acaba de ser eliminado.';
+        $this->response['estado'] = true;
+        $this->response['datos'] = $p;
+        return response()->json($this->response, 200);
+    }
+
 
     
     //
