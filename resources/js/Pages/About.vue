@@ -44,7 +44,7 @@
                       <input type="file" @change="onChange2"/>
                       <div class="flex">
                         <div class="mr-2">
-                          <Button label="Reglamento" @click="descargar('reglamento.pdf')" outlined style="height:38px;" />              
+                          <Button label="Esquema" @click="descargar('esquema.pdf')" outlined style="height:38px;" />              
                         </div>
                         <div>
                           <Button label="Subir" style="height:38px;" @click="submit2"/>                            
