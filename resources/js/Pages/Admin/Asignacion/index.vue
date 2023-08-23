@@ -242,8 +242,8 @@
 
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
-              <div><label>Programa</label></div>  
-              <Dropdown v-model="prog" :options="programasselect" optionLabel="label" optionValue="value"  placeholder="Seleccione un programa" style="width:100%;" class="w-full md:w-11rem">            
+              <div><label>Programa de estudio</label></div>  
+              <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">            
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
