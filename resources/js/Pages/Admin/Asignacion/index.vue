@@ -528,7 +528,7 @@
   const confirm2 = (event,doc) => {
       confirm.require({
           target: event.currentTarget,
-          message: '¿Estas seguro de eliminar al docente '+ doc.nombres+'?',
+          message: '¿Estas seguro de eliminar el curso '+ doc.nombres+'?',
           icon: 'pi pi-info-circle',
           acceptClass: 'p-button-danger',
           accept: () => {

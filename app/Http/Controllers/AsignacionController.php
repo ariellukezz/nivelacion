@@ -159,7 +159,7 @@ class AsignacionController extends Controller
     public function asignarCursoNivelacion(Request $request){
 
       try {
-          DB::transaction(function () {
+          DB::transaction(function () use ($request) {
 
             foreach ($request->diferencia as $alumno) {
                 $this->asignarCurso($request->curso, $alumno['id']);
