@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class CursoController extends Controller
 {
-
-
-
     //DOCENTE 
     public function cursoDocente()
     {

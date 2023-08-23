@@ -44,7 +44,7 @@
                       <input type="file" @change="onChange2"/>
                       <div class="flex">
                         <div class="mr-2">
-                          <Button label="Esquema" @click="descargar('esquema.pdf')" outlined style="height:38px;" />              
+                          <Button label="Descargar esquema" @click="descargar('esquema.pdf')" outlined style="height:38px;" />              
                         </div>
                         <div>
                           <Button label="Subir" style="height:38px;" @click="submit2"/>                            
@@ -79,7 +79,7 @@
                       <input type="file" @change="onChange3"/>
                       <div class="flex justify-end">
                         <div class="mr-2">
-                          <Button label="Ejemplo" @click="descargar('ejemplo.docx')" outlined style="height:38px;" />              
+                          <Button label="Descargar ejemplo" @click="descargar('ejemplo.docx')" outlined style="height:38px;" />              
                         </div>
                         <div>
                           <Button label="Subir" style="height:38px;" @click="submit3"/>              

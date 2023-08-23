@@ -101,6 +101,7 @@ class AsignacionController extends Controller
                 'grupo' => $request->grupo,
                 'escuela' => $request->escuela,
                 'estado' => $request->estado,
+                'id_programa' => $request->id_programa,
                 'id_usuario' => auth()->id(),
             ]);
             $this->response['tipo'] = 'success';
@@ -116,6 +117,7 @@ class AsignacionController extends Controller
             $curso->grupo = $request->grupo;
             $curso->escuela = $request->escuela;
             $curso->estado = $request->estado;
+            $curso->id_programa = $request->id_programa;
             $curso->save();
 
             $this->response['tipo'] = 'info';

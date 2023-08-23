@@ -215,7 +215,6 @@ class DocenteController extends Controller
         ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
         ->where('curso_detalle.id_curso','=',$curso)
         ->get();
-
         
         $data = $res[0];
         $pdf = Pdf::loadView('RepCursoPDF/index', compact('data','estudiantes'));

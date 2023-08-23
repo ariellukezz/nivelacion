@@ -230,7 +230,7 @@
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
               <div><label>Competencia</label></div>  
-              <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+              <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Seleccione una competencia" style="width:100%;" class="w-full md:w-11rem">            
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -239,6 +239,20 @@
               </Dropdown>
             </div>
         </div>
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+            <div class="mb-3" style="width: 100%;">
+              <div><label>Programa</label></div>  
+              <Dropdown v-model="prog" :options="programasselect" optionLabel="label" optionValue="value"  placeholder="Seleccione un programa" style="width:100%;" class="w-full md:w-11rem">            
+                <template #option="slotProps">
+                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                        <div>{{ slotProps.option.label }}</div>
+                    </div>
+                </template>
+              </Dropdown>
+            </div>
+        </div>
+
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
@@ -357,6 +371,54 @@
     {value:"E", label:"Grupo E"},
   ])
 
+  const prog = ref(null);
+  const programasselect = ref([
+    {value:1, label:"INGENIERIA AGRONOMICA"},
+    {value:2, label:"INGENIERIA AGROINDUSTRIAL"},
+    {value:3, label:"INGENIERIA TOPOGRAFICA Y AGRIMENSURA"},
+    {value:4, label:"MEDICINA VETERINARIA Y ZOOTECNIA"},
+    {value:5, label:"INGENIERIA ECONOMICA"},
+    {value:6, label:"CIENCIAS CONTABLES"},
+    {value:7, label:"ADMINISTRACION"},
+    {value:8, label:"TRABAJO SOCIAL"},
+    {value:9, label:"ENFERMERIA"},
+    {value:10, label:"INGENIERIA DE MINAS"},
+    {value:11, label:"HUMANIDADES"},
+    {value:12, label:"SOCIOLOGIA"},
+    {value:13, label:"TURISMO"},
+    {value:14, label:"ANTROPOLOGIA"},
+    {value:15, label:"CIENCIAS DE LA COMUNICACION SOCIAL"},
+    {value:16, label:"ARTE: ARTES PLASTICAS"},
+    {value:17, label:"ARTE: MUSICA"},
+    {value:18, label:"ARTE: DANZA"},
+    {value:19, label:"BIOLOGIA: ECOLOGIA"},
+    {value:20, label:"BIOLOGIA: MICROBIOLOGIA Y LABORATORIO CLINICO"},
+    {value:21, label:"BIOLOGIA: PESQUERIA"},
+    {value:22, label:"EDUC. SEC.: CIENCIA, TECNOLOGIA Y AMBIENTE"},
+    {value:23, label:"EDUC. SEC.: CIENCIAS SOCIALES"},
+    {value:24, label:"EDUC. SEC.: LIT. PSICOLOGIA Y FILOSOFIA"},
+    {value:25, label:"EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA"},
+    {value:26, label:"EDUCACION PRIMARIA"},
+    {value:27, label:"EDUCACION INICIAL"},
+    {value:28, label:"EDUCACION FISICA"},
+    {value:29, label:"INGENIERIA ESTADISTICA E INFORMATICA"},
+    {value:30, label:"DERECHO"},
+    {value:31, label:"INGENIERIA QUIMICA"},
+    {value:32, label:"ODONTOLOGIA"},
+    {value:33, label:"NUTRICION HUMANA"},
+    {value:34, label:"INGENIERIA GEOLOGICA"},
+    {value:35, label:"INGENIERIA METALURGICA"},
+    {value:36, label:"INGENIERIA CIVIL"},
+    {value:37, label:"ARQUITECTURA Y URBANISMO"},
+    {value:38, label:"CIENCIAS FISICO MATEMATICAS: FISICA"},
+    {value:39, label:"CIENCIAS FISICO MATEMATICAS: MATEMATICAS "},
+    {value:40, label:"INGENIERIA AGRICOLA"},
+    {value:41, label:"MEDICINA HUMANA"},
+    {value:42, label:"INGENIERIA MECANICA ELECTRICA"},
+    {value:43, label:"INGENIERIA ELECTRONICA"},
+    {value:44, label:"INGENIERIA DE SISTEMAS"},
+  ])
+
   const alumnosregistro = ref([])
 
   const docentes2 = ref([])
@@ -429,7 +491,8 @@
         id_docente: curso.value.id_docente,
         escuela: escuela.value.escuela,
         grupo: curso.value.grupo,
-        estado: curso.value.estado
+        estado: curso.value.estado,
+        id_programa: prog.value 
       }
     );
   

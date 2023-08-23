@@ -18,6 +18,7 @@ class Curso extends Model
         'grupo',
         'escuela',
         'id_usuario',
-        'estado'
+        'estado',
+        'id_programa'
     ];
 }
