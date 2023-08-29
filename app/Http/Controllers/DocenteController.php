@@ -11,6 +11,7 @@ use App\Models\CursoDetalle;
 use App\Models\DocenteCompetencia;
 use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Http;
 use DB;
 
 class DocenteController extends Controller
@@ -231,6 +232,26 @@ class DocenteController extends Controller
     public function dashboardDocente()
     {
         return Inertia::render('Docente/Dashboard/index');
+    }
+
+
+    //GET DATA DE APIBRAYAN
+    public function getDataPrisma($dni)
+    {
+        $url = "https://erpprisma.com/rucdni/l_dni.php?dni=" . $dni;
+        
+        $response = Http::get($url);
+        $data = explode("|", $response->body());
+
+        $resultado = [
+            'codigo' => $data[0],
+            'dni' => $data[1],
+            'nombre' => $data[2],
+            'paterno' => $data[3],
+            'materno' => $data[4],
+        ];
+
+        return response()->json($resultado);
     }
 
 

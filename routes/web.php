@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Docente\DashboardController;
 use Inertia\Inertia;
 
-
-
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified','admin',])->name('dashboard');
@@ -63,6 +61,8 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/save-docente', [DocenteController::class, 'save']);
         Route::post('/get-competencia-x-docente', [DocenteController::class, 'getCompetenciasByDocente']);
         Route::get('/delete-docente/{id}', [DocenteController::class, 'delete']);
+        Route::get('/get-data-docente/{dni}', [DocenteController::class, 'getDataPrisma']);
+        
 
         Route::get('/asignacion', fn () => Inertia::render('Admin/Asignacion/index'))->name('coordinador-asignacion');
         Route::post('/get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
@@ -74,6 +74,8 @@ Route::middleware('auth','admin')->group(function () {
         Route::post('/get-competencias', [CoordinadorController::class, 'compes']);
 
         Route::get('delete-curso/{id}', [CursoController::class, 'delete']);
+
+
 
     });
 

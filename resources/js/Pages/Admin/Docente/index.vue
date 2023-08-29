@@ -152,15 +152,15 @@
 
 
           <div class="flex" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
-            <div class="" style="width: 73%;">
+            <div class="" style="width: 100%;">
               <div><label>Dirección</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
             </div>
     
-            <div class="" style="width: 23%;">
+            <!-- <div class="" style="width: 23%;">
               <div><label>Fecha nacimiento</label></div>  
               <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
-            </div>
+            </div> -->
           </div>
  
 
@@ -175,7 +175,6 @@
                 <div class="mb-2"><h2>Habilidades</h2></div>  
                   <div style="column-count: 2;">
                   <div v-for="category of categories" :key="category.key" class="mb-2" style="font-size: .9rem" >
-
                         <div v-if="category.value % 2 === 0" class="flex">
                           <Checkbox v-model="selectedCategories" :inputId="category.key" class="mr-2" name="category" :value="category.value" />
                           <div style=" max-width: 230px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
@@ -271,7 +270,6 @@
     celular:"",
     correo:"",
     direccion:"",
-    fecha:"",
     sexo:"M",
     estado:true
   })
@@ -294,14 +292,13 @@
   
 
   const guardar =  async () => {
-    let fec = null;
-    if(docente.value.fecha != null && docente.value.fecha !== temp.value ){
-      fec = docente.value.fecha.toISOString().substring(0, 10);
-    }
-    else {
-      fec = docente.value.fecha
-    }
-
+    // let fec = null;
+    // if(docente.value.fecha != null && docente.value.fecha !== temp.value ){
+    //   fec = docente.value.fecha.toISOString().substring(0, 10);
+    // }
+    // else {
+    //   fec = docente.value.fecha
+    // }
 
     let res = await axios.post(
       "/coordinador/save-docente",
@@ -315,7 +312,7 @@
         celular: docente.value.celular,
         correo: docente.value.correo,
         direccion: docente.value.direccion,
-        fecha: fec,
+        //fecha: fec,
         sexo : docente.value.sexo,
         estado : docente.value.estado,
         competencias : selectedCategories.value
@@ -335,6 +332,13 @@
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
     getDocentes() 
   }  
+
+  const getdataprisma =  async ( ) => {
+    let res = await axios.get("get-data-docente/"+docente.value.nro_doc);
+    docente.value.nombres = res.data.nombre;
+    docente.value.primer_apellido = res.data.paterno;
+    docente.value.segundo_apellido = res.data.materno;
+  }  
   
   const emod = ref(false);
 
@@ -351,7 +355,7 @@
     docente.value.celular = item.telefono
     docente.value.correo = item.email
     docente.value.direccion = item.direccion
-    docente.value.fecha = item.f_nac
+//    docente.value.fecha = item.f_nac
     temp.value = item.f_nac
     docente.value.sexo = item.sexo
     if(item.estado === 1) { docente.value.estado = true } else { docente.value.estado = false }
@@ -370,7 +374,7 @@
         docente.value.celular = null
         docente.value.correo = null
         docente.value.direccion = null
-        docente.value.fecha = null
+    //  docente.value.fecha = null
         temp.value = null
         docente.value.sexo = 'M'
         docente.value.estado = true
@@ -380,6 +384,12 @@
   watch(buscar, ( newValue, oldValue ) => {
       getDocentes()
   })
+
+  watch(() => docente.value.nro_doc, (newValue, oldValue) => {
+    if( newValue.length == 8){
+      getdataprisma();
+    }
+  });
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
@@ -418,6 +428,23 @@
     {value:11, name: "(C11) RELIGIÓN"}
   ]);
   const selectedCategories = ref([]);
+
+  const limpiar = () => {
+    docente.value.id = null
+    docente.value.tipo_doc = 1
+    docente.value.nro_doc = null
+    docente.value.nombres = null
+    docente.value.primer_apellido = null
+    docente.value.segundo_apellido = null
+    docente.value.celular = null
+    docente.value.correo = null
+    docente.value.direccion = null
+  //  docente.value.fecha = null
+    temp.value = null
+    docente.value.sexo = 'M'
+    docente.value.estado = true
+    selectedCategories.value = []
+  }
 
   </script>
   
