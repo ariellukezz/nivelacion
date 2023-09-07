@@ -11,8 +11,6 @@ class AvanceController extends Controller {
   public function getAvance(){
 
 
-    try {
-        DB::transaction(function () {
             $escuelas = DB::select('SELECT 
             distinct
             documento.id_escuela,
@@ -50,11 +48,6 @@ class AvanceController extends Controller {
         $this->response['escuelas'] = $escuelas;
         return response()->json($this->response, 200);
         
-        });
-
-        } catch (\Throwable $e) {
-            echo "Error en la transacción: " . $e->getMessage();
-        }
 
     }
 
