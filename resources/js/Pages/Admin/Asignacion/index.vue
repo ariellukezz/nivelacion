@@ -211,7 +211,7 @@
  
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 68%;">
-              <div><label>Nombre</label></div>  
+              <div><label>Nombre del Curso.</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="curso.nombre" />
             </div>
     
@@ -589,6 +589,16 @@
   })
 
   const abrirseleccionar = () => {  modal_registro.value = true  }
+
+  const limpiar = () => {  
+    cursocompetencia.value = null
+    curso.value.id = null
+    curso.value.nombre = ""
+    curso.value.id_docente = ""
+    curso.value.grupo = "A"
+    curso.value.estado = true
+    prog.value = null
+   }
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });

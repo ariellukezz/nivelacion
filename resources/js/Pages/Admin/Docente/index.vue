@@ -386,7 +386,7 @@
   })
 
   watch(() => docente.value.nro_doc, (newValue, oldValue) => {
-    if( newValue.length == 8){
+    if( docente.value.nro_doc.length == 8){
       getdataprisma();
     }
   });
