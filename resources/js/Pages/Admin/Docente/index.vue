@@ -5,14 +5,21 @@
 
       <div>
         <div class="flex" style="justify-content: space-between;">
-          <Button label="Nuevo" @click="visible = true" size="small" style="height: 40px;"/>
-        
+          <Button label="Docente Nuevo" @click="visible = true" size="small" style="height: 40px;"/> 
+
+          
+    
           <span class="p-input-icon-left ">
               <i class="pi pi-search" />
               <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
           </span>
 
         </div>
+        <div class="card" >
+        <Message :closable="false" style=" color: rgb(139, 62, 62)">Solo agregar Docente de su Escuela Profesional, en caso sea de 
+        sevicio comunicarse con el Docente o Director de Escuela para su asignación.</Message>
+    </div>
+
       </div>
       <Toast />
       <ConfirmPopup></ConfirmPopup>
@@ -65,6 +72,8 @@
       </div>
   
       <Dialog v-model:visible="visible" header="Docente Nuevo" :style="{ width: '60vw', height:'600px' }">
+        
+        
 
         <div style="">
         <TabView>
@@ -240,6 +249,7 @@
   import TabView from 'primevue/tabview';
   import TabPanel from 'primevue/tabpanel';
   import Checkbox from 'primevue/checkbox';
+  import Message from 'primevue/message';
 
   
   const toast = useToast();

@@ -102,8 +102,8 @@
             style="font-size: .9rem;"
             :paginator="true" :rows="9"
             >
-                <Column field="nombre" header="Nombre"></Column>
-                <Column field="competencia" header="Curso"></Column>
+                <Column field="nombre" header="Nombre del Curso"></Column>
+                <Column field="competencia" header="(Competencia) Curso"></Column>
                 <Column field="docente" header="Docente">
                     <template #body="{ data }">
                         <div class="flex" style="justify-content: flex-start;">
@@ -150,7 +150,7 @@
       <div v-if="escuela !== null && cursoseleccionado !== null"> 
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="abrirseleccionar()" style="height:40px"> Seleccionar </Button>
+          <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button>
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
