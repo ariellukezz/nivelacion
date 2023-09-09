@@ -16,7 +16,7 @@
 
         </div>
         <div class="card" >
-        <Message :closable="false" style=" color: rgb(139, 62, 62)">Solo agregar Docente de su Escuela Profesional, en caso sea de 
+        <Message :closable="false" style=" color: rgb(139, 62, 62)">Solo agregar Docente de su Escuela Profesional, en caso sea Docente de 
         sevicio comunicarse con el Docente o Director de Escuela para su asignación.</Message>
     </div>
 
