@@ -114,6 +114,9 @@ class DocenteController extends Controller
             // }
 
             $docente->save();
+            $usuario = Usuario::find($docente->usuario_id);
+            $usuario->email = $request->correo;
+            $usuario->save();
             $this->response['tipo'] = 'info';
             $this->response['titulo'] = '!REGISTRO MODIFICADO!';
             $this->response['mensaje'] = 'Docente '.$docente->nombres.' acaba de ser modificado.';

@@ -395,11 +395,12 @@
       getDocentes()
   })
 
-  // watch(() => docente.value.nro_doc, (newValue, oldValue) => {
-  //   if( docente.value.nro_doc.length == 8){
-  //     getdataprisma();
-  //   }
-  // });
+  watch(() => docente.value.nro_doc, (newValue, oldValue) => {
+    if(docente.value.nro_doc != null){
+  if( docente.value.nro_doc.length == 8){
+      getdataprisma();
+    }}
+ });
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
