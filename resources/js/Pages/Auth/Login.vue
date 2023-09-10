@@ -1,6 +1,6 @@
 <template>
   <GuestLayout>
-    <Head title="Log in"/>
+    <Head title="Nivelacion"/>
 
     <div class="flex flex-col overflow-y-auto md:flex-row">
       <div class="h-32 md:h-auto md:w-1/2">
@@ -8,7 +8,9 @@
       </div>
       <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
         <div class="w-full">
-          <h1 class="mb-4 text-xl font-semibold text-gray-700">Iniciar sesion</h1>
+          <h1 class=" text-xl  text-gray-900" style="text-align: center;">¡Bienvenidos al Sistema de Nivelación para Ingresantes a la 
+            Universidad Nacional del Altiplano - Puno! </h1>
+          <h2 class="mb-4 text-xl font-semibold text-gray-700 " style="text-align: center;">Iniciar sesión</h2>
 
           <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
