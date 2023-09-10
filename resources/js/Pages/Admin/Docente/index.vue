@@ -16,7 +16,7 @@
 
         </div>
         <div class="card" >
-        <Message :closable="false" style=" color: rgb(139, 62, 62)">Solo agregar Docente de su Escuela Profesional, en caso sea Docente de 
+          <Message severity="error" sticky>Solo agregar Docente de su Escuela Profesional, en caso sea Docente de 
         servicio comunicarse con el Docente o Director de Escuela para su asignación.</Message>
     </div>
 
@@ -395,11 +395,11 @@
       getDocentes()
   })
 
-  watch(() => docente.value.nro_doc, (newValue, oldValue) => {
-    if( docente.value.nro_doc.length == 8){
-      getdataprisma();
-    }
-  });
+  // watch(() => docente.value.nro_doc, (newValue, oldValue) => {
+  //   if( docente.value.nro_doc.length == 8){
+  //     getdataprisma();
+  //   }
+  // });
   
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
