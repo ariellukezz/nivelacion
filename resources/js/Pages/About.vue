@@ -17,6 +17,9 @@
                     </div>
                   </form>
                 </div>
+                <div class="card" >
+        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).</Message>
+    </div>
                 <div>
                   <DataTable :value="resoluciones" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
                     <Column field="nombre" header="Nombre"></Column>
@@ -53,6 +56,9 @@
                     </div>
                   </form>
                 </div>
+                <div class="card" >
+        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).</Message>
+    </div>
                 <div>
                   <DataTable :value="planes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
                     <Column field="nombre" header="Nombre"></Column>
@@ -89,6 +95,9 @@
                     </div>
                   </form>
                 </div>
+                <div class="card" >
+        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo Comprimido).</Message>
+    </div>
 
                 <div>
                   <DataTable :value="informes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
@@ -127,6 +136,7 @@ import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Message from 'primevue/message';
 const baseUrl = window.location.origin;
 
 
