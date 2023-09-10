@@ -5,7 +5,7 @@
 
         <div>
           <div class="flex" style="justify-content: space-between;">
-            <Button label="Nuevo" @click="visible = true" size="small" style="height: 40px;"/>
+            <Button label="Lista de Estudiantes" @click="visible = true" size="small" style="height: 40px;"/>
           
             <span class="p-input-icon-left ">
                 <i class="pi pi-search" />

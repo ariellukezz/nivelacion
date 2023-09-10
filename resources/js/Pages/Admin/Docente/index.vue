@@ -4,22 +4,20 @@
   <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
 
       <div>
+        <div class="card" >
+          <Message severity="warn" sticky>Solo debe agregar al docente de su Escuela Profesional. 
+            En caso de ser docente de servicio, comuníquese con el docente o el director de la escuela para su asignación en el sistema.</Message>
+        </div>
         <div class="flex" style="justify-content: space-between;">
           <Button label="Docente Nuevo" @click="visible = true" size="small" style="height: 40px;"/> 
 
-          
-    
           <span class="p-input-icon-left ">
               <i class="pi pi-search" />
               <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
           </span>
 
         </div>
-        <div class="card" >
-          <Message severity="error" sticky>Solo agregar Docente de su Escuela Profesional, en caso sea Docente de 
-        servicio comunicarse con el Docente o Director de Escuela para su asignación.</Message>
-    </div>
-
+  
       </div>
       <Toast />
       <ConfirmPopup></ConfirmPopup>
@@ -125,7 +123,7 @@
  
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
-              <div><label>Nro documento</label></div>  
+              <div><label>Nro documento (DNI)</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nro_doc" />
             </div>
     
@@ -149,12 +147,12 @@
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 23%;">
-              <div><label>Celular</label></div>  
+              <div><label>Nro Celular</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.celular" />
             </div>
     
             <div class="mb-2" style="width: 73%;">
-              <div><label>Correo</label></div>  
+              <div><label>Correo (preferiblemente institucional)</label></div>  
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.correo" />
             </div>
           </div>

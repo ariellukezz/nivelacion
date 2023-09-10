@@ -80,7 +80,7 @@
             </div>
             <span class="p-input-icon-left ">
                 <i class="pi pi-search" />
-                <InputText v-model="buscarAlumno" style="padding-left: 40px; height: 40px;" placeholder="Search" />
+                <InputText v-model="buscarAlumno" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
             </span>
 
           </div>
