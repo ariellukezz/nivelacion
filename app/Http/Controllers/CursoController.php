@@ -38,6 +38,8 @@ class CursoController extends Controller
       
     }
 
+
+
     public function getAlumnosXCurso(Request $request){
 
         $comp = Curso::find($request->curso);
@@ -124,6 +126,19 @@ class CursoController extends Controller
         ->join('curso_detalle','curso_detalle.id_curso','curso.id')
         ->where('curso.estado',"=",1)
         ->where('curso_detalle.id_alumno',"=", $alumno[0]->id)
+        ->get();
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+    }
+
+    public function getCursosEncuestaD() {
+
+        $docente = DB::select('SELECT id from docente where usuario_id = '.auth()->user()->id );
+        $res = Curso::select('encuesta', 'id', 'nombre')
+        ->where('curso.estado',"=",1)
+        ->where('id_docente',"=", $docente[0]->id)
         ->get();
     
         $this->response['estado'] = true;

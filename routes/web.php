@@ -129,6 +129,11 @@ Route::middleware('auth','docente')->group(function () {
     Route::post('docente/update-nota', [CursoController::class, 'updateNota']);
     Route::post('/docente/get-usuario', [UsuarioController::class, 'getUsuarioDocente']);
     Route::get('/docente/generar-pdf/{id}', [DocenteController::class, 'pdf']);
+
+    Route::get('docente/encuestas', fn () => Inertia::render('Docente/Encuestas/index'))->name('docente-encuestas');
+    Route::get('docente/cursos-encuesta', [CursoController::class, 'getCursosEncuestaD']);
+    Route::get('docente/get-preguntas/{encuesta}', [PreguntaController::class, 'getPreguntas']);
+    Route::post('docente/save-encuesta-docente', [PreguntaController::class, 'saveRepuestasDocente']);
     
 });
 
