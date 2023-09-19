@@ -27,7 +27,7 @@ class PreguntaController extends Controller {
     public function saveRepuestasPostulante(Request $request){
 
         $alumno = Alumno::where('usuario_id', auth()->id())
-             ->first();
+             ->first(); 
 
         foreach ($request->preguntas as $index => $pregunta) {
             $curso = Respuesta::create([
