@@ -14,6 +14,7 @@ use App\Http\Controllers\TeController;
 use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\AvanceController;
 use App\Http\Controllers\ArchivoController;
+use App\Http\Controllers\SupervisorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Docente\DashboardController;
@@ -112,9 +113,11 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('documento/resolucion', [DocumentoController::class, 'resolucion']);
     Route::post('documento/plan', [DocumentoController::class, 'plan']);
     Route::post('documento/informe', [DocumentoController::class, 'informe']);
+    Route::post('documento/otros', [DocumentoController::class, 'otros']);
     Route::post('get-resoluciones', [DocumentoController::class, 'getResoluciones']);
     Route::post('get-planes', [DocumentoController::class, 'getPlanes']);
     Route::post('get-informes', [DocumentoController::class, 'getInformes']);
+    Route::post('get-otros', [DocumentoController::class, 'getOtros']);
 
 });
 
@@ -154,8 +157,17 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 
 Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
 
-Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'));
-Route::get('/get-avance', [AvanceController::class, 'getAvance']);
 
+
+
+Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () {
+    Route::get('/', fn () => Inertia::render('Supervisor/index'))->name('supervisor-inicio');
+    Route::get('/asignacion', fn () => Inertia::render('Supervisor/Asignacion/asignacion'))->name('supervisor-asignacion');
+    Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSupervisor']);
+    Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
+    Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'))->name('supervisor-avance');;
+    Route::get('/get-avance', [AvanceController::class, 'getAvance']);
+});
 
 require __DIR__.'/auth.php';
+    

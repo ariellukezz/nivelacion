@@ -127,6 +127,18 @@ class UsuarioController extends Controller
 
     }
 
+    public function getUsuarioSupervisor(Request $request){
+
+        $res = DB::select('SELECT users.nombres, programa.escuela, users.estado_contraseña as e_contra  FROM users
+        JOIN programa ON programa.id = users.programa_id
+        WHERE users.id = '. auth()->user()->id);
+
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+
+    }
+
   //GET USUARIO ESTUDIANTE
     public function getUsuarioEstudiante(Request $request){
         

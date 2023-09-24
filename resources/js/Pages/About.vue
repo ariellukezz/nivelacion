@@ -1,124 +1,170 @@
 <template>
-  <Head title="Documentos"/>
+  <Head title="Documentos" />
 
   <AuthenticatedLayout>
     <Toast />
     <div class="p-4 bg-white rounded-lg shadow-xs">
-      
 
       <div class="card">
         <TabView>
           <TabPanel header="Resolución decanal">
-                <div class="mb-3">
-                  <form @submit.prevent="submit">
-                    <div class="flex justify-between">
-                      <input type="file" @change="onChange"/>
-                      <Button label="Subir" style="height:38px;" @click="submit"/>              
-                    </div>
-                  </form>
+            <div class="mb-3">
+              <form @submit.prevent="submit">
+                <div class="flex justify-between">
+                  <input type="file" @change="onChange" />
+                  <Button label="Subir" style="height:38px;" @click="submit" />
                 </div>
-                <div class="card" >
-        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).</Message>
-    </div>
-                <div>
-                  <DataTable :value="resoluciones" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
-                    <Column field="nombre" header="Nombre"></Column>
-                    <Column field="tipo" header="Tipo"></Column>
-                    <Column field="fecha" header="Fecha"></Column>
-                    <Column field="id_programa" header="Acciones" width="50" style> 
-                      <template #body="{ data }">
-                        <div class="flex justify-center">
-                          <!-- <div class="mr-2">
+              </form>
+            </div>
+            <div class="card">
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
+              </Message>
+            </div>
+            <div>
+              <DataTable :value="resoluciones" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
+                <Column field="nombre" header="Nombre"></Column>
+                <Column field="tipo" header="Tipo"></Column>
+                <Column field="fecha" header="Fecha"></Column>
+                <Column field="id_programa" header="Acciones" width="50" style>
+                  <template #body="{ data }">
+                    <div class="flex justify-center">
+                      <!-- <div class="mr-2">
                             <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                           </div> -->
-                          <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"  size="small"  style="width: 25px; height: 25px;"/>
-                        </div>
-                      </template>
-                    </Column>
-                  </DataTable>
-                    <!-- {{ resoluciones }} -->
-                </div>
+                      <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
+                        size="small" style="width: 25px; height: 25px;" />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+              <!-- {{ resoluciones }} -->
+            </div>
           </TabPanel>
 
           <TabPanel header="Plan de trabajo">
-                <div class="mb-3">
-                  <form @submit.prevent="submit">
-                    <div class="flex justify-between">
-                      <input type="file" @change="onChange2"/>
-                      <div class="flex">
-                        <div class="mr-2">
-                          <Button label="Descargar esquema" @click="descargar('esquema.pdf')" outlined style="height:38px;" />              
-                        </div>
-                        <div>
-                          <Button label="Subir" style="height:38px;" @click="submit2"/>                            
-                        </div> 
-                      </div>
+            <div class="mb-3">
+              <form @submit.prevent="submit">
+                <div class="flex justify-between">
+                  <input type="file" @change="onChange2" />
+                  <div class="flex">
+                    <div class="mr-2">
+                      <Button label="Descargar esquema" @click="descargar('esquema.pdf')" outlined style="height:38px;" />
                     </div>
-                  </form>
+                    <div>
+                      <Button label="Subir" style="height:38px;" @click="submit2" />
+                    </div>
+                  </div>
                 </div>
-                <div class="card" >
-        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).</Message>
-    </div>
-                <div>
-                  <DataTable :value="planes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
-                    <Column field="nombre" header="Nombre"></Column>
-                    <Column field="tipo" header="Tipo"></Column>
-                    <Column field="fecha" header="Fecha"></Column>
-                    <Column field="id_programa" header="Acciones" width="50" style> 
-                      <template #body="{ data }">
-                        <div class="flex justify-center">
-                          <!-- <div class="mr-2">
+              </form>
+            </div>
+            <div class="card">
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
+              </Message>
+            </div>
+            <div>
+              <DataTable :value="planes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
+                <Column field="nombre" header="Nombre"></Column>
+                <Column field="tipo" header="Tipo"></Column>
+                <Column field="fecha" header="Fecha"></Column>
+                <Column field="id_programa" header="Acciones" width="50" style>
+                  <template #body="{ data }">
+                    <div class="flex justify-center">
+                      <!-- <div class="mr-2">
                             <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                           </div> -->
-                          <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"  size="small"  style="width: 25px; height: 25px;"/>
-                        </div>
-                      </template>
-                    </Column>
-                  </DataTable>
-                    <!-- {{ resoluciones }} -->
-                </div>
+                      <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
+                        size="small" style="width: 25px; height: 25px;" />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+              <!-- {{ resoluciones }} -->
+            </div>
           </TabPanel>
           <TabPanel header="Informe">
-                <div class="mb-3">
-                  <form @submit.prevent="submit">
-                    <div class="flex justify-between">
-                      <input type="file" @change="onChange3"/>
-                      <div class="flex justify-end">
-                        <div class="mr-2">
-                          <Button label="Descargar ejemplo" @click="descargar('ejemplo.docx')" outlined style="height:38px;" />              
-                        </div>
-                        <div>
-                          <Button label="Subir" style="height:38px;" @click="submit3"/>              
-                        </div>
-                      </div>
-
+            <div class="mb-3">
+              <form @submit.prevent="submit">
+                <div class="flex justify-between">
+                  <input type="file" @change="onChange3" />
+                  <div class="flex justify-end">
+                    <div class="mr-2">
+                      <Button label="Descargar ejemplo" @click="descargar('ejemplo.docx')" outlined
+                        style="height:38px;" />
                     </div>
-                  </form>
-                </div>
-                <div class="card" >
-        <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo Comprimido).</Message>
-    </div>
+                    <div>
+                      <Button label="Subir" style="height:38px;" @click="submit3" />
+                    </div>
+                  </div>
 
-                <div>
-                  <DataTable :value="informes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
-                    <Column field="nombre" header="Nombre"></Column>
-                    <Column field="tipo" header="Tipo"></Column>
-                    <Column field="fecha" header="Fecha"></Column>
-                    <Column field="id_programa" header="Acciones" width="50" style> 
-                      <template #body="{ data }">
-                        <div class="flex justify-center">
-                          <!-- <div class="mr-2">
+                </div>
+              </form>
+            </div>
+            <div class="card">
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
+                Comprimido).</Message>
+            </div>
+
+            <div>
+              <DataTable :value="informes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
+                <Column field="nombre" header="Nombre"></Column>
+                <Column field="tipo" header="Tipo"></Column>
+                <Column field="fecha" header="Fecha"></Column>
+                <Column field="id_programa" header="Acciones" width="50" style>
+                  <template #body="{ data }">
+                    <div class="flex justify-center">
+                      <!-- <div class="mr-2">
                             <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                           </div> -->
-                          <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)"  size="small"  style="width: 25px; height: 25px;"/>
-                        </div>
-                      </template>
-                    </Column>
-                  </DataTable>
-                    <!-- {{ resoluciones }} -->
+                      <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)" size="small"
+                        style="width: 25px; height: 25px;" />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+              <!-- {{ resoluciones }} -->
+            </div>
+          </TabPanel>
+
+          <TabPanel header="Complemento">
+            <div class="mb-3">
+              <form @submit.prevent="submit">
+                <div class="flex justify-between">
+                  <input type="file" @change="onChange4" />
+                  <div class="flex justify-end">
+                    <div>
+                      <Button label="Subir" style="height:38px;" @click="submit4" />
+                    </div>
+                  </div>
+
                 </div>
-            </TabPanel>
-          </TabView>
+              </form>
+            </div>
+            <div class="card">
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
+                Comprimido). No obligatorio</Message>
+            </div>
+
+            <div>
+              <DataTable :value="otros" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
+                <Column field="nombre" header="Nombre"></Column>
+                <Column field="tipo" header="Tipo"></Column>  
+                <Column field="fecha" header="Fecha"></Column>
+                <Column field="id_programa" header="Acciones" width="50" style>
+                  <template #body="{ data }">
+                    <div class="flex justify-center">
+                      <!-- <div class="mr-2">
+                            <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
+                          </div> -->
+                      <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)" size="small"
+                        style="width: 25px; height: 25px;" />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+              <!-- {{ resoluciones }} -->
+            </div>
+          </TabPanel>
+        </TabView>
 
       </div>
     </div>
@@ -144,17 +190,19 @@ const pagina = ref(1)
 const resoluciones = ref([])
 const planes = ref([])
 const informes = ref([])
+const otros = ref([])
 
 
 const toast = useToast();
 
 const showToast = (tipo, titulo, detalle) => {
-    toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
+  toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
 };
 
 const imagen = ref(null);
 const imagen2 = ref(null);
 const imagen3 = ref(null);
+const imagen4 = ref(null);
 
 const onChange = (e) => {
   console.log("Selected file", e.target.files[0])
@@ -170,54 +218,76 @@ const onChange3 = (e) => {
   imagen3.value = e.target.files[0];
 }
 
+const onChange4 = (e) => {
+  console.log("Selected file", e.target.files[0])
+  imagen4.value = e.target.files[0];
+}
+
 const submit = async () => {
   let fd = new FormData();
   fd.append('img', imagen.value)
-  await axios.post("/documento/resolucion", fd).then(res=>{
-    showToast("success","2",res.data.menssje);
+  await axios.post("/documento/resolucion", fd).then(res => {
+    showToast("success", "Documento guardado", res.data.menssje);
     getResoluciones()
-  }).catch(err=>console.log(err))
+  }).catch(err => console.log(err))
 }
 
 const submit2 = async () => {
   let fd = new FormData();
   fd.append('img', imagen2.value)
-  await axios.post("/documento/plan", fd).then(res=>{
-    showToast("success","2",res.data.menssje);
+  await axios.post("/documento/plan", fd).then(res => {
+    showToast("success", "Documento guardado", res.data.menssje);
     getPlanes()
-  }).catch(err=>console.log(err))
+  }).catch(err => console.log(err))
 }
 //RUTA http://nivelacion.test/documentos/planes/29718938.pdf
 const submit3 = async () => {
   let fd = new FormData();
   fd.append('img', imagen3.value)
-  await axios.post("/documento/informe", fd).then(res=>{
-    showToast("success","2",res.data.menssje);
+  await axios.post("/documento/informe", fd).then(res => {
+    showToast("success", "Archivo guardado", res.data.menssje);
     getInformes()
-  }).catch(err=>console.log(err))
+  }).catch(err => console.log(err))
 }
 
-  
-const getResoluciones =  async () => {
-    let res = await axios.post(
+const submit4 = async () => {
+  let fd = new FormData();
+  fd.append('img', imagen4.value)
+  await axios.post("/documento/otros", fd).then(res => {
+    showToast("success", "Archivo guardado", res.data.menssje);
+    getOtros()
+  }).catch(err => console.log(err))
+}
+
+
+const getResoluciones = async () => {
+  let res = await axios.post(
     "get-resoluciones?page=" + pagina.value,
     { term: "" }
-    );
-    resoluciones.value = res.data.datos.data;
+  );
+  resoluciones.value = res.data.datos.data;
 }
-const getPlanes =  async () => {
-    let res = await axios.post(
+const getPlanes = async () => {
+  let res = await axios.post(
     "get-planes?page=" + pagina.value,
     { term: "" }
-    );
-    planes.value = res.data.datos.data;
+  );
+  planes.value = res.data.datos.data;
 }
-const getInformes =  async () => {
-    let res = await axios.post(
+const getInformes = async () => {
+  let res = await axios.post(
     "get-informes?page=" + pagina.value,
     { term: "" }
-    );
-    informes.value = res.data.datos.data;
+  );
+  informes.value = res.data.datos.data;
+}
+
+const getOtros = async () => {
+  let res = await axios.post(
+    "get-otros?page=" + pagina.value,
+    { term: "" }
+  );
+  otros.value = res.data.datos.data;
 }
 
 const verdocumento = (data) => {
@@ -226,7 +296,7 @@ const verdocumento = (data) => {
 
 const descargar = (nombre) => {
   // window.open(baseUrl+'/documentos/'+nombre, '_blank');
-  window.open(baseUrl+'/documentos/'+nombre);
+  window.open(baseUrl + '/documentos/' + nombre);
 }
 
 
@@ -235,6 +305,7 @@ const descargar = (nombre) => {
 getResoluciones()
 getPlanes()
 getInformes()
+getOtros()
 
 </script>
 
@@ -252,5 +323,4 @@ input[type=file]::file-selector-button {
 
 input[type=file]::file-selector-button:hover {
   background: var(--primary-600);
-}
-</style>
+}</style>

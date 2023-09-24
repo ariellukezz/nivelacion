@@ -33,7 +33,7 @@ class DocenteController extends Controller
                 ->orWhere('docente.materno', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('docente.nro_doc', 'LIKE', '%' . $request->term . '%');
         })->orderBy('docente.id', 'DESC')
-        ->paginate(10);
+        ->paginate(200);
     
         $this->response['estado'] = true;
         $this->response['datos'] = $res;

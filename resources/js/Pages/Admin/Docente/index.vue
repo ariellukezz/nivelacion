@@ -27,7 +27,7 @@
           <div class="flex justify-content-center mb-4">
               <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
           </div>
-          <DataTable :value="docentes" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
+          <DataTable :value="docentes" :class="'p-datatable-sm'" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" tableStyle="min-width: 50rem" style="font-size: .9rem;">
               <Column field="nro_doc" header="N° Doc"></Column>
               <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
               <Column field="nombres" header="Nombres">

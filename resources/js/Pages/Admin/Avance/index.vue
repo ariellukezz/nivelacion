@@ -9,7 +9,7 @@
   
 <script setup>
 import {ref} from 'vue'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '@/Layouts/LayoutSupervisor.vue';
 import { Head } from '@inertiajs/vue3';
 import CardComponent from './components/cardAvance.vue';
 
@@ -18,7 +18,7 @@ const escuelas = ref([])
 
 const getAvance =  async (event) => {
   let res = await axios.get(
-  "/get-avance");
+  "get-avance");
   data.value = res.data.datos;
   escuelas.value = res.data.escuelas;
 }

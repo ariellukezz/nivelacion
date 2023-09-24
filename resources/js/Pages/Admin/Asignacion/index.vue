@@ -574,18 +574,36 @@
      }
 })
 
+const pageSize = ref(10)
+
+watch(() => escuela.escuela, (newValue, oldValue) => {
+  if (escuela.escuela != null)
+  {
+    cursoseleccionado.value = null;
+    cursos.value = null
+    detalle_curso.value = null;
+    alumnos_seleccionados_registro.value = null;
+    seleccionadosTemp.value = null;
+  }
+
+ });
+
     
   watch(buscarescuela, ( newValue, oldValue ) => { getEscuelas() })
   watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })  
   watch(buscar, ( newValue, oldValue ) => { getDocentes(); })
   watch(cursocompetencia, ( newValue, oldValue ) => { getDocenteXcompetencia(); })  
   watch(competencia, ( newValue, oldValue ) => { getCursos(); })
-  watch(escuela, ( newValue, oldValue ) => { getCursos(); })
+  watch(escuela, ( newValue, oldValue ) => { if (escuela.value != null){ getCursos();} })
+  watch(pageSize, (newValue, oldValue) => { getDocumentos(); })
 
   watch(cursoseleccionado, ( newValue, oldValue ) => {
-    curso.value = cursoseleccionado.value
-    getDetalleCurso()
-    getAlumnosRegistros()
+    if (cursoseleccionado.value != null){
+      curso.value = cursoseleccionado.value
+      getDetalleCurso()
+      getAlumnosRegistros()
+    }
+
   })
 
   const abrirseleccionar = () => {  modal_registro.value = true  }
