@@ -470,6 +470,7 @@
   const emod = ref(false);
 
   const editar =  async (item) => {
+    limpiar()
     visible.value = true;
     emod.value = true;
     curso.value.id = item.id;
@@ -494,6 +495,8 @@
         estado: curso.value.estado,
         id_programa: prog.value 
       }
+
+
     );
   
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
@@ -639,7 +642,6 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
   
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
   const resEsuela = () => { cursoseleccionado.value = null }
-
 
 
 
