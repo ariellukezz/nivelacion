@@ -15,6 +15,7 @@ use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\AvanceController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\SuperadmiController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Docente\DashboardController;
@@ -157,7 +158,7 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 
 Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
 
-
+   //supervisor
 
 
 Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () {
@@ -169,5 +170,16 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
 });
 
+   //superadmi
+
+Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
+    Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSuperadmi']);
+    Route::get('/', fn () => Inertia::render('Superadmi/index'))->name('superadmi-inicio');
+
+    
+});
+
 require __DIR__.'/auth.php';
+
+
     

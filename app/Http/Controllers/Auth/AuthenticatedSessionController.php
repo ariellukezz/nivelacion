@@ -42,6 +42,8 @@ class AuthenticatedSessionController extends Controller
 
         if( auth()->user()->rol == 6 ){ return redirect('/supervisor'); }
 
+        if( auth()->user()->rol == 0 ){ return redirect('/superadmi'); }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
