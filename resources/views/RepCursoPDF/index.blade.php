@@ -28,7 +28,7 @@
                     </td>
                     <td align="center" style="font-size:11pt; font-weight:700;">
                         <div style="margin-top:5px;"><span style="font-size: 14pt;">UNIVERSIDAD NACIONAL DEL ALTIPLANO</span></div>
-                        <div>VICERECTORADO ACADÉMICO</div>
+                        <div>VICERRECTORADO ACADÉMICO</div>
                         <div>NIVELACIÓN INGRESANTES UNA-PUNO</div>
                     </td>
                     <td align="center" rowspan="1"> <img src="{{ public_path('imagenes/vracad.png')}}"  width="105"></td>
