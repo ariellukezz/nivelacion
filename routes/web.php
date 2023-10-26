@@ -176,8 +176,13 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSuperadmi']);
     Route::get('/', fn () => Inertia::render('Superadmi/index'))->name('superadmi-inicio');
 
+    Route::get('getAlumnosc/{c}', [SuperadmiController::class, 'getAlumnos']);
+    Route::get('alumnos', fn () => Inertia::render('Superadmi/estudiantes/alumnos'))->name('superadmi-estudiante');
+
+    
     
 });
+
 
 require __DIR__.'/auth.php';
 
