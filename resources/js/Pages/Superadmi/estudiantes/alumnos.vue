@@ -61,7 +61,7 @@
   import { ref } from 'vue';
   
   const alumnos = ref([]);
-  
+
   const getAlumnos = async () => {
     // Aquí puedes realizar una llamada a tu API para obtener datos reales de alumnos
     // Reemplaza los datos de ejemplo con los datos reales

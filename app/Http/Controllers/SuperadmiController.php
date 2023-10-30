@@ -93,8 +93,28 @@ class SuperadmiController extends Controller
         $this->response['estado'] = true;
         $this->response['datos'] = $estudiantes;
         return response()->json($this->response, 200);
-
-
     }
 
+
+    public function getDocentes(Request $request) {
+
+    $docentes = DB::table('docente as d')
+    ->select(
+        'd.nro_doc', 
+        'd.paterno', 
+        'd.materno', 
+        'd.nombres', 
+        'd.sexo', 
+        'd.telefono', 
+        'd.email', 
+        'u.nombres as nombre_usuario', 
+        'e.nombre as nombre_escuela')
+    ->join('users as u', 'd.id_usuario', '=', 'u.id')
+    ->join('escuela as e', 'u.id_escuela', '=', 'e.id')
+    ->get();
+
+    $this->response['estado'] = true;
+    $this->response['datos'] = $docentes;
+    return response()->json($this->response, 200);
+        }
 }

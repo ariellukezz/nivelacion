@@ -166,7 +166,7 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::get('/asignacion', fn () => Inertia::render('Supervisor/Asignacion/asignacion'))->name('supervisor-asignacion');
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSupervisor']);
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
-    Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'))->name('supervisor-avance');;
+    Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'))->name('supervisor-avance');
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
 });
 
@@ -179,6 +179,11 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     Route::get('getAlumnosc/{c}', [SuperadmiController::class, 'getAlumnos']);
     Route::get('alumnos', fn () => Inertia::render('Superadmi/estudiantes/alumnos'))->name('superadmi-estudiante');
 
+    Route::get('getDocentes', [SuperadmiController::class, 'getDocentes']);
+    Route::get('docentes', fn () => Inertia::render('Superadmi/docentes/docentes'))->name('superadmi-docentes');
+
+    Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
+    Route::get('/avance', fn () => Inertia::render('Superadmi/documentos/index'))->name('superadmi-avance');
     
     
 });
