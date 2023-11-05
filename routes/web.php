@@ -179,7 +179,7 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     Route::post('getAlumnosc', [SuperadmiController::class, 'getAlumnos']);
     Route::get('alumnos', fn () => Inertia::render('Superadmi/estudiantes/alumnos'))->name('superadmi-estudiante');
 
-    Route::get('getDocentes', [SuperadmiController::class, 'getDocentes']);
+    Route::post('getDocentes', [SuperadmiController::class, 'getDocentes']);
     Route::get('docentes', fn () => Inertia::render('Superadmi/docentes/docentes'))->name('superadmi-docentes');
 
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);

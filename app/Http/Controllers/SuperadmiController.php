@@ -104,6 +104,7 @@ class SuperadmiController extends Controller
     }
 
     public function getDocentes(Request $request) {
+        $term = $request->buscar;
 
     $docentes = DB::table('docente as d')
     ->select(
@@ -119,6 +120,13 @@ class SuperadmiController extends Controller
         'e.nombre as nombre_escuela')
     ->join('users as u', 'd.id_usuario', '=', 'u.id')
     ->join('escuela as e', 'u.id_escuela', '=', 'e.id')
+
+    ->where(function ($query) use ($term) {
+        $query->orWhere('d.nro_doc', 'LIKE', '%' . $term . '%')
+            ->orWhere('d.nombres', 'LIKE', '%' . $term . '%')
+            ->orWhere('d.paterno', 'LIKE', '%' . $term . '%')
+            ->orWhere('d.materno', 'LIKE', '%' . $term . '%');
+    })
     ->get();
 
     $this->response['estado'] = true;
