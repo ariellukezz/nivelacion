@@ -52,9 +52,9 @@ class SuperadmiController extends Controller
         ], 200);
     }
 
-    public function getAlumnos(Request $request, $competencia) {
-        $c = $competencia;
-        $term = $request->input('term');
+    public function getAlumnos(Request $request) {
+        $competencia = $request->competencia;
+        $term = $request->buscar;
     
         $estudiantes = DB::table('estudiante AS e')
             ->select(
@@ -91,6 +91,7 @@ class SuperadmiController extends Controller
             ->where(function ($query) use ($term) {
                 $query->orWhere('e.dni', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.codigo', 'LIKE', '%' . $term . '%')
+                    ->orWhere('e.nombres', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.materno', 'LIKE', '%' . $term . '%');
             })

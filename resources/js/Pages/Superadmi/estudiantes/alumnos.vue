@@ -8,11 +8,11 @@
       <div class="flex" style="justify-content: space-between;">
         <span class="p-input-icon-left">
                 <i class="pi pi-search" />
-                <InputText v-model="buscar" placeholder="Search" />
-            </span>
-      </div>
+                <InputText v-model="buscar" placeholder="Search"/>
+        </span>
 
 
+    </div>
       <DataTable :value="alumnos" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
         <Column field="dni" header="Dni"></Column>
         <Column field="codigo" header="codigo"></Column>
@@ -69,21 +69,30 @@ import AuthenticatedLayout from '@/Layouts/LayoutSuperadmi.vue';
 import { Head } from '@inertiajs/vue3';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+
 
 const alumnos = ref([]);
 const buscar = ref("")
 
-
-
-
-
-const getAlumnos = async () => {
-  // Aquí puedes realizar una llamada a tu API para obtener datos reales de alumnos
-  // Reemplaza los datos de ejemplo con los datos reales
-  const res = await axios.get("getAlumnosc/1");
+const getAlumnos =  async (event) => {
+  let res = await axios.post(
+  "getAlumnosc",{competencia:1,buscar:buscar.value}
+  );
   alumnos.value = res.data.datos;
-};
+}
+
+watch(buscar, ( newValue, oldValue ) => {
+   getAlumnos()
+})
+
+
+// const getAlumnos = async () => {
+//   // Aquí puedes realizar una llamada a tu API para obtener datos reales de alumnos
+//   // Reemplaza los datos de ejemplo con los datos reales
+//   const res = await axios.get("getAlumnosc/1");
+//   alumnos.value = res.data.datos;
+// };
 
 const visible = ref(false);
 const alumnoSeleccionado = ref([]);
