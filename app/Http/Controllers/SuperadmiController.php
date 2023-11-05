@@ -52,49 +52,55 @@ class SuperadmiController extends Controller
         ], 200);
     }
 
-    public function getAlumnos($competencia) {
-        $c=$competencia;
-
+    public function getAlumnos(Request $request, $competencia) {
+        $c = $competencia;
+        $term = $request->input('term');
+    
         $estudiantes = DB::table('estudiante AS e')
-        ->select(
-            'e.id',
-            'e.dni',
-            'e.codigo',
-            'e.paterno',
-            'e.materno',
-            'e.nombres',
-            'e.sexo',
-            'e.email',
-            'e.anio_egreso',
-            'e.nombre_colegio',
-            'e.telefono',
-            'p.programa',
-            'c.nombre',
-            'd.modalidad',
-            'd.semestre',
-            'cd.nota',
-            'c.id_competencia',
-            'm.C'.$competencia.'_R'
-        )
-        ->join('datos_ingreso AS d', 'e.dni', '=', 'd.dni')
-        ->join('matriz AS m', 'e.dni', '=', 'm.dni')
-        ->join('programa AS p', 'd.id_programa', '=', 'p.id')
-        ->join('curso AS c', function($join) use ($competencia)  {
-            $join->on('p.id', '=', 'c.id_programa')
-                ->where('c.id_competencia', $competencia);
-        })
-        ->join('curso_detalle AS cd', function($join)  {
-            $join->on('e.id', '=', 'cd.id_alumno')
-                ->on('cd.id_curso', '=', 'c.id');
-        })
-        ->distinct()
-        ->get();
-
+            ->select(
+                'e.id',
+                'e.dni',
+                'e.codigo',
+                'e.paterno',
+                'e.materno',
+                'e.nombres',
+                'e.sexo',
+                'e.email',
+                'e.anio_egreso',
+                'e.nombre_colegio',
+                'e.telefono',
+                'p.programa',
+                'c.nombre',
+                'd.modalidad',
+                'd.semestre',
+                'cd.nota',
+                'c.id_competencia',
+                'm.C' . $competencia . '_R'
+            )
+            ->join('datos_ingreso AS d', 'e.dni', '=', 'd.dni')
+            ->join('matriz AS m', 'e.dni', '=', 'm.dni')
+            ->join('programa AS p', 'd.id_programa', '=', 'p.id')
+            ->join('curso AS c', function ($join) use ($competencia) {
+                $join->on('p.id', '=', 'c.id_programa')
+                    ->where('c.id_competencia', $competencia);
+            })
+            ->join('curso_detalle AS cd', function ($join) {
+                $join->on('e.id', '=', 'cd.id_alumno')
+                    ->on('cd.id_curso', '=', 'c.id');
+            })
+            ->where(function ($query) use ($term) {
+                $query->orWhere('e.dni', 'LIKE', '%' . $term . '%')
+                    ->orWhere('e.codigo', 'LIKE', '%' . $term . '%')
+                    ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
+                    ->orWhere('e.materno', 'LIKE', '%' . $term . '%');
+            })
+            ->distinct()
+            ->get();
+    
         $this->response['estado'] = true;
         $this->response['datos'] = $estudiantes;
         return response()->json($this->response, 200);
     }
-
 
     public function getDocentes(Request $request) {
 
@@ -106,7 +112,8 @@ class SuperadmiController extends Controller
         'd.nombres', 
         'd.sexo', 
         'd.telefono', 
-        'd.email', 
+        'd.email',
+        'u.estado', 
         'u.nombres as nombre_usuario', 
         'e.nombre as nombre_escuela')
     ->join('users as u', 'd.id_usuario', '=', 'u.id')

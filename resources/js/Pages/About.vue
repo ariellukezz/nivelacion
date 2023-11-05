@@ -16,6 +16,8 @@
                 </div>
               </form>
             </div>
+            <!-- aqui barra de progreso -->
+            <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
               </Message>
@@ -57,6 +59,7 @@
                 </div>
               </form>
             </div>
+            <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
               </Message>
@@ -99,6 +102,7 @@
                 </div>
               </form>
             </div>
+            <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
                 Comprimido).</Message>
@@ -139,6 +143,7 @@
                 </div>
               </form>
             </div>
+            <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
                 Comprimido). No obligatorio</Message>
@@ -183,6 +188,7 @@ import { useToast } from "primevue/usetoast";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Message from 'primevue/message';
+import ProgressBar from 'primevue/progressbar';
 const baseUrl = window.location.origin;
 
 

@@ -38,6 +38,7 @@
     <Dialog v-model:visible="visible" maximizable modal header="Detalles del Alumno" :style="{ width: '50vw' }">
       <DataTable :value="docenteSeleccionado" :class="'p-datatable-sm'" style="font-size: 0.8rem;">
         <Column field="nro_doc" header="Dni"></Column>
+        <Column field="estado" header="Estado pass"></Column>
 
       </DataTable>
     </Dialog>
