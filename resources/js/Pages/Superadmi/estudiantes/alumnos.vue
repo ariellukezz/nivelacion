@@ -75,12 +75,26 @@ import { ref, watch } from 'vue';
 const alumnos = ref([]);
 const buscar = ref("")
 
+const totalpaginas = ref(0)
+const pagina = ref(1)
+
+
+// const getAlumnos =  async (event) => {
+//   let res = await axios.post(
+//   "getAlumnosc",{competencia:1,buscar:buscar.value}
+//   );
+//   alumnos.value = res.data.datos;
+// }
+
+
 const getAlumnos =  async (event) => {
   let res = await axios.post(
-  "getAlumnosc",{competencia:1,buscar:buscar.value}
+  "getAlumnosc",{ page: pagina.value, competencia:1, buscar:buscar.value}
   );
   alumnos.value = res.data.datos;
+  totalpaginas.value = res.data.datos.total;
 }
+
 
 watch(buscar, ( newValue, oldValue ) => {
    getAlumnos()

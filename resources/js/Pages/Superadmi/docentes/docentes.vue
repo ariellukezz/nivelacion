@@ -70,12 +70,17 @@ import { ref, watch } from 'vue'
 const docentes=ref([])
 const buscar = ref("")
 
+const totalpaginas = ref(0)
+const pagina = ref(1)
+
 const getDocentes =  async (event) => {
   let res = await axios.post(
-  "getDocentes",{buscar:buscar.value}
+  "getDocentes",{page: pagina.value, buscar:buscar.value}
   );
   docentes.value = res.data.datos;
+  totalpaginas.value = res.data.datos.total;
 }
+
 
 watch(buscar, ( newValue, oldValue ) => {
    getDocentes()
