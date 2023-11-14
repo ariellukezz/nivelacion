@@ -184,8 +184,23 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
 
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
     Route::get('/avance', fn () => Inertia::render('Superadmi/documentos/index'))->name('superadmi-avance');
+
+    Route::post('getUsuarios', [SuperadmiController::class, 'getUsuarios']);
+    Route::get('usuarios', fn () => Inertia::render('Superadmi/usuarios/usuarios'))->name('superadmi-usuarios');
     
-    
+    //ASIGNACIÓN
+    Route::get('asignacion', [AsignacionController::class, 'index'])->name('asignacion-index');
+    Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
+    Route::post('save-curso', [AsignacionController::class, 'save']);
+    Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
+    Route::post('asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
+    Route::post('get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
+
+    //GET DATA
+    Route::post('get-programas', [DataController::class, 'getProgramas']);
+    Route::post('get-roles', [DataController::class, 'getRoles']);
+    Route::post('get-competencias', [DataController::class, 'getCompetencias']);
+    Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
 });
 
 

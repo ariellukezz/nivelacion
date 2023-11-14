@@ -92,7 +92,7 @@ const getAlumnos =  async (event) => {
   "getAlumnosc",{ page: pagina.value, competencia:1, buscar:buscar.value}
   );
   alumnos.value = res.data.datos;
-  totalpaginas.value = res.data.datos.total;
+  totalpaginas.value = res.data.datos;
 }
 
 

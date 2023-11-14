@@ -133,4 +133,100 @@ class SuperadmiController extends Controller
     $this->response['datos'] = $docentes;
     return response()->json($this->response, 200);
         }
+    public function getUsuarios(Request $request) {
+        $term = $request->buscar;
+    
+        $usuarios = DB::table('users as u')
+        ->leftJoin('estudiante as e', 'u.id', '=', 'e.usuario_id')
+        ->leftJoin('docente as d', 'u.id', '=', 'd.usuario_id')
+        ->select(
+            'u.nombres',
+            'u.apellidos', 
+            'u.email', 
+            'e.dni', 
+            'e.paterno',
+            'e.materno', 
+            'e.nombres as e_nombres', 
+            'e.email as e_email', 
+            'd.nro_doc',
+            'd.paterno as d_paterno', 
+            'd.materno as d_materno', 
+            'd.nombres as d_nombres',
+            'd.email as d_email')
+        ->where(function ($query) use ($term) {
+            $query->orWhere('u.nombres', 'LIKE', '%' . $term . '%')
+                ->orWhere('u.apellidos', 'LIKE', '%' . $term . '%')
+                ->orWhere('u.email', 'LIKE', '%' . $term . '%')
+                ->orWhere('e.dni', 'LIKE', '%' . $term . '%')
+                ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
+                ->orWhere('e.materno', 'LIKE', '%' . $term . '%')
+                ->orWhere('e.nombres', 'LIKE', '%' . $term . '%')
+                ->orWhere('e.email', 'LIKE', '%' . $term . '%')
+                ->orWhere('d.nro_doc', 'LIKE', '%' . $term . '%')
+                ->orWhere('d.paterno', 'LIKE', '%' . $term . '%')
+                ->orWhere('d.materno', 'LIKE', '%' . $term . '%')
+                ->orWhere('d.nombres', 'LIKE', '%' . $term . '%')
+                ->orWhere('d.email', 'LIKE', '%' . $term . '%');
+        })
+    ->get();
+    
+    $this->response['estado'] = true;
+    $this->response['datos'] = $usuarios;
+    return response()->json($this->response, 200);
+        }
+
+
+
+
+
+
+
+
+        public function getCursos(Request $request){
+
+            $query_where = [];
+    
+            if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
+            
+            $res = Curso::select(
+                'curso.id', 'curso.nombre',
+                'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
+                'competencia.id as id_competencia', 'competencia.nombre as competencia',
+                'curso.grupo','curso.escuela', 'curso.estado'
+            )
+            ->join('docente','docente.id','curso.id_docente')
+            ->join('competencia','competencia.id','curso.id_competencia')
+            ->where('curso.escuela',"=",$request->escuela)
+            #->where('curso.id_usuario',"=",auth()->id())
+            ->where($query_where)
+            ->where(function ($query) use ($request) {
+                return $query
+                    ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%')
+                    ->orWhere('competencia.nombre', 'LIKE', '%' . $request->term . '%');
+            })->orderBy('curso.id', 'DESC')
+            ->paginate(100);
+    
+            $this->response['estado'] = true;
+            $this->response['datos'] = $res;
+            return response()->json($this->response, 200);
+          
+        }
+    
+      public function getEscuelas(Request $request){
+        $res = Escuela::select('escuela.id','escuela.nombre as escuela', 'programa.facultad', 'programa.area')
+        ->join('programa','programa.id_escuela','escuela.id')
+    #    ->where('escuela.id','=',auth()->user()->id_escuela)
+        ->where(function ($query) use ($request) {
+            return $query
+                ->orWhere('escuela.nombre', 'LIKE', '%' . $request->term . '%');
+        })->distinct()
+        ->paginate(100);
+    
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+        return response()->json($this->response, 200);
+      
+      }
 }
+
+
