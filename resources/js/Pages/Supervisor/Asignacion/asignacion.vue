@@ -1,5 +1,5 @@
 <template>
-    <Head title="Asignación" />
+    <Head title="Documentos" />
     <AuthenticatedLayout>
         <div class="flex justify-between">
             

@@ -187,20 +187,23 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
 
     Route::post('getUsuarios', [SuperadmiController::class, 'getUsuarios']);
     Route::get('usuarios', fn () => Inertia::render('Superadmi/usuarios/usuarios'))->name('superadmi-usuarios');
-    
-    //ASIGNACIÓN
-    Route::get('asignacion', [AsignacionController::class, 'index'])->name('asignacion-index');
-    Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
-    Route::post('save-curso', [AsignacionController::class, 'save']);
-    Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
-    Route::post('asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
-    Route::post('get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
+    Route::post('/get-docentes', [DocenteController::class, 'getDocentes']);
 
-    //GET DATA
-    Route::post('get-programas', [DataController::class, 'getProgramas']);
-    Route::post('get-roles', [DataController::class, 'getRoles']);
-    Route::post('get-competencias', [DataController::class, 'getCompetencias']);
-    Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
+    /// otros sacados de gtp
+    Route::post('get-programas', [SuperadmiController::class, 'getProgramas']);
+    Route::post('get-roles', [SuperadmiController::class, 'getRoles']);
+    Route::post('get-escuelas', [SuperadmiController::class, 'getEscuelas']);
+    Route::post('get-competencias', [SuperadmiController::class, 'getCompetencias']);
+
+    // Rutas para el controlador AsignacionController
+    Route::get('/asignacion', fn () => Inertia::render('Superadmi/Asignacion/index'))->name('asignacion-superadmi');
+    //Route::get('asignacion', [SuperadmiController::class, 'index'])->name('asignacion-index');
+    Route::post('get-cursos', [SuperadmiController::class, 'getCursos']);
+    Route::post('get-detalle-curso', [SuperadmiController::class, 'getDetalleCurso']);
+    // Route::post('asignar-curso-nivelacion', [SuperadmiController::class, 'asignarCursoNivelacion']);
+    // Route::post('get-docente-competencia', [SuperadmiController::class, 'getDocentesXcompetencia']);
+    // Route::post('save-curso', [SuperadmiController::class, 'save']);
+
 });
 
 

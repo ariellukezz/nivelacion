@@ -8,6 +8,7 @@ use App\Models\Docente;
 use App\Models\CursoDetalle;
 use App\Models\Curso;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Collection;
 
 class AsignacionController extends Controller

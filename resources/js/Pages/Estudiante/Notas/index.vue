@@ -10,6 +10,17 @@
             style="font-size: .9rem;"
             >
             <Column field="nombre" header="CURSO"></Column>
+
+            <Column field="nombres" header="NOMBRE DEL DOCENTE ENCARGADO">
+            <template #body="{ data }">
+              <div class="flex" style="justify-content: flex-start;">
+                <div>
+                  {{ data.nombres }}, {{ data.paterno }} {{ data.materno }}
+                </div>
+              </div>
+            </template>
+          </Column>
+
             <Column field="grupo" header="GRUPO"></Column>
             <Column field="escuela" header="PROGRAMA DE ESTUDIO"></Column>
             <Column field="nota" header="NOTA"></Column>

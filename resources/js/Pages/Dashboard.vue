@@ -1,6 +1,5 @@
 <template>
   <Head title="Dashboard"/>
-
   <AuthenticatedLayout>
     <DataTable 
           :showGridlines= "false"
@@ -15,7 +14,6 @@
       </DataTable> 
   </AuthenticatedLayout>
 </template>
-
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -23,7 +21,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import { ref } from 'vue'
   
-  
+
 const competencias = ref([
     {
         competencia: "C1",
@@ -81,7 +79,6 @@ const competencias = ref([
         perfil:"Comprende y aprecia la dimensión espiritual y religiosa en la vida de las personas y de las sociedades.",
         curso:"Religión"
     },
-
 ])
   
 </script>

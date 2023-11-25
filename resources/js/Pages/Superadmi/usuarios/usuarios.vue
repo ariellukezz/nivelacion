@@ -11,17 +11,27 @@
                 <InputText v-model="buscar" placeholder="Search"/>
         </span>
 
-    <div>
+    <!-- <div>
       <pre>
         {{ usuarios }}
          </pre>
-    </div>
+    </div> -->
     </div>
       <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
-        <Column field="paterno" header="xxxx"></Column>
-        <Column field="materno" header="xxx"></Column>
+        <Column field="nombres" header="nombres"></Column>
+        <Column field="apellidos" header="apellidos"></Column>
         <Column field="email" header="email"></Column>
-        
+        <Column field="dni" header="dni"></Column>
+        <Column field="paterno" header="paterno"></Column>
+        <Column field="materno" header="materno"></Column>
+        <Column field="e_nombres" header="e_nombres"></Column>
+        <Column field="e_email" header="e_email"></Column>
+        <Column field="nro_doc" header="nro_doc"></Column>
+        <Column field="d_paterno" header="d_paterno"></Column>
+        <Column field="d_materno" header="d_materno"></Column>
+        <Column field="d_nombres" header="d_nombres"></Column>
+        <Column field="d_email" header="d_email"></Column>
+
       </DataTable>
     </div>
   </AuthenticatedLayout>

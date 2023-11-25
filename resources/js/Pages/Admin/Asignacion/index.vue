@@ -92,6 +92,12 @@
         </div>
 
         <!-- {{ cursoseleccionado }} -->
+        <div class="card" >
+          <Message severity="warn" sticky>Debe crearse un solo curso por competencia. En caso de múltiples docentes, 
+            uno asume la responsabilidad de ingresar notas tras coordinar con los demás, calcular el promedio de las notas finales del curso. Este docente de preferencia de la escuela profesional o,
+             si no, el docente de servicio.
+          </Message>
+        </div>
         <div class="mt-3" >
           <DataTable 
             v-model:selection="cursoseleccionado"
@@ -200,10 +206,14 @@
       <ConfirmPopup></ConfirmPopup>
       
       <!--- MODAL -->
-      <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '500px' }">
+      <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '750px' }">
   
         <!-- {{ curso }} {{ cursocompetencia }} -->
         <!-- <pre>{{ docente }}</pre> -->
+        <!-- <div class="card" >
+          <Message severity="warn" sticky>llenar los datos completos (grupo solo para escuelas con progama de estudio)
+          </Message>
+        </div> -->
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label> 
             <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>  
@@ -335,6 +345,7 @@
   import { useConfirm } from "primevue/useconfirm";
   import ConfirmPopup from 'primevue/confirmpopup';
   import Tag from 'primevue/tag';
+  import Message from 'primevue/message';
 
   const escuela = ref(null);
   

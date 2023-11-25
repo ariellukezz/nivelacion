@@ -2,17 +2,31 @@
   <Head title="Alumnos" />
   <AuthenticatedLayout>
     <div class="bg-white shadow-xs p-4" style="height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
-
-
-
       <div class="flex" style="justify-content: space-between;">
         <span class="p-input-icon-left">
                 <i class="pi pi-search" />
                 <InputText v-model="buscar" placeholder="Search"/>
         </span>
 
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+            <div class="mb-3" style="width: 240px;">
+               
+              <Dropdown v-model="compes" :options="compeselect" filter optionLabel="label" optionValue="value"  placeholder="Competencias" style="width:100%;" class="w-full md:w-11rem">            
+                <template #option="slotProps">
+                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                        <div>{{ slotProps.option.label }}</div>
+                    </div>
+                </template>
+              </Dropdown>
+            </div>
+        </div>
 
+        
     </div>
+
+
+
+
       <DataTable :value="alumnos" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
         <Column field="dni" header="Dni"></Column>
         <Column field="codigo" header="codigo"></Column>
@@ -70,6 +84,8 @@ import { Head } from '@inertiajs/vue3';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import { ref, watch } from 'vue';
+import 'primeicons/primeicons.css';
+import Dropdown from 'primevue/dropdown';
 
 
 const alumnos = ref([]);
@@ -78,6 +94,7 @@ const buscar = ref("")
 const totalpaginas = ref(0)
 const pagina = ref(1)
 
+const compes = ref(1);
 
 // const getAlumnos =  async (event) => {
 //   let res = await axios.post(
@@ -86,10 +103,13 @@ const pagina = ref(1)
 //   alumnos.value = res.data.datos;
 // }
 
+watch(buscar, (newValue, oldValue) => { getAlumnos(); })
+watch(compes, (newValue, oldValue) => { getAlumnos(); })
+
 
 const getAlumnos =  async (event) => {
   let res = await axios.post(
-  "getAlumnosc",{ page: pagina.value, competencia:1, buscar:buscar.value}
+  "getAlumnosc",{ page: pagina.value, competencia:compes.value, buscar:buscar.value}
   );
   alumnos.value = res.data.datos;
   totalpaginas.value = res.data.datos;
@@ -100,6 +120,20 @@ watch(buscar, ( newValue, oldValue ) => {
    getAlumnos()
 })
 
+const compeselect = ref([
+        {value:1, label:"C1"},
+        {value:2, label:"C2"},
+        {value:3, label:"C3"},
+        {value:4, label:"C4"},
+        {value:5, label:"C5"},
+        {value:6, label:"C6"},
+        {value:7, label:"C7"},
+        {value:8, label:"C8"},
+        {value:9, label:"C9"},
+        {value:10, label:"C10"},
+        {value:11, label:"C11"},
+
+  ])
 
 // const getAlumnos = async () => {
 //   // Aquí puedes realizar una llamada a tu API para obtener datos reales de alumnos

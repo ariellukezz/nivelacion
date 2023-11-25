@@ -1,5 +1,5 @@
 <template>
-    <Head title="Nivelación"/>
+    <Head title="Asignación"/>
     <AuthenticatedLayout>
     <!-- <pre>{{ alumnosregistro }}</pre> -->
   
@@ -320,7 +320,7 @@
   </template>
     
   <script setup>
-    import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+    import AuthenticatedLayout from '@/Layouts/LayoutSuperadmi.vue';
     import { Head } from '@inertiajs/vue3';
     import { ref, watch } from 'vue';
     import Button from 'primevue/button';
@@ -436,23 +436,23 @@
     })
     
     const getDocentes =  async () => {
-      let res = await axios.post( "/coordinador/get-docentes?page=" + pagina.value, { term: buscar.value, } );
+      let res = await axios.post( "get-docentes?page=" + pagina.value, { term: buscar.value, } );
       docentes.value = res.data.datos.data;
       totalpaginas.value = res.data.datos.total;
     }
     
     const getProgramas =  async () => {
-      let res = await axios.post( "/get-programas?page=" + pagina.value, { term: "" } );
+      let res = await axios.post( "get-programas?page=" + pagina.value, { term: "" } );
       programas.value = res.data.datos.data;
     }
   
     const getEscuelas =  async () => {
-      let res = await axios.post( "/get-escuelas", { term: buscarescuela.value } );
+      let res = await axios.post( "get-escuelas", { term: buscarescuela.value } );
       escuelas.value = res.data.datos.data;
     }
     
     const getCompetencias =  async () => {
-      let res = await axios.post( "/coordinador/get-competencias?page=",{ term: "" } );
+      let res = await axios.post( "get-competencias?page=",{ term: "" } );
       competencias.value = res.data.datos;
     }
   
@@ -563,7 +563,7 @@
     }
   
     const getAlumnosRegistros =  async () => {
-      let res = await axios.post( "/get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia });
+      let res = await axios.post( "get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia });
       alumnosregistro.value = res.data.datos;
     }
     
@@ -649,6 +649,6 @@
     getProgramas()
     getCompetencias()
     getEscuelas()
-    // getAlumnosRegistros()
+    getAlumnosRegistros()
   
   </script>
