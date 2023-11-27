@@ -25,12 +25,11 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified','admin',])->name('dashboard');
 
-Route::middleware('redireccion')->group(function () {
-Route::get('/', function () {
-    return Inertia::render('Inicio/index');});
-});
+
+Route::middleware('red')->get('/', fn () => Inertia::render('Auth/Login'));
+
 Route::middleware('auth','admin')->group(function () {
-    Route::get('/', fn () => Inertia::render('Inicio/index'))->name('inicio');
+    Route::get('/inicio', fn () => Inertia::render('Inicio/index'))->name('inicio');
     Route::get('/about', fn () => Inertia::render('About'))->name('about');
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');

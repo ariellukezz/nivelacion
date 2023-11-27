@@ -19,7 +19,7 @@ class Admin
         if( auth()->user()->rol == 1){
             return $next($request);        
         }else {
-            return redirect()->to('/');
+            return redirect()->to('/inicio');
         }
     }
 }
