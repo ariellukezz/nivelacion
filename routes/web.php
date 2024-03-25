@@ -177,6 +177,7 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
 
 Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSuperadmi']);
+    Route::post('/restablecerContraseña', [SuperadmiController::class, 'restablecer']);
     Route::get('/', fn () => Inertia::render('Superadmi/index'))->name('superadmi-inicio');
 
     Route::post('getAlumnosc', [SuperadmiController::class, 'getAlumnos']);
@@ -186,7 +187,11 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     Route::get('docentes', fn () => Inertia::render('Superadmi/docentes/docentes'))->name('superadmi-docentes');
 
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
-    Route::get('/avance', fn () => Inertia::render('Superadmi/documentos/index'))->name('superadmi-avance');
+    Route::get('/documentos-avance', fn () => Inertia::render('Superadmi/documentos/index'))->name('superadmi-avance');
+
+    Route::get('/get-avance', [AvanceController::class, 'getAvance']);
+    Route::get('/avances', fn () => Inertia::render('Superadmi/Avance/index'))->name('superadmi-documento');
+
 
     Route::post('getUsuarios', [SuperadmiController::class, 'getUsuarios']);
     Route::get('usuarios', fn () => Inertia::render('Superadmi/usuarios/usuarios'))->name('superadmi-usuarios');
@@ -206,6 +211,15 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
     // Route::post('asignar-curso-nivelacion', [SuperadmiController::class, 'asignarCursoNivelacion']);
     // Route::post('get-docente-competencia', [SuperadmiController::class, 'getDocentesXcompetencia']);
     // Route::post('save-curso', [SuperadmiController::class, 'save']);
+// ------------------prueba de crud----------
+    Route::get('get-pregunta', [SuperadmiController::class, 'getPregunta']);
+    Route::get('/pregrentas', fn () => Inertia::render('Superadmi/Pregunta/pregunta'))->name('pregun');
+    Route::post('guardarp', [SuperadmiController::class, 'savep']);
+    Route::get('eliminarp/{id}', [SuperadmiController::class, 'eliminarp']);
+
+// --------------------------------------------
+
+
 
 });
 

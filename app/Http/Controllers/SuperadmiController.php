@@ -11,6 +11,9 @@ use App\Models\Programa;
 use Inertia\Inertia;
 use App\Models\Docente;
 use App\Models\Escuela;
+use App\Models\Pregunta;
+use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 
@@ -138,49 +141,104 @@ class SuperadmiController extends Controller
     $this->response['datos'] = $docentes;
     return response()->json($this->response, 200);
         }
-    public function getUsuarios(Request $request) {
-        $term = $request->buscar;
-    
-        $usuarios = DB::table('users as u')
-        ->leftJoin('estudiante as e', 'u.id', '=', 'e.usuario_id')
-        ->leftJoin('docente as d', 'u.id', '=', 'd.usuario_id')
-        ->select(
-            'u.nombres',
-            'u.apellidos', 
-            'u.email', 
-            'e.dni', 
-            'e.paterno',
-            'e.materno', 
-            'e.nombres as e_nombres', 
-            'e.email as e_email', 
-            'd.nro_doc',
-            'd.paterno as d_paterno', 
-            'd.materno as d_materno', 
-            'd.nombres as d_nombres',
-            'd.email as d_email')
-        ->where(function ($query) use ($term) {
-            $query->orWhere('u.nombres', 'LIKE', '%' . $term . '%')
-                ->orWhere('u.apellidos', 'LIKE', '%' . $term . '%')
-                ->orWhere('u.email', 'LIKE', '%' . $term . '%')
-                ->orWhere('e.dni', 'LIKE', '%' . $term . '%')
-                ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
-                ->orWhere('e.materno', 'LIKE', '%' . $term . '%')
-                ->orWhere('e.nombres', 'LIKE', '%' . $term . '%')
-                ->orWhere('e.email', 'LIKE', '%' . $term . '%')
-                ->orWhere('d.nro_doc', 'LIKE', '%' . $term . '%')
-                ->orWhere('d.paterno', 'LIKE', '%' . $term . '%')
-                ->orWhere('d.materno', 'LIKE', '%' . $term . '%')
-                ->orWhere('d.nombres', 'LIKE', '%' . $term . '%')
-                ->orWhere('d.email', 'LIKE', '%' . $term . '%');
-        })
+
+        public function getUsuarios(Request $request) {
+            $usuarios = [];
+            $term = $request->buscar;
+        
+            switch ($request->rol) {
+                case 0:
+                    $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
+                        ->where('rol', '0')
+                        ->where(function ($query) use ($term) {
+                            $query->orWhere('nombres', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('apellidos', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('email', 'LIKE', '%' . $term . '%');
+                        })
+                        ->get();
+                    break;
+                case 1:
+                    $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
+                        ->where('rol', '1')
+                        ->where(function ($query) use ($term) {
+                            $query->orWhere('nombres', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('apellidos', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('email', 'LIKE', '%' . $term . '%');
+                        })
+                        ->get();
+                    break;
+                case 2:
+                    $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
+                        ->where('rol', '2')
+                        ->where(function ($query) use ($term) {
+                            $query->orWhere('nombres', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('apellidos', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('email', 'LIKE', '%' . $term . '%');
+                        })
+                        ->get();
+                    break;
+                case 3:
+                    $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
+                        ->where('rol', '3')
+                        ->where(function ($query) use ($term) {
+                            $query->orWhere('nombres', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('apellidos', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('email', 'LIKE', '%' . $term . '%');
+                        })
+                        ->get();
+                    break;
+                case 4:
+                    $usuarios = Usuario::select('users.id', 'docente.nombres', 'users.email', 'users.estado_contraseña')
+                    ->join('docente', 'users.id', '=', 'docente.usuario_id')
+                    ->where('users.rol', '4')
+                    ->selectRaw("CONCAT(docente.paterno, ' ', docente.materno) AS apellidos")
+                    ->where(function ($query) use ($term) {
+                        $query->orWhere('docente.nombres', 'LIKE', '%' . $term . '%')
+                              ->orWhere('docente.paterno', 'LIKE', '%' . $term . '%')
+                              ->orWhere('docente.materno', 'LIKE', '%' . $term . '%')
+                              ->orWhere('users.email', 'LIKE', '%' . $term . '%');
+                    })
+                    ->get();
+                    break;
+                case 5:
+                    $usuarios = Usuario::select('users.id', 'estudiante.nombres', 'users.email', 'users.estado_contraseña')
+    ->join('estudiante', 'users.id', '=', 'estudiante.usuario_id')
+    ->where('users.rol', '5')
+    ->selectRaw("CONCAT(estudiante.paterno, ' ', estudiante.materno) AS apellidos")
+    ->where(function ($query) use ($term) {
+        $query->orWhere('estudiante.nombres', 'LIKE', '%' . $term . '%')
+              ->orWhere('estudiante.paterno', 'LIKE', '%' . $term . '%')
+              ->orWhere('estudiante.materno', 'LIKE', '%' . $term . '%')
+              ->orWhere('users.email', 'LIKE', '%' . $term . '%');
+    })
     ->get();
-    
-    $this->response['estado'] = true;
-    $this->response['datos'] = $usuarios;
-    return response()->json($this->response, 200);
+                    break;
+                case 6:
+                    $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
+                        ->where('rol', '6')
+                        ->where(function ($query) use ($term) {
+                            $query->orWhere('nombres', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('apellidos', 'LIKE', '%' . $term . '%')
+                                  ->orWhere('email', 'LIKE', '%' . $term . '%');
+                        })
+                        ->get();
+                    break;
+                default:
+                    return "Rol no reconocido";
+            }
+        
+            $this->response['estado'] = true;
+            $this->response['datos'] = $usuarios;
+            return response()->json($this->response, 200);
         }
 
-
+public function restablecer(Request $request) {
+    $usuario = Usuario::find($request->id);
+    $usuario['password'] = Hash::make('nivelacion');
+    $usuario['estado_contraseña']= 1;
+    $usuario->save();
+    return $usuario;
+}
 
 // aqui esta controlador DataController
 public function getProgramas(Request $request){
@@ -443,6 +501,36 @@ public function eliminarCurso($id_curso, $id_alumno) {
         return response()->json(['message' => 'Registro no encontrado'], 404);
     }
 }
+//--------------------------------------------- prueba de preguntas------------------------------
+public function getPregunta(){
+    $data = Pregunta::all();
+    return response()->json($data);
+}
+
+
+public function savep(Request $request){
+    if ($request->id != null) {
+        $preg = pregunta::find($request->id);
+        $preg['texto'] = $request->texto;
+        $preg['aspecto'] = $request->aspecto;
+        $preg['id_encuesta'] = $request->id_encuesta;
+        $preg->save();
+    }else {
+        $pregunta = pregunta::create([
+            'texto' => $request->texto,
+            'aspecto' => $request->aspecto,
+            'id_encuesta' => $request->id_encuesta
+        ]);
+    }
+    return $pregunta;
+}
+
+
+public function eliminarp($id){
+    $usario = pregunta::find($id);
+    $usario->delete();
+}
+
 
 
 }

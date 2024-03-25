@@ -153,8 +153,12 @@
                 </tbody>
 
             </table>
+            <div style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 12pt;">
+                Cu, {{ strftime("%d de %B del %Y") }}
+            </div>
         </div>
 
     </div>
+    
 </body>
 </html>
