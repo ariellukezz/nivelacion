@@ -38,6 +38,8 @@
                       <Column field="apto" header="INGRESO"/>
                       <Column field="direccion" header="DIRECCION"/>
                       <Column field="telefono" header="TELEFONO"/>
+                      <Column field="id_programa" header="ID_PROGRAMA"/>
+                      <Column field="id_escuela" header="id_escuela"/>
                     </DataTable>
                   </div>
             </TabPanel>

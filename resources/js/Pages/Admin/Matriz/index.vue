@@ -11,6 +11,7 @@
                 <tr style="font-size: .9rem;">
                     <th style="border: 1px solid #d9d9d9;">DNI</th>
                     <th style="border: 1px solid #d9d9d9;">NOMBRES</th>
+                    <th style="border: 1px solid #d9d9d9;">PROGRAMA</th>
                     <th style="border: 1px solid #d9d9d9;">C1</th>
                     <th style="border: 1px solid #d9d9d9;">C2</th>
                     <th style="border: 1px solid #d9d9d9;">C3</th>
@@ -28,6 +29,7 @@
                 <tr v-for="item in estudiantes" :key="item.id" style="font-size: .9rem;">
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.dni }}</div></td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .7rem;"><div class="pl-1 pr-1">{{item.nombre }} {{ item.paterno }} {{ item.materno }}</div> </td>
+                    <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.programa }}</div></td>
                     <td v-for="(ite,index) in 11" :key="index" style="border: 1px solid #d9d9d9; min-width:40px;" >
                         <!-- {{ buscarValor(item.notas, index) }} -->
                         <div v-if="buscarValor(item.notas, ite) !== null" style="text-align: center;">
@@ -87,6 +89,7 @@ const generarObjetosEstudiantes = () => {
   objetosEstudiantes.value = estudiantes.value.map(item => {
     const estudiante = {
       dni: item.dni,
+      programa: item.programa,
       nombreCompleto: `${item.nombre} ${item.paterno} ${item.materno}`,
     };
 
