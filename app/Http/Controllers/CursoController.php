@@ -100,7 +100,7 @@ class CursoController extends Controller
         ->join('curso_detalle','curso_detalle.id_alumno','estudiante.id')
         ->join('curso','curso.id','curso_detalle.id_curso')
         ->join('users','users.id','estudiante.usuario_id')
-        ->join('docente', 'docente.id', '=', 'curso.id_docente')
+        ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
         ->where('curso.estado',"=",1)
         ->where('estudiante.usuario_id',"=", auth()->user()->id)
         ->where(function ($query) use ($request) {
