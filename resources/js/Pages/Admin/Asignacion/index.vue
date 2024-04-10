@@ -120,6 +120,7 @@
                     </template>
                 </Column> 
                 <Column field="grupo" header="Grupo"></Column>
+                <Column field="programa" header="Programa"></Column>
                 <Column field="escuela" header="Escuela Prof."></Column>
                 <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
                 <template #body="{ data }">
@@ -179,6 +180,7 @@
           :paginator="true" :rows="9"
           >
             <Column field="dni" header="DNI"></Column>
+            <Column field="semestre" header="Ingreso"></Column>
             <Column field="nombres" header="Nombres"></Column>
             <Column field="paterno" header="Paterno"></Column>
             <Column field="materno" header="Materno"></Column>
@@ -309,11 +311,12 @@
             tableStyle="min-width: 50rem" 
             style="font-size: .9rem;"
             :paginator="true" 
-            :rows="9"
+            :rows="10"
           >
               <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
               <Column field="programa" header="Programa"></Column>
               <Column field="dni" header="DNI"></Column>
+              <Column field="semestre" header="Ingreso"></Column>
               <Column field="nombres" header="Nombres"></Column>
               <Column field="paterno" header="Paterno"></Column>
               <Column field="materno" header="Materno"></Column>
@@ -428,6 +431,7 @@
     {value:42, label:"INGENIERIA MECANICA ELECTRICA"},
     {value:43, label:"INGENIERIA ELECTRONICA"},
     {value:44, label:"INGENIERIA DE SISTEMAS"},
+    {value:45, label:"PSICOLOGIA"},
   ])
 
   const alumnosregistro = ref([])
@@ -488,6 +492,7 @@
     curso.value.nombre = item.nombre;
     curso.value.grupo = item.grupo;
     curso.value.id_docente = item.id_docente;
+    curso.value.id_programa = item.id_programa;
     cursocompetencia.value = item.id_competencia;
     curso.value.id = item.id;
     if(item.estado === 1) { curso.value.estado = true } else { curso.value.estado = false }
@@ -509,7 +514,15 @@
 
 
     );
-  
+    // curso.value.id = null;
+    // curso.value.nombre = null;
+    // cursocompetencia.value = null;
+    // curso.value.id_docente = null;
+    // escuela.value.escuela = null;
+    // curso.value.grupo = null;
+    // curso.value.estado = null;
+    // prog.value = null;
+
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
     getCursos()  
     visible.value = false

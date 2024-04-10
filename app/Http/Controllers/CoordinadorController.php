@@ -116,7 +116,7 @@ class CoordinadorController extends Controller
 
     public function getAlumnos(Request $request){
 
-        $consulta = ['estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
+        $consulta = ['estudiante.id', 'estudiante.dni','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
         if($request->codigo == true) { array_push($consulta,'estudiante.codigo'); }
         if($request->telefono == true) { array_push($consulta,'estudiante.telefono'); }
         if($request->colegio == true) { array_push($consulta,'estudiante.nombre_colegio as colegio'); }

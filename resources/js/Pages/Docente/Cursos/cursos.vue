@@ -199,6 +199,7 @@ getCursos()
 
 const columns = ref([
     { field: 'dni', header: 'DNI' },
+    { field: 'semestre', header: 'Ingreso' },
     { field: 'nombres', header: 'Nombres' },
     { field: 'paterno', header: 'Paterno' },
     { field: 'materno', header: 'Materno' }

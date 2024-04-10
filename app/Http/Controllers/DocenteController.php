@@ -215,10 +215,11 @@ class DocenteController extends Controller
         ->get();
 
         $estudiantes = CursoDetalle::select(
-            'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
             'curso_detalle.nota', 'curso_detalle.condicion' 
         )
         ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
+        ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
         ->where('curso_detalle.id_curso','=',$curso)
         ->get();
         

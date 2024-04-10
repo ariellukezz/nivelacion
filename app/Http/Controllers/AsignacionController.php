@@ -29,10 +29,11 @@ class AsignacionController extends Controller
             'curso.id', 'curso.nombre',
             'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
             'competencia.id as id_competencia', 'competencia.nombre as competencia',
-            'curso.grupo','curso.escuela', 'curso.estado'
+            'curso.grupo','curso.id_programa', 'programa.programa', 'curso.escuela', 'curso.estado'
         )
-        ->join('docente','docente.id','curso.id_docente')
+        ->leftJoin('docente','docente.id','curso.id_docente')
         ->join('competencia','competencia.id','curso.id_competencia')
+        ->join('programa', 'programa.id', '=', 'curso.id_programa')
         ->where('curso.escuela',"=",$request->escuela)
         ->where('curso.id_usuario',"=",auth()->id())
         ->where($query_where)
@@ -56,12 +57,13 @@ class AsignacionController extends Controller
         
         
         $res = CursoDetalle::select(
-            'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
             'curso.nombre as curso',  
             'curso_detalle.nota'
         )
         ->join('curso','curso_detalle.id_curso','curso.id')
         ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+        ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
         ->where('curso.id',"=",$request->curso)
         ->where($query_where)
         ->where(function ($query) use ($request) {

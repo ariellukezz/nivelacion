@@ -26,7 +26,8 @@
             </div>
             <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
                 <Column field="dni" header="Dni"></Column>
-                <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
+                <Column field="semestre" header="Ingreso"></Column>
+                <Column v-if="conf_codigo === true" field="codigo" header="Código"></Column>
                 <Column field="nombres" header="Nombres">
                     <template #body="{ data }">
                         <div class="flex" style="justify-content: flex-start;">
