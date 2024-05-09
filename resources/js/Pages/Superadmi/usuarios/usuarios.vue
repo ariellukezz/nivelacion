@@ -77,8 +77,8 @@ const rol = ref(1)
 
 
 const getUsuarios = async (event) => {
-  let res = await axios.post(
-    "getUsuarios", { page: pagina.value, buscar: buscar.value, rol:  rol.value}
+  let res = await axios.post("getUsuarios",
+  { page: pagina.value, buscar: buscar.value, rol:  rol.value}
   );
   usuarios.value = res.data.datos;
   totalpaginas.value = res.data.datos;

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
-    
+
     public function index()
     {
         return Inertia::render('Usuarios/index');
@@ -20,11 +20,11 @@ class UsuarioController extends Controller
 
 
     public function getUsuarios(Request $request){
-      
+
         $res = Usuario::select(
             'users.id', 'users.nombres', 'users.apellidos', 'users.email', 'users.estado',
             'programa.id as id_programa', 'programa.programa as programa',
-            'rol.id as id_rol', 'rol.nombre as rol'  
+            'rol.id as id_rol', 'rol.nombre as rol'
         )
         ->leftjoin('programa','users.programa_id','programa.id')
         ->join('rol','users.rol','rol.id')
@@ -36,11 +36,11 @@ class UsuarioController extends Controller
                 ->orWhere('rol.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('users.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -99,7 +99,7 @@ class UsuarioController extends Controller
     return response()->json($this->response, 200);
   }
 
-  
+
     public function getUsuarioAdministrador(Request $request){
 
         $res = DB::select('SELECT users.nombres, programa.escuela, users.estado_contraseña as e_contra  FROM users
@@ -114,13 +114,13 @@ class UsuarioController extends Controller
 
     public function getUsuarioDocente(Request $request){
 
-        $res = DB::select('SELECT docente.nombres, docente.paterno, docente.materno, programa.escuela,
-        users.estado_contraseña as e_contra 
+        $res = DB::select('SELECT docente.nombres, docente.paterno, docente.materno, programa.escuela as user_escuela,
+        users.estado_contraseña as e_contra, rol.nombre as escuela
         FROM docente
         JOIN users ON users.id = docente.usuario_id
+        join rol ON users.rol = rol.id
         JOIN programa ON programa.id IN (SELECT users.programa_id FROM users WHERE users.id = docente.id_usuario)
         WHERE users.id = '. auth()->user()->id);
-
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
@@ -153,7 +153,7 @@ class UsuarioController extends Controller
 
   //GET USUARIO ESTUDIANTE
     public function getUsuarioEstudiante(Request $request){
-        
+
         $res = Alumno::select('estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'programa.escuela', 'users.estado_contraseña as e_contra')
         ->join('users','users.id','estudiante.usuario_id')
         ->join('datos_ingreso','datos_ingreso.dni','estudiante.dni')
@@ -163,7 +163,7 @@ class UsuarioController extends Controller
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-    
+
     }
 
     public function saveNewContra(Request $request){

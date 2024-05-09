@@ -12,6 +12,9 @@
               <form @submit.prevent="submit">
                 <div class="flex justify-between">
                   <input type="file" @change="onChange" />
+                  <div class="mr-2">
+                      <Button label="Descargar Reglamento" @click="descargar('nivelacion_ingresantes.pdf')" outlined style="height:38px;" />
+                    </div>
                   <Button label="Subir" style="height:38px;" @click="submit" />
                 </div>
               </form>
@@ -19,7 +22,7 @@
             <!-- aqui barra de progreso -->
             <ProgressBar :value="value"></ProgressBar>
             <div class="card">
-              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo). debe estar pendientes del estado del documento y te informaremos si se aprobó o no. Podrás ver las observaciones en caso de haberlas.
               </Message>
             </div>
             <div>
@@ -27,18 +30,41 @@
                 <Column field="nombre" header="Nombre"></Column>
                 <Column field="tipo" header="Tipo"></Column>
                 <Column field="fecha" header="Fecha"></Column>
+                <Column header="estado">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div> <Tag severity="danger" value="Rechazado"></Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div> <Tag severity="success" value="Aceptado"> </Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == null" style="color: green; font-weight: bold">
+                        <div> <Tag severity="secondary" value="Pendiente"> </Tag> </div>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Observaciones">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                  </template>
+                </Column>
                 <Column field="id_programa" header="Acciones" width="50" style>
                   <template #body="{ data }">
                     <div class="flex justify-center">
-                      <!-- <div class="mr-2">
-                            <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
-                          </div> -->
                       <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
                         size="small" style="width: 25px; height: 25px;" />
                     </div>
                   </template>
                 </Column>
               </DataTable>
+
+              <!-- {{ otemp }} -->
+
               <!-- {{ resoluciones }} -->
             </div>
           </TabPanel>
@@ -61,7 +87,7 @@
             </div>
             <ProgressBar :value="value"></ProgressBar>
             <div class="card">
-              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo).
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato PDF (un solo Archivo). debe estar pendientes del estado del documento y te informaremos si se aprobó o no. Podrás ver las observaciones en caso de haberlas.
               </Message>
             </div>
             <div>
@@ -69,12 +95,32 @@
                 <Column field="nombre" header="Nombre"></Column>
                 <Column field="tipo" header="Tipo"></Column>
                 <Column field="fecha" header="Fecha"></Column>
+                <Column header="estado">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div> <Tag severity="danger" value="Rechazado"></Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div> <Tag severity="success" value="Aceptado"> </Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == null" style="color: green; font-weight: bold">
+                        <div> <Tag severity="secondary" value="Pendiente"> </Tag> </div>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Observaciones">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                  </template>
+                </Column>
                 <Column field="id_programa" header="Acciones" width="50" style>
                   <template #body="{ data }">
                     <div class="flex justify-center">
-                      <!-- <div class="mr-2">
-                            <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
-                          </div> -->
                       <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
                         size="small" style="width: 25px; height: 25px;" />
                     </div>
@@ -105,7 +151,7 @@
             <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
-                Comprimido).</Message>
+                Comprimido), debe estar pendientes del estado del documento y te informaremos si se aprobó o no. Podrás ver las observaciones en caso de haberlas.</Message>
             </div>
 
             <div>
@@ -113,14 +159,34 @@
                 <Column field="nombre" header="Nombre"></Column>
                 <Column field="tipo" header="Tipo"></Column>
                 <Column field="fecha" header="Fecha"></Column>
+                <Column header="estado">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div> <Tag severity="danger" value="Rechazado"></Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div> <Tag severity="success" value="Aceptado"> </Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == null" style="color: green; font-weight: bold">
+                        <div> <Tag severity="secondary" value="Pendiente"> </Tag> </div>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Observaciones">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                  </template>
+                </Column>
                 <Column field="id_programa" header="Acciones" width="50" style>
                   <template #body="{ data }">
                     <div class="flex justify-center">
-                      <!-- <div class="mr-2">
-                            <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
-                          </div> -->
-                      <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)" size="small"
-                        style="width: 25px; height: 25px;" />
+                      <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
+                        size="small" style="width: 25px; height: 25px;" />
                     </div>
                   </template>
                 </Column>
@@ -128,6 +194,73 @@
               <!-- {{ resoluciones }} -->
             </div>
           </TabPanel>
+
+          <!-- aquie empieza nuevo -->
+          <TabPanel header="Docentes de Nivelacion">
+            <div class="mb-3">
+              <form @submit.prevent="submit">
+                <div class="flex justify-between">
+                  <input type="file" @change="onChange5" />
+                  <div class="flex justify-end">
+                    <div class="mr-2">
+                      <Button label="Descargar ejemplo" @click="descargar('FORMATO-DOCENTES.xlsx')" outlined
+                        style="height:38px;" />
+                    </div>
+                    <div>
+                      <Button label="Subir" style="height:38px;" @click="submit5" />
+                    </div>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+            <ProgressBar :value="value"></ProgressBar>
+            <div class="card">
+              <Message :closable="false" style=" color: rgb(139, 62, 62)">(un solo Archivo) debe estar pendientes del estado del documento y te informaremos si se aprobó o no. Podrás ver las observaciones en caso de haberlas.</Message>
+            </div>
+
+            <div>
+              <DataTable :value="dictantes" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
+                <Column field="nombre" header="Nombre"></Column>
+                <Column field="tipo" header="Tipo"></Column>
+                <Column field="fecha" header="Fecha"></Column>
+                <Column header="estado">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div> <Tag severity="danger" value="Rechazado"></Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div> <Tag severity="success" value="Aceptado"> </Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == null" style="color: green; font-weight: bold">
+                        <div> <Tag severity="secondary" value="Pendiente"> </Tag> </div>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Observaciones">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="id_programa" header="Acciones" width="50" style>
+                  <template #body="{ data }">
+                    <div class="flex justify-center">
+                      <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
+                        size="small" style="width: 25px; height: 25px;" />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+              <!-- {{ resoluciones }} -->
+            </div>
+          </TabPanel>
+
+          <!-- aqui ternima nuevo -->
 
           <TabPanel header="Complemento">
             <div class="mb-3">
@@ -146,22 +279,42 @@
             <ProgressBar :value="value"></ProgressBar>
             <div class="card">
               <Message :closable="false" style=" color: rgb(139, 62, 62)">Subir en formato .RAR ó .ZIP (un solo Archivo
-                Comprimido). No obligatorio</Message>
+                Comprimido). No obligatorio, debe estar pendientes del estado del documento y te informaremos si se aprobó o no. Podrás ver las observaciones en caso de haberlas.</Message>
             </div>
 
             <div>
               <DataTable :value="otros" :class="'p-datatable-sm'" tableStyle="min-width: 50rem">
                 <Column field="nombre" header="Nombre"></Column>
-                <Column field="tipo" header="Tipo"></Column>  
+                <Column field="tipo" header="Tipo"></Column>
                 <Column field="fecha" header="Fecha"></Column>
+                <Column header="estado">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div> <Tag severity="danger" value="Rechazado"></Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div> <Tag severity="success" value="Aceptado"> </Tag> </div>
+                    </div>
+                    <div v-if="data.aceptado == null" style="color: green; font-weight: bold">
+                        <div> <Tag severity="secondary" value="Pendiente"> </Tag> </div>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Observaciones">
+                  <template #body="{ data }">
+                    <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                    <div v-if="data.aceptado == 1" style="color: green; font-weight: bold">
+                        <div>{{ data.obser }}</div>
+                    </div>
+                  </template>
+                </Column>
                 <Column field="id_programa" header="Acciones" width="50" style>
                   <template #body="{ data }">
                     <div class="flex justify-center">
-                      <!-- <div class="mr-2">
-                            <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
-                          </div> -->
-                      <Button icon="pi pi-eye" severity="info" @click="verdocumento(data)" size="small"
-                        style="width: 25px; height: 25px;" />
+                      <Button icon="pi pi-eye" severity="info" aria-label="Submit" @click="verdocumento(data)"
+                        size="small" style="width: 25px; height: 25px;" />
                     </div>
                   </template>
                 </Column>
@@ -187,15 +340,24 @@ import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Tag from 'primevue/tag';
 import Message from 'primevue/message';
 import ProgressBar from 'primevue/progressbar';
 const baseUrl = window.location.origin;
+
+
+const otemp = ref({});
+const levantarobservacion = (item) =>{
+  otemp.value = item;
+}
+
 
 
 const pagina = ref(1)
 const resoluciones = ref([])
 const planes = ref([])
 const informes = ref([])
+const dictantes = ref([])
 const otros = ref([])
 
 
@@ -209,6 +371,7 @@ const imagen = ref(null);
 const imagen2 = ref(null);
 const imagen3 = ref(null);
 const imagen4 = ref(null);
+const imagen5 = ref(null);
 
 const onChange = (e) => {
   console.log("Selected file", e.target.files[0])
@@ -227,6 +390,10 @@ const onChange3 = (e) => {
 const onChange4 = (e) => {
   console.log("Selected file", e.target.files[0])
   imagen4.value = e.target.files[0];
+}
+const onChange5 = (e) => {
+  console.log("Selected file", e.target.files[0])
+  imagen5.value = e.target.files[0];
 }
 
 const submit = async () => {
@@ -265,6 +432,15 @@ const submit4 = async () => {
   }).catch(err => console.log(err))
 }
 
+const submit5 = async () => {
+  let fd = new FormData();
+  fd.append('img', imagen5.value)
+  await axios.post("/documento/dictantes", fd).then(res => {
+    showToast("success", "Archivo guardado", res.data.menssje);
+    getDictantes()
+  }).catch(err => console.log(err))
+}
+
 
 const getResoluciones = async () => {
   let res = await axios.post(
@@ -296,6 +472,14 @@ const getOtros = async () => {
   otros.value = res.data.datos.data;
 }
 
+const getDictantes = async () => {
+  let res = await axios.post(
+    "get-dictantes?page=" + pagina.value,
+    { term: "" }
+  );
+  dictantes.value = res.data.datos.data;
+}
+
 const verdocumento = (data) => {
   window.open(data.url, '_blank', 'fullscreen=yes'); return false;
 }
@@ -311,6 +495,7 @@ const descargar = (nombre) => {
 getResoluciones()
 getPlanes()
 getInformes()
+getDictantes()
 getOtros()
 
 </script>

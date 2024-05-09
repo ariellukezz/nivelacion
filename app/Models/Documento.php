@@ -17,6 +17,9 @@ class Documento extends Model
         'fecha_subida',
         'id_usuario',
         'id_escuela',
-        'tipo'
+        'tipo',
+        'obser',
+        'aceptado'
     ];
+
 }

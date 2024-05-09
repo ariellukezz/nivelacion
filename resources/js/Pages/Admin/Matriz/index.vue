@@ -1,7 +1,7 @@
 <template>
 <AuthenticatedLayout>
     <div class="p-4" style="background: white;">
-
+ <!-- <pre>{{ objetosEstudiantes }}</pre>  -->
         <div class="flex justify-end mb-2">
             <Button label="Exportar excel" @click="exportarExcel" size="small" style="height: 40px;"/>
         </div>
@@ -10,8 +10,9 @@
             <thead style="height: 30px; color: white; background-color: var(--primary-color); padding: 0px 10px;">
                 <tr style="font-size: .9rem;">
                     <th style="border: 1px solid #d9d9d9;">DNI</th>
-                    <th style="border: 1px solid #d9d9d9;">NOMBRES</th>
-                    <th style="border: 1px solid #d9d9d9;">PROGRAMA</th>
+                    <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
+                    <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
+                    <th style="border: 1px solid #d9d9d9;">INGRESO</th>
                     <th style="border: 1px solid #d9d9d9;">C1</th>
                     <th style="border: 1px solid #d9d9d9;">C2</th>
                     <th style="border: 1px solid #d9d9d9;">C3</th>
@@ -28,8 +29,9 @@
             <tbody>
                 <tr v-for="item in estudiantes" :key="item.id" style="font-size: .9rem;">
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.dni }}</div></td>
-                    <td style="border: 1px solid #d9d9d9; font-weight: .7rem;"><div class="pl-1 pr-1">{{item.nombre }} {{ item.paterno }} {{ item.materno }}</div> </td>
+                    <td style="border: 1px solid #d9d9d9; font-weight: .7rem;"><div class="pl-1 pr-1"> {{ item.paterno }} {{ item.materno }},  {{item.nombre }}</div> </td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.programa }}</div></td>
+                    <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.semestre }}</div></td>
                     <td v-for="(ite,index) in 11" :key="index" style="border: 1px solid #d9d9d9; min-width:40px;" >
                         <!-- {{ buscarValor(item.notas, index) }} -->
                         <div v-if="buscarValor(item.notas, ite) !== null" style="text-align: center;">
@@ -90,7 +92,8 @@ const generarObjetosEstudiantes = () => {
     const estudiante = {
       dni: item.dni,
       programa: item.programa,
-      nombreCompleto: `${item.nombre} ${item.paterno} ${item.materno}`,
+      semestre: item.semestre,
+      nombreCompleto: `${item.paterno} ${item.materno},  ${item.nombre}`,
     };
 
     for (let i = 1; i <= 11; i++) {

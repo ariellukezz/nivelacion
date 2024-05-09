@@ -8,7 +8,7 @@ use App\Models\Docente;
 use App\Models\CursoDetalle;
 use App\Models\Curso;
 use Illuminate\Support\Facades\DB;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 
 class AsignacionController extends Controller
@@ -209,5 +209,45 @@ class AsignacionController extends Controller
     }
 
 
+
+        // ---------- genrar pdf ------------
+public function pdf($curso){
+
+    $res = Curso::select(
+        'curso.id AS id_curso',
+        'curso.nombre AS curso',
+        'curso.ciclo',
+        'competencia.id AS id_competencia',
+        'competencia.nombre AS competencia',
+        'docente.nro_doc AS dni_docente', 
+        'docente.nombres AS nombre',
+        'docente.paterno as paterno',
+        'docente.materno as materno',
+        'curso.grupo',
+        'curso.escuela',
+        'programa.programa'
+    )
+    ->join('competencia','competencia.id','curso.id_competencia')
+    ->leftjoin('docente','curso.id_docente','docente.id')
+    ->join('programa','curso.id_programa','programa.id')
+    ->where('curso.id','=',$curso)
+    ->get();
+
+    $estudiantes = CursoDetalle::select(
+        'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+        'curso_detalle.nota', 'curso_detalle.condicion' 
+    )
+    ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
+    ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
+    ->where('curso_detalle.id_curso','=',$curso)
+    ->get();
+    
+    $data = $res[0];
+    $pdf = pdf::loadView('RepCursoPDF/indexcursos', compact('data','estudiantes'));
+    
+    return $pdf->download('Reporte.pdf');
+
+}
+// ******** fin pdf ---------------
 
 }

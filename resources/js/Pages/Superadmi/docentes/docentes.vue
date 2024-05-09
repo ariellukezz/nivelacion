@@ -3,15 +3,16 @@
     <AuthenticatedLayout>
       <div class="bg-white shadow-xs p-4" style="height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
 
+        <div class="flex mb-4" style="justify-content: space-between;">
+          <Button label="Docente Nuevo" @click="visible = true" size="small" style="height: 40px;"/> 
 
-        <div class="flex" style="justify-content: space-between;">
-        <span class="p-input-icon-left">
-                <i class="pi pi-search" />
-                <InputText v-model="buscar" placeholder="Search"/>
-        </span>
+          <span class="p-input-icon-left ">
+              <i class="pi pi-search" />
+              <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
+          </span>
 
-
-    </div>
+        </div>      
+    
         <!-- <pre>{{ docentes }}</pre> -->
 
         <DataTable :value="docentes" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">

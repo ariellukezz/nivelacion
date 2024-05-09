@@ -2,11 +2,11 @@
     <Head title="Documentos" />
     <AuthenticatedLayout>
         <div class="flex justify-between">
-            
+
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 240px;">
-               
-              <Dropdown v-model="programa" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione escuela profesional" style="width:100%;" class="w-full md:w-11rem">            
+
+              <Dropdown v-model="programa" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione escuela profesional" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -25,15 +25,15 @@
 
 
         <div class="mt-3">
-            <DataTable 
-                :showGridlines="false" 
-                :value="documentos" 
+            <DataTable
+                :showGridlines="false"
+                :value="documentos"
                 paginator
                 :rows="10"
                 :totalRecords="totalRegistros"
                 :rowsPerPageOptions="[ 10, 20, 50]"
                 :currentPage.sync="pagina"
-                :class="'p-datatable-sm'" 
+                :class="'p-datatable-sm'"
                 tableStyle="min-width: 50rem"
                 style="font-size: .9rem;">
                 <Column field="tipo" header="TIPO"></Column>
@@ -49,12 +49,61 @@
                     </template>
 
                 </Column>
+                <Column header="Observaciones">
+            <template #body="{ data }">
+                <div>
+                    {{ data.obser }}
+                </div>
+            </template>
+        </Column>
+
+        <Column field="id_programa" header="Acciones" width="90px">
+
+
+                <template #body="{ data }">
+                  <div class="flex">
+                    <div class="mr-2">
+                        <div v-if="data.aceptado == 1">
+                            <Button severity="danger" icon="pi pi-times" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
+                        </div>
+                        <div v-if="data.aceptado == 0">
+                            <Button severity="success" icon="pi pi-check" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
+                        </div>
+                        <div v-if="data.aceptado == null">
+                            <Button severity="secondary" icon="pi pi-spinner" label="" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
+                        </div>
+
+                    </div>
+                    <div class="mr-2">
+                      <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
+                    </div>
+                   
+                  </div>
+                </template>
+              </Column>
 
             </DataTable>
             <div>
 
             </div>
         </div>
+s
+
+        <Dialog v-model:visible="modaleditar" modal header="Observación" :style="{ width: '25rem' }">
+            <div class="w-full">
+                <div>
+                    <Textarea  v-model="archivo.obser" style="width: 100%;" variant="filled" rows="6"/>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex justify-end">
+                    <Button icon="pi pi-save" label="Observar" severity="success" aria-label="Submit" @click="observar()"  size="small"  style="height: 25px;"/>
+                </div>
+            </template>
+        </Dialog>
+        <Toast/>
+
 
     </AuthenticatedLayout>
 </template>
@@ -68,6 +117,20 @@ import InputText from 'primevue/inputtext';
 import 'primeicons/primeicons.css';
 import Dropdown from 'primevue/dropdown';
 import Paginator from 'primevue/paginator';
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
+
+import Toast from 'primevue/toast';
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
+const showToast = (tipo, titulo, detalle) => {
+  toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
+};
+
+
+const modaleditar = ref(false);
+
 
 const pagina = ref(1);
 const buscar = ref(null);
@@ -88,6 +151,28 @@ const getDocumentos = async () => {
 
 const abrirDocumento = (url) => {
     window.open("../" + url, "_blank");
+}
+
+const archivo = ref({});
+
+
+const observar = async () => {
+    let res = await axios.post("observar-documento", archivo.value );
+    getDocumentos();
+    showToast('info', 'DOCUMENTO OBSERVADO', '');
+    modaleditar.value= false;
+    archivo.value = {}
+}
+
+const cambiarEstado = async (item) => {
+    let res = await axios.post("cambiar-estado-documento", item );
+    getDocumentos();
+    showToast('info', 'ESTADO MODIFICADO', '');
+}
+
+const editar = (item) => {
+    modaleditar.value = true;
+    archivo.value = item;
 }
 
 const programasselect = ref([
@@ -127,6 +212,8 @@ const programasselect = ref([
         {value:34, label:"INGENIERIA MECANICA ELECTRICA"},
         {value:35, label:"INGENIERIA ELECTRONICA"},
         {value:36, label:"INGENIERIA DE SISTEMAS"},
+        {value:37, label:"PSICOLOGIA"},
+
   ])
 
 

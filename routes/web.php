@@ -52,22 +52,22 @@ Route::middleware('auth','admin')->group(function () {
 
     //COORDINADOR
     Route::prefix('coordinador')->group(function () {
-        Route::get('/', fn () => Inertia::render('Admin/Coordinador/index'))->name('coordinador');    
+        Route::get('/', fn () => Inertia::render('Admin/Coordinador/index'))->name('coordinador');
         Route::post('/save-coordinador', [CoordinadorController::class, 'save']); #-->
         Route::post('/get-coordinadores', [CoordinadorController::class, 'getCoordinadores']);
         Route::get('/delete-coordinador/{id}', [CoordinadorController::class, 'delete']);
         // Route::post('/get-escuelas', [CoordinadorController::class, 'getEscuelas']);
 
-        Route::get('/estudiante', fn () => Inertia::render('Admin/Estudiante/index'))->name('coordinador-estudiante');    
+        Route::get('/estudiante', fn () => Inertia::render('Admin/Estudiante/index'))->name('coordinador-estudiante');
         Route::post('/get-alumnos', [CoordinadorController::class, 'getAlumnos']);
 
-        Route::get('/docente', fn () => Inertia::render('Admin/Docente/index'))->name('coordinador-docente');    
+        Route::get('/docente', fn () => Inertia::render('Admin/Docente/index'))->name('coordinador-docente');
         Route::post('/get-docentes', [DocenteController::class, 'getDocentes']);
         Route::post('/save-docente', [DocenteController::class, 'save']);
         Route::post('/get-competencia-x-docente', [DocenteController::class, 'getCompetenciasByDocente']);
         Route::get('/delete-docente/{id}', [DocenteController::class, 'delete']);
         Route::get('/get-data-docente/{dni}', [DocenteController::class, 'getDataPrisma']);
-        
+
 
         Route::get('/asignacion', fn () => Inertia::render('Admin/Asignacion/index'))->name('coordinador-asignacion');
         Route::post('/get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
@@ -80,19 +80,20 @@ Route::middleware('auth','admin')->group(function () {
 
         Route::get('delete-curso/{id}', [CursoController::class, 'delete']);
 
-
+        //pdf
+        Route::get('/generar-pdf/{id}', [AsignacionController::class, 'pdf']);
 
     });
 
 
     Route::get('/alumnos-importar', fn () => Inertia::render('Admin/Alumnos/index'))->name('alumnos-importar');
-    Route::post('importar-excel-estudiante', [AlumnoController::class, 'excelEstudiante']); 
-    
+    Route::post('importar-excel-estudiante', [AlumnoController::class, 'excelEstudiante']);
+
     //ALUMNO
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumno-index');
     Route::post('get-alumnos', [AlumnoController::class, 'getAlumnos']);
     Route::post('get-alumnos-registro', [AlumnoController::class, 'getAlumnosRegistro']);
-    
+
     //TUTORES
     Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
     Route::post('save-docente', [DocenteController::class, 'save']);
@@ -112,18 +113,50 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-roles', [DataController::class, 'getRoles']);
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
-    
+
     //DOCUMENTOS
     Route::post('documento/resolucion', [DocumentoController::class, 'resolucion']);
     Route::post('documento/plan', [DocumentoController::class, 'plan']);
     Route::post('documento/informe', [DocumentoController::class, 'informe']);
     Route::post('documento/otros', [DocumentoController::class, 'otros']);
+    Route::post('documento/dictantes', [DocumentoController::class, 'dictantes']);
     Route::post('get-resoluciones', [DocumentoController::class, 'getResoluciones']);
     Route::post('get-planes', [DocumentoController::class, 'getPlanes']);
     Route::post('get-informes', [DocumentoController::class, 'getInformes']);
+    Route::post('get-dictantes', [DocumentoController::class, 'getDictantes']);
     Route::post('get-otros', [DocumentoController::class, 'getOtros']);
 
+
 });
+
+// Route::middleware('auth','superadmi')->group(function () {
+//     Route::get('/docentes-verdadero', fn () => Inertia::render('Superadmi/docentes/index'))->name('super-docente');
+
+//     Route::post('/get-competencia-x-docente', [DocenteController::class, 'getCompetenciasByDocente']);
+//     Route::get('/get-data-docente/{dni}', [DocenteController::class, 'getDataPrisma']);
+
+//     //TUTORES
+//     Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
+//     Route::post('save-docente', [DocenteController::class, 'save2']);
+//     Route::post('get-docentes', [DocenteController::class, 'getDocentes']);
+//     Route::get('delete-docente/{id}', [DocenteController::class, 'delete']);
+
+//     //ASIGNACIÓN
+//     Route::get('asignacion', [AsignacionController::class, 'index'])->name('asignacion-index');
+//     Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
+//     Route::post('save-curso', [AsignacionController::class, 'save']);
+//     Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
+//     Route::post('asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
+//     Route::post('get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
+
+//     //GET DATA
+//     Route::post('get-programas', [DataController::class, 'getProgramas']);
+//     Route::post('get-roles', [DataController::class, 'getRoles']);
+//     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
+//     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
+
+
+// });
 
 
 Route::middleware('auth','docente')->group(function () {
@@ -141,7 +174,7 @@ Route::middleware('auth','docente')->group(function () {
     Route::get('docente/cursos-encuesta', [CursoController::class, 'getCursosEncuestaD']);
     Route::get('docente/get-preguntas/{encuesta}', [PreguntaController::class, 'getPreguntas']);
     Route::post('docente/save-encuesta-docente', [PreguntaController::class, 'saveRepuestasDocente']);
-    
+
 });
 
 
@@ -171,11 +204,54 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
     Route::get('/avance', fn () => Inertia::render('Admin/Avance/index'))->name('supervisor-avance');
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
+
+    Route::get('/get-avance', [AvanceController::class, 'getAvance']);
+
+    Route::post('/observar-documento', [SupervisorController::class, 'ObservarDocumento']);
+
+    Route::post('/cambiar-estado-documento', [SupervisorController::class, 'cambiarEstado']);
+
+
+
 });
 
    //superadmi
+   Route::middleware(['auth', 'superadmi'])->prefix('superadmi')->group(function () {
+//   Route::middleware('auth','superadmi')->group(function () {
+//   Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
 
-Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
+        Route::get('/docentes-verdadero', fn () => Inertia::render('Superadmi/docentes/index'))->name('super-docente');
+
+        Route::post('/get-competencia-x-docente', [DocenteController::class, 'getCompetenciasByDocente']);
+        Route::get('/get-data-docente/{dni}', [DocenteController::class, 'getDataPrisma']);
+
+        //TUTORES
+        Route::get('tutores', [DocenteController::class, 'index'])->name('tutor-index');
+        Route::post('save-docente', [DocenteController::class, 'save2']);
+        Route::post('get-docentes', [DocenteController::class, 'getDocentes']);
+        Route::get('delete-docente/{id}', [DocenteController::class, 'delete']);
+
+        //ASIGNACIÓN
+        Route::get('asignacion', [AsignacionController::class, 'index'])->name('asignacion-index');
+        Route::post('get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
+        Route::post('save-curso', [AsignacionController::class, 'save']);
+        Route::post('get-cursos', [AsignacionController::class, 'getCursos']);
+        Route::post('asignar-curso-nivelacion', [AsignacionController::class, 'asignarCursoNivelacion']);
+        Route::post('get-detalle-curso', [AsignacionController::class, 'getDetalleCurso']);
+
+        //GET DATA
+        Route::post('get-programas', [DataController::class, 'getProgramas']);
+        Route::post('get-roles', [DataController::class, 'getRoles']);
+        Route::post('get-competencias', [DataController::class, 'getCompetencias']);
+        Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
+
+
+
+        Route::post('/get-docentes-superadmi', [DocenteController::class, 'getDocentesSuperAdmin']);
+
+
+
+
     Route::post('/get-usuario', [UsuarioController::class, 'getUsuarioSuperadmi']);
     Route::post('/restablecerContraseña', [SuperadmiController::class, 'restablecer']);
     Route::get('/', fn () => Inertia::render('Superadmi/index'))->name('superadmi-inicio');
@@ -227,4 +303,3 @@ Route::middleware('auth','superadmi')->prefix('superadmi')->group(function () {
 require __DIR__.'/auth.php';
 
 
-    

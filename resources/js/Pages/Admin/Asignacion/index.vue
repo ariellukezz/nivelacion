@@ -122,20 +122,32 @@
                 <Column field="grupo" header="Grupo"></Column>
                 <Column field="programa" header="Programa"></Column>
                 <Column field="escuela" header="Escuela Prof."></Column>
-                <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
-                <template #body="{ data }">
-                  <div class="flex" style="justify-content: center;">
-                    <div v-if="data.estado === 1">
-                        <Tag severity="info" value="Activo"></Tag>
-                    </div>
-                    <div v-if="data.estado === 0">
-                        <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
-  
-                    </div>
-                  </div>
-                </template>
-              </Column>
 
+
+                <Column field="estado" header="Lista" style="text-align: center;">
+  <template #body="{ data }">
+    <div class="flex" style="justify-content: center;">
+      <div v-if="data.estado === 1">
+        <!-- <Button  @click="descargarPDF(data.id)" label="Generar PDF" /> -->
+        <Button class="secondary" severity="success" icon="pi pi-print" aria-label="Submit" @click="descargarPDF(data.id)" size="small" style="width: 25px; height: 25px;"/>
+
+      </div>
+    </div>
+  </template>
+</Column>
+
+<Column field="estado" header="Estado" style="text-align: center;">
+  <template #body="{ data }">
+    <div class="flex" style="justify-content: center;">
+      <div v-if="data.estado === 1">
+        <Tag severity="info" value="Activo"></Tag>
+      </div>
+      <div v-else>
+        <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
+      </div>
+    </div>
+  </template>
+</Column>
                 <Column field="id_programa" header="Acciones" width="90px"> 
                   <template #body="{ data }">
                     <div class="flex">
@@ -209,7 +221,7 @@
       
       <!--- MODAL -->
       <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '750px' }">
-  
+
         <!-- {{ curso }} {{ cursocompetencia }} -->
         <!-- <pre>{{ docente }}</pre> -->
         <!-- <div class="card" >
@@ -351,6 +363,9 @@
   import Message from 'primevue/message';
 
   const escuela = ref(null);
+
+  const temps = ref(null);
+  
   
   const toast = useToast();
   const confirm = useConfirm();
@@ -486,6 +501,7 @@
 
   const editar =  async (item) => {
     limpiar()
+    temps.value = item;
     visible.value = true;
     emod.value = true;
     curso.value.id = item.id;
@@ -493,6 +509,7 @@
     curso.value.grupo = item.grupo;
     curso.value.id_docente = item.id_docente;
     curso.value.id_programa = item.id_programa;
+    prog.value = item.id_programa;
     cursocompetencia.value = item.id_competencia;
     curso.value.id = item.id;
     if(item.estado === 1) { curso.value.estado = true } else { curso.value.estado = false }
@@ -593,11 +610,14 @@
   
   watch(visible, ( newValue, oldValue ) => {
       if(emod.value == true  && visible.value == false ){
-        visible.value = false
         curso.value.id = null;
         curso.value.nombre = null;
-        curso.value.grupo = null;
-        curso.value.estado = true
+        curso.value.grupo = 'A';
+        curso.value.estado = true;
+        prog.value = null;
+        curso.id_docente =null;
+        cursocompetencia.value = null;
+
      }
 })
 
@@ -668,11 +688,16 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
   const resEsuela = () => { cursoseleccionado.value = null }
 
 
+  const descargarPDF =  async ( id ) => {
+  window.open("/coordinador/generar-pdf/"+id, '_self');
+}
 
+watch(cursoseleccionado, ( newValue, oldValue ) => { getDocentes() })
   getDocentes()
   getProgramas()
   getCompetencias()
   getEscuelas()
+  
   // getAlumnosRegistros()
 
 </script>

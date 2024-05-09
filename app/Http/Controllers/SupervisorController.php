@@ -16,9 +16,9 @@ class SupervisorController extends Controller
 
 //         $query_where = [];
 
-//         if ($request->programa) array_push($query_where,[DB::raw('documento.id_programa'), '=', $request->programa]); 
+//         if ($request->programa) array_push($query_where,[DB::raw('documento.id_programa'), '=', $request->programa]);
 //         $res = Documento::select(
-//             'documento.tipo', 
+//             'documento.tipo',
 //             'escuela.nombre AS escuela', 'escuela.nombre_corto', 'documento.fecha_subida', 'users.nombres AS username', 'users.apellidos AS userlastname')
 //         ->join('escuela','documento.id_escuela', 'escuela.id')
 //         ->join('users','users.id', 'documento.id_usuario')
@@ -41,7 +41,7 @@ class SupervisorController extends Controller
         // Definir las condiciones iniciales
         $conditions = [];
 
-        if ($request->programa) array_push($conditions,[DB::raw('documento.id_escuela'), '=', $request->programa]);   
+        if ($request->programa) array_push($conditions,[DB::raw('documento.id_escuela'), '=', $request->programa]);
         // Filtrar por programa si está presente en la solicitud
         // if ($request->has('programa')) {
         //     $conditions[] = ['documento.id_escuela', '=', $request->programa];
@@ -49,13 +49,16 @@ class SupervisorController extends Controller
 
         // Realizar la consulta de manera más legible
         $query = Documento::select(
-            'documento.tipo', 
-            'escuela.nombre AS escuela', 
-            'escuela.nombre_corto', 
-            'documento.fecha_subida', 
-            'users.nombres AS username', 
+            'documento.id',
+            'documento.tipo',
+            'escuela.nombre AS escuela',
+            'escuela.nombre_corto',
+            'documento.fecha_subida',
+            'users.nombres AS username',
             'users.apellidos AS userlastname',
-            'documento.url'
+            'documento.url',
+            'documento.aceptado',
+            'documento.obser'
         )
         ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
         ->join('users', 'users.id', '=', 'documento.id_usuario')
@@ -79,6 +82,41 @@ class SupervisorController extends Controller
             'datos' => $res,
         ], 200);
     }
+
+    public function ObservarDocumento(Request $request){
+
+        $doc = Documento::find($request->id);
+        $doc->obser = $request->obser;
+        $doc->save();
+
+        $this->response['tipo'] = 'info';
+        $this->response['titulo'] = '!REGISTRO MODIFICADO!';
+        $this->response['mensaje'] = ' ';
+        $this->response['estado'] = true;
+        $this->response['datos'] = $doc;
+
+        return response()->json($this->response, 200);
+
+    }
+
+    public function cambiarEstado(Request $request){
+
+        $doc = Documento::find($request->id);
+        if($doc->aceptado  == 0 || $doc->aceptado == null ){
+            $doc->aceptado = 1;
+        }else{
+            $doc->aceptado = 0;
+        }
+        $doc->save();
+        $this->response['estado'] = true;
+        $this->response['datos'] = $doc;
+
+        return response()->json($this->response, 200);
+
+    }
+
+
+
 
 
 }

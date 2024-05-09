@@ -24,15 +24,15 @@ class SuperadmiController extends Controller
         // Definir las condiciones iniciales
         $conditions = [];
 
-        if ($request->programa) array_push($conditions,[DB::raw('documento.id_escuela'), '=', $request->programa]);   
+        if ($request->programa) array_push($conditions,[DB::raw('documento.id_escuela'), '=', $request->programa]);
 
         // Realizar la consulta de manera más legible
         $query = Documento::select(
-            'documento.tipo', 
-            'escuela.nombre AS escuela', 
-            'escuela.nombre_corto', 
-            'documento.fecha_subida', 
-            'users.nombres AS username', 
+            'documento.tipo',
+            'escuela.nombre AS escuela',
+            'escuela.nombre_corto',
+            'documento.fecha_subida',
+            'users.nombres AS username',
             'users.apellidos AS userlastname',
             'documento.url'
         )
@@ -62,7 +62,7 @@ class SuperadmiController extends Controller
     public function getAlumnos(Request $request) {
         $competencia = $request->competencia;
         $term = $request->buscar;
-    
+
         $estudiantes = DB::table('estudiante AS e')
             ->select(
                 'e.id',
@@ -100,12 +100,13 @@ class SuperadmiController extends Controller
                     ->orWhere('e.codigo', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.nombres', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
-                    ->orWhere('e.materno', 'LIKE', '%' . $term . '%');
+                    ->orWhere('e.materno', 'LIKE', '%' . $term . '%')
+                    ->orWhere('p.programa', 'LIKE', '%' . $term . '%');
             })
             ->distinct()
             ->get();
-            
-    
+
+
         $this->response['estado'] = true;
         $this->response['datos'] = $estudiantes;
         return response()->json($this->response, 200);
@@ -116,18 +117,18 @@ class SuperadmiController extends Controller
 
     $docentes = DB::table('docente as d')
     ->select(
-        'd.nro_doc', 
-        'd.paterno', 
-        'd.materno', 
-        'd.nombres', 
-        'd.sexo', 
-        'd.telefono', 
+        'd.nro_doc',
+        'd.paterno',
+        'd.materno',
+        'd.nombres',
+        'd.sexo',
+        'd.telefono',
         'd.email',
-        'u.estado', 
-        'u.nombres as nombre_usuario', 
-        'e.nombre as nombre_escuela')
-    ->join('users as u', 'd.id_usuario', '=', 'u.id')
-    ->join('escuela as e', 'u.id_escuela', '=', 'e.id')
+        'u.estado',
+        'u.nombres as nombre_usuario',
+        'p.programa as nombre_escuela')
+    ->join('users as u', 'd.usuario_id', '=', 'u.id')
+    ->join('programa as p', 'u.programa_id', '=', 'p.id')
 
     ->where(function ($query) use ($term) {
         $query->orWhere('d.nro_doc', 'LIKE', '%' . $term . '%')
@@ -145,7 +146,7 @@ class SuperadmiController extends Controller
         public function getUsuarios(Request $request) {
             $usuarios = [];
             $term = $request->buscar;
-        
+
             switch ($request->rol) {
                 case 0:
                     $usuarios = Usuario::select('id', 'nombres', 'apellidos', 'email', 'estado_contraseña')
@@ -226,7 +227,7 @@ class SuperadmiController extends Controller
                 default:
                     return "Rol no reconocido";
             }
-        
+
             $this->response['estado'] = true;
             $this->response['datos'] = $usuarios;
             return response()->json($this->response, 200);
@@ -245,7 +246,7 @@ public function getProgramas(Request $request){
 
     $query_where = [];
     $res = Programa::select(
-        'id as value', 'programa as label' 
+        'id as value', 'programa as label'
     )
     ->where($query_where)
     ->where(function ($query) use ($request) {
@@ -257,14 +258,14 @@ public function getProgramas(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
   }
 
   public function getRoles(Request $request){
-      
+
     $query_where = [];
     $res = Rol::select(
-        'id as value', 'nombre as label' 
+        'id as value', 'nombre as label'
     )
     ->where($query_where)
     ->where(function ($query) use ($request) {
@@ -276,7 +277,7 @@ public function getProgramas(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
   }
 
   public function getEscuelas(Request $request){
@@ -291,14 +292,14 @@ public function getProgramas(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
   }
 
   public function getCompetencias(Request $request){
-      
+
     $query_where = [];
     $res = Competencia::select(
-        'id as value', 'nombre as label' 
+        'id as value', 'nombre as label'
     )
     ->where($query_where)
     ->where(function ($query) use ($request) {
@@ -310,25 +311,25 @@ public function getProgramas(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
   }
 //termina aqui
 
-// empieza AsignacionController 
+// empieza AsignacionController
 
 public function getCursos(Request $request){
 
     $query_where = [];
 
     if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
-    
+
     $res = Curso::select(
         'curso.id', 'curso.nombre',
         'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
         'competencia.id as id_competencia', 'competencia.nombre as competencia',
         'curso.grupo','curso.escuela', 'curso.estado'
     )
-    ->join('docente','docente.id','curso.id_docente')
+    ->leftJoin('docente','docente.id','curso.id_docente')
     ->join('competencia','competencia.id','curso.id_competencia')
     ->where('curso.escuela',"=",$request->escuela)
     ->where($query_where)
@@ -342,18 +343,18 @@ public function getCursos(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
 }
 
 public function getDetalleCurso(Request $request){
 
     $query_where = [];
     //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
-    
-    
+
+
     $res = CursoDetalle::select(
         'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
-        'curso.nombre as curso',  
+        'curso.nombre as curso',
         'curso_detalle.nota'
     )
     ->join('curso','curso_detalle.id_curso','curso.id')
@@ -377,13 +378,13 @@ public function getDetalleCurso(Request $request){
             ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
     })->orderBy('curso.id', 'DESC')
     ->paginate(200);
-    
+
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     $this->response['registrados'] = $registrados;
 
     return response()->json($this->response, 200);
-  
+
 }
 
 
@@ -452,7 +453,7 @@ public function getDocentesXcompetencia(Request $request){
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
     return response()->json($this->response, 200);
-  
+
 }
 
 public function asignarCursoNivelacion(Request $request){
@@ -534,5 +535,3 @@ public function eliminarp($id){
 
 
 }
-
-
