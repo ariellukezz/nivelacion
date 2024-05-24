@@ -40,7 +40,7 @@
                 <Column field="escuela" header="ESCUELA PROFESIONAL"></Column>
                 <Column field="fecha_subida" header="FECHA"></Column>
                 <Column field="username" header="USUARIO"></Column>
-                <Column field="url" header="Ver " style="min-width: 12rem">
+                <Column field="url" header="Ver Documento" style="min-width: 12rem">
                     <template #body="{ data }">
                         <Button label="Link" @click="abrirDocumento(data.url)" link>
                             <i class="pi pi-download" style="color: green"></i>
@@ -99,10 +99,10 @@
                   <div class="flex">
                     <div class="mr-2">
                         <div v-if="data.aceptado == 1">
-                            <Button severity="danger" icon="pi pi-times" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
+                            <Button severity="success" icon="pi pi-check" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
                         </div>
                         <div v-if="data.aceptado == 0">
-                            <Button severity="success" icon="pi pi-check" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
+                            <Button severity="danger" icon="pi pi-times" aria-label="Submit" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
                         </div>
                         <div v-if="data.aceptado == null">
                             <Button severity="secondary" icon="pi pi-spinner" label="" @click="cambiarEstado(data)" size="small" style="width: 25px; height: 25px;"/>
