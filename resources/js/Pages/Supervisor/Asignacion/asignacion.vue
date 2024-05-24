@@ -23,7 +23,7 @@
             </span>
         </div>
 
-
+<!-- {{ documentos }} -->
         <div class="mt-3">
             <DataTable
                 :showGridlines="false"
@@ -49,6 +49,41 @@
                     </template>
 
                 </Column>
+                <Column field="id_programa" header="Estado" width="90px">
+    <template #body="{ data }">
+        <div class="flex">
+            <div class="mr-2">
+                <Button
+                    v-if="data.aceptado === 1"
+                    severity="success"
+                    label="Aceptado"
+                    aria-label="Submit"
+
+                    size="small"
+                    style="width: 90px; height: 25px;"
+                ></Button>
+                <Button
+                    v-else-if="data.aceptado === 0"
+                    severity="danger"
+                    label="Rechazado"
+                    aria-label="Submit"
+
+                    size="small"
+                    style="width: 90px; height: 25px;"
+                ></Button>
+                <Button
+                    v-else
+                    severity="secondary"
+                    label="Pendiente"
+                    aria-label="Submit"
+
+                    size="small"
+                    style="width: 90px; height: 25px;"
+                ></Button>
+            </div>
+        </div>
+    </template>
+</Column>
                 <Column header="Observaciones">
             <template #body="{ data }">
                 <div>
@@ -77,7 +112,6 @@
                     <div class="mr-2">
                       <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                     </div>
-                   
                   </div>
                 </template>
               </Column>
@@ -87,7 +121,6 @@
 
             </div>
         </div>
-s
 
         <Dialog v-model:visible="modaleditar" modal header="Observación" :style="{ width: '25rem' }">
             <div class="w-full">

@@ -58,6 +58,7 @@ class SupervisorController extends Controller
             'users.apellidos AS userlastname',
             'documento.url',
             'documento.aceptado',
+            'documento.aceptado as aceptados',
             'documento.obser'
         )
         ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')

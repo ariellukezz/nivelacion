@@ -8,7 +8,7 @@
       </div>
       <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
         <div class="w-full">
-          <h1 class=" text-xl  text-gray-900" style="text-align: center;">¡Bienvenidos al Sistema de Nivelación para Ingresantes a la 
+          <h1 class=" text-xl  text-gray-900" style="text-align: center;">¡Bienvenidos al Sistema de Nivelación para Ingresantes a la
             Universidad Nacional del Altiplano - Puno! </h1>
           <h2 class="mb-4 text-xl font-semibold text-gray-700 " style="text-align: center;">Iniciar sesión</h2>
 
