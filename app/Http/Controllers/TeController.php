@@ -9,7 +9,7 @@ use DB;
 
 
 class TeController extends Controller {
-    
+
     public function getTest(){
 
       $escuela = DB::select("SELECT nombre from escuela where id = '" .auth()->user()->id_escuela ."';" );
@@ -44,7 +44,7 @@ class TeController extends Controller {
               'programa' => $row->programa,
               'semestre' => $row->semestre,
               'dni' => $row->dni,
-              'paterno' => $row->paterno, 
+              'paterno' => $row->paterno,
               'materno' => $row->materno,
               'notas' => [],
               ];
@@ -63,7 +63,7 @@ class TeController extends Controller {
         $this->response['competencias'] = $competencias;
 
       return response()->json($this->response, 200);
-    
+
     }
 
 }

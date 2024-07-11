@@ -211,6 +211,8 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
 
     Route::post('/cambiar-estado-documento', [SupervisorController::class, 'cambiarEstado']);
 
+    Route::get('/notasperf-supervisor', [SupervisorController::class, 'getTestResultsvisor']);
+Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/notasper/index'))->name('notas-todosest-supervisor');
 
 
 });
@@ -293,7 +295,11 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('guardarp', [SuperadmiController::class, 'savep']);
     Route::get('eliminarp/{id}', [SuperadmiController::class, 'eliminarp']);
 
-// --------------------------------------------
+// --------------------------------------------notas perfil
+Route::get('/notasperf', [SuperadmiController::class, 'getTestResults']);
+Route::get('/notas-todosest', fn () => Inertia::render('Superadmi/notasperfiles/notasperfil'))->name('notas-todosest');
+
+
 
 
 

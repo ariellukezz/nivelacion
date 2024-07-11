@@ -2,11 +2,11 @@
 <Head title="Usuarios"/>
 <AuthenticatedLayout>
 <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); ">
-    
+
     <div>
       <div class="flex" style="justify-content: space-between;">
         <Button label="Nuevo" @click="visible = true" size="small" style="height: 40px;"/>
-      
+
         <span class="p-input-icon-left ">
             <i class="pi pi-search" />
             <InputText v-model="buscar" class="lt" style="padding-left: 40px; height: 40px;" placeholder="Search" />
@@ -16,11 +16,11 @@
     <Toast />
     <ConfirmPopup></ConfirmPopup>
 
-<!-- 
+<!--
     <pre>{{ programas }}</pre> -->
     <!-- <pre>{{ buscar }}</pre>  -->
     <!-- <AutoComplete v-model="buscar" optionLabel="label" :suggestions="programas" @complete="getProgramas" /> -->
-    
+
     <!-- <pre>{{ usuarios }}</pre> -->
 
     <div>
@@ -33,7 +33,7 @@
             <Column field="apellidos" header="Apellidos"></Column>
             <Column field="programa" header="Programa"></Column>
             <Column field="rol" header="Rol"></Column>
-            <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
+            <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px">
               <template #body="{ data }">
                 <div class="flex" style="justify-content: center;">
                   <div v-if="data.estado === 1">
@@ -45,7 +45,7 @@
                 </div>
               </template>
             </Column>
-            <Column field="id_programa" header="Acciones" width="90px"> 
+            <Column field="id_programa" header="Acciones" width="90px">
               <template #body="{ data }">
                 <div class="flex">
                   <div class="mr-2">
@@ -64,40 +64,40 @@
       <!-- <pre>{{ usuario }}</pre> -->
 
       <div class="flex mt-2 align-items-center" style="justify-content: flex-end;" >
-        <div class="mr-3"> <label>Estado</label> </div>  
+        <div class="mr-3"> <label>Estado</label> </div>
         <InputSwitch v-model="usuario.estado" />
       </div>
 
       <div class="flex" style="width: 100%; justify-content: space-between;">
         <div class="mb-2" style="width: 48%;">
-          <div><label>Nombres</label></div>  
+          <div><label>Nombres</label></div>
           <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.nombres" />
         </div>
 
         <div class="mb-2" style="width: 48%;">
-          <div><label>Apellidos</label></div>  
+          <div><label>Apellidos</label></div>
           <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.apellidos" />
         </div>
       </div>
 
       <div class="mb-2">
-        <div><label>Rol</label></div>  
-        <Dropdown 
-          v-model:modelValue="usuario.rol" 
-          optionValue="value" 
-          :options="roles" 
+        <div><label>Rol</label></div>
+        <Dropdown
+          v-model:modelValue="usuario.rol"
+          optionValue="value"
+          :options="roles"
           showClear
           style="height: 45px;"
-          @complete="changeRol" 
-          optionLabel="label" 
-          placeholder="Selecciona el rol" 
+          @complete="changeRol"
+          optionLabel="label"
+          placeholder="Selecciona el rol"
           class="w-full md:w-10rem">
-        </Dropdown> 
+        </Dropdown>
       </div>
 
       <div class="flex" style="width: 100%; justify-content: space-between;">
         <div class="mb-2" style="width: 48%;">
-          <div><label>Correo</label></div>  
+          <div><label>Correo</label></div>
           <InputText style="width: 100%; height: 40px;"  type="text" v-model="usuario.email"/>
         </div>
 
@@ -108,15 +108,15 @@
       </div>
 
       <div class="mb-2">
-        <div><label>Programa</label></div>  
-        <Dropdown 
-          v-model="usuario.programa"  
+        <div><label>Programa</label></div>
+        <Dropdown
+          v-model="usuario.programa"
           showClear
           style="height: 45px;"
-          :options="programas" 
-          @complete="getProgramas" 
-          optionValue="value" 
-          optionLabel="label" 
+          :options="programas"
+          @complete="getProgramas"
+          optionValue="value"
+          optionLabel="label"
           placeholder="Selecciona el programa"
           class="w-full md:w-14rem"/>
       </div>
@@ -163,7 +163,7 @@ const pagina = ref(1)
 const buscar = ref("")
 
 const roles = ref([])
-const usuarios = ref([]) 
+const usuarios = ref([])
 const visible = ref(false);
 
 
@@ -207,7 +207,7 @@ const getRoles =  async (term = "") => {
 const guardar =  async () => {
   let res = await axios.post(
     "save-usuario",
-    { 
+    {
       id: usuario.value.id,
       nombres : usuario.value.nombres,
       apellidos : usuario.value.apellidos,
@@ -220,7 +220,7 @@ const guardar =  async () => {
   );
 
   showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-  getUsuarios()  
+  getUsuarios()
   visible.value = false
   limpiar()
   // roles.value = res.data.datos.data;
@@ -230,7 +230,7 @@ const eliminar =  async (id) => {
   let res = await axios.get(
   "delete-usuario/"+id);
   showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-  getUsuarios() 
+  getUsuarios()
 }
 
 
@@ -276,11 +276,11 @@ const confirm2 = (event,user) => {
 watch(visible, ( newValue, oldValue ) => {
   if(visible.value == false && usuario.value.id != null ){
     limpiar()
-  }  
+  }
 
 })
 
-const limpiar = () => { 
+const limpiar = () => {
   usuario.value.id= null,
   usuario.value.nombres = "",
   usuario.value.apellidos = "",
