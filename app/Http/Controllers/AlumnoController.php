@@ -33,7 +33,7 @@ class AlumnoController extends Controller
             $consulta
 
             // 'programa.id as id_programa', 'programa.programa as programa',
-            // 'rol.id as id_rol', 'rol.nombre as rol'  
+            // 'rol.id as id_rol', 'rol.nombre as rol'
         )
         ->leftjoin('datos_ingreso','estudiante.dni','datos_ingreso.dni')
         ->leftjoin('programa','programa.id','datos_ingreso.id_programa')
@@ -48,11 +48,11 @@ class AlumnoController extends Controller
                 ->orWhere('programa.area', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -63,7 +63,7 @@ class AlumnoController extends Controller
         $competencia = "";
         if( $id_competencia === 1 ) { $competencia = "C1_R";}
         if( $id_competencia === 2 ) { $competencia = 'C2_R';}
-        if( $id_competencia === 3 ) { $competencia = 'C3_R';} 
+        if( $id_competencia === 3 ) { $competencia = 'C3_R';}
         if( $id_competencia === 4 ) { $competencia = 'C4_R';}
         if( $id_competencia === 5 ) { $competencia = 'C5_R';}
         if( $id_competencia === 6 ) { $competencia = 'C6_R';}
@@ -72,7 +72,7 @@ class AlumnoController extends Controller
         if( $id_competencia === 9 ) { $competencia = 'C9_R';}
         if( $id_competencia === 10 ) { $competencia = 'C10_R';}
         if( $id_competencia === 11 ) { $competencia = 'C11_R';}
-            
+
         $res = DB::select("SELECT estudiante.id, programa.programa,datos_ingreso.semestre, estudiante.dni, estudiante.nombres, estudiante.paterno, estudiante.materno from matriz
         JOIN datos_ingreso ON matriz.dni = datos_ingreso.dni
         JOIN competencia_programa ON datos_ingreso.id_programa = competencia_programa.id_programa
@@ -83,15 +83,15 @@ class AlumnoController extends Controller
         JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
         JOIN programa ON programa.id = datos_ingreso.id_programa
         JOIN escuela ON escuela.id = programa.id_escuela
-        WHERE escuela.id = ".$id_escuela.' ) AND competencia_programa.id_competencia = '.$id_competencia." 
+        WHERE escuela.id = ".$id_escuela.' ) AND competencia_programa.id_competencia = '.$id_competencia."
         AND matriz.".$competencia." <= 10.49");
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-    
+
     }
-    
+
 
     public function getAlumnosRegistroSSSS(Request $request){
 
@@ -110,11 +110,11 @@ class AlumnoController extends Controller
                 ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -123,7 +123,8 @@ class AlumnoController extends Controller
         foreach ( $request->datos as  $item) {
 
             $usuario = Usuario::create([
-                'email' => $item['email'],
+                // 'email' => $item['email'],
+                'email' => $item['codigo'],
                 'password' => Hash::make($item['dni']),
                 'rol' => 5,
                 'estado' => 1,
@@ -150,19 +151,19 @@ class AlumnoController extends Controller
                 'apto' => $item['apto'],
                 'direccion' => $item['direccion'],
                 'telefono' => $item['telefono'],
-                'usuario_id' => $usuario->id  
+                'usuario_id' => $usuario->id
             ]);
             $alumno->save();
         }
 
        $this->response['estado'] = true;
        return response()->json($this->response, 200);
-      
+
     }
 
 
 
-    
+
 
 
 

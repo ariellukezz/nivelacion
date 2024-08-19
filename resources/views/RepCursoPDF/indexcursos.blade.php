@@ -11,7 +11,7 @@
         opacity: 0.9;
         font-family: 'Gill Sans Extrabold', Helvetica, sans-serif;
         *{margin:2cm 2cm; padding:90px 80px 90px 85px; }
-    }           
+    }
     </style>
 </head>
 <body class="fondo"  style="" >
@@ -36,10 +36,10 @@
                 <tr>
                     <td colspan="3" align="center">LISTA DE ESTUDIANTES A NIVELAR</td>
                 </tr>
-            </table>    
+            </table>
         </div>
 
-        <div style="margin-top: 20px; margin-bottom:12pt">  
+        <div style="margin-top: 20px; margin-bottom:12pt">
             <table style="width: 100%">
                 <tr>
                     <td align="left" style="width:200px;">
@@ -61,7 +61,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;"> 2024-I {{ $data->ciclo}} </span>
+                            <span style="font-size:10pt;"> 2024-II {{ $data->ciclo}} </span>
                         </div>
                     </td>
                 </tr>
@@ -132,10 +132,10 @@
                             <td style="border:solid 1px black;">{{ $item->nombres }}</td>
                             <td style="border:solid 1px black;"></td>
                             <td style="border:solid 1px black;">Desaprobado</td>
-                            
+
 
                         </tr>
-                    @endforeach 
+                    @endforeach
 
                 </tbody>
 
@@ -146,6 +146,6 @@
         </div>
 
     </div>
-    
+
 </body>
 </html>

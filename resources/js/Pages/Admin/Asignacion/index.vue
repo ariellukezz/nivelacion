@@ -8,7 +8,7 @@
         <Button severity="secondary" style="font-size: 0.9rem"  text @click="Inicio"> Inicio </Button>
         <div v-if="escuela !== null" class="flex justify-content-center" style="align-items:center;">
           <i class="pi pi-angle-right " />
-          <Button  severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text> 
+          <Button  severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text>
             <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                 <span> {{ escuela.escuela }} </span>
             </div>
@@ -17,7 +17,7 @@
 
         <div v-if="cursoseleccionado !== null" class="flex justify-content-center" style="align-items:center;">
           <i class="pi pi-angle-right " />
-          <Button  severity="secondary" style="font-size: 0.9rem" text> 
+          <Button  severity="secondary" style="font-size: 0.9rem" text>
             <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                 <span> {{ cursoseleccionado.nombre }} </span>
             </div>
@@ -35,15 +35,15 @@
       </div>
 
       <div v-if="escuela !== null && cursoseleccionado === null">
-        <Dropdown 
-          v-model="competencia" 
+        <Dropdown
+          v-model="competencia"
           :options="competencias"
-          severity="primary" 
-          optionLabel="label" 
-          optionValue="value"  
-          placeholder="Selecciona una competencia" 
-          style="width:325px; height:38px" 
-          class="w-full md:w-11rem mr-4">            
+          severity="primary"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecciona una competencia"
+          style="width:325px; height:38px"
+          class="w-full md:w-11rem mr-4">
           <template #option="slotProps">
               <div class="flex align-items-center" style="width: 280px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                   <div>{{ slotProps.option.label }}</div>
@@ -52,31 +52,31 @@
         </Dropdown>
       </div>
   </div>
-  
+
   <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 140px); font-family: Arial, Helvetica, sans-serif;">
       <!--- PASO 1-->
       <!-- {{ escuela }} -->
       <div>
         <div v-if="escuela === null" class="card">
-          <DataTable 
+          <DataTable
             v-model:selection="escuela"
             selectionMode="single"
-            :value="escuelas" 
-            :class="'p-datatable-sm'"  
-            tableStyle="min-width: 50rem" 
+            :value="escuelas"
+            :class="'p-datatable-sm'"
+            tableStyle="min-width: 50rem"
             style="font-size: .9rem;"
             :paginator="true" :rows="10" :filters="filters"
             >
               <Column field="escuela" header="Escuela"></Column>
               <Column field="facultad" header="Facultad"></Column>
-              <Column field="area" header="Area"></Column>              
+              <Column field="area" header="Area"></Column>
           </DataTable>
         </div>
       </div>
       <!--- END PASO 1-->
 
       <!--- PASO 2 -->
-      <div v-if="escuela !== null && cursoseleccionado === null"> 
+      <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
           <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button>
@@ -88,23 +88,23 @@
               </span>
             </div>
           </div>
-    
+
         </div>
 
         <!-- {{ cursoseleccionado }} -->
         <div class="card" >
-          <Message severity="warn" sticky>Debe crearse un solo curso por competencia. En caso de múltiples docentes, 
+          <Message severity="warn" sticky>Debe crearse un solo curso por competencia. En caso de múltiples docentes,
             uno asume la responsabilidad de ingresar notas tras coordinar con los demás, calcular el promedio de las notas finales del curso. Este docente de preferencia de la escuela profesional o,
              si no, el docente de servicio.
           </Message>
         </div>
         <div class="mt-3" >
-          <DataTable 
+          <DataTable
             v-model:selection="cursoseleccionado"
-            selectionMode="single" 
-            :value="cursos" 
-            :class="'p-datatable-sm'"  
-            tableStyle="min-width: 50rem" 
+            selectionMode="single"
+            :value="cursos"
+            :class="'p-datatable-sm'"
+            tableStyle="min-width: 50rem"
             style="font-size: .9rem;"
             :paginator="true" :rows="9"
             >
@@ -118,7 +118,7 @@
                             </div>
                         </div>
                     </template>
-                </Column> 
+                </Column>
                 <Column field="grupo" header="Grupo"></Column>
                 <Column field="programa" header="Programa"></Column>
                 <Column field="escuela" header="Escuela Prof."></Column>
@@ -148,7 +148,7 @@
     </div>
   </template>
 </Column>
-                <Column field="id_programa" header="Acciones" width="90px"> 
+                <Column field="id_programa" header="Acciones" width="90px">
                   <template #body="{ data }">
                     <div class="flex">
                       <div class="mr-2">
@@ -158,7 +158,7 @@
                     </div>
                   </template>
                 </Column>
-          </DataTable> 
+          </DataTable>
         </div>
 
       </div>
@@ -166,7 +166,7 @@
       <!-- END PASO 2 -->
       <!--- PASO 3 -->
       <!-- {{cursoseleccionado}} -->
-      <div v-if="escuela !== null && cursoseleccionado !== null"> 
+      <div v-if="escuela !== null && cursoseleccionado !== null">
 
         <div class="flex" style="justify-content: space-between;">
           <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button>
@@ -183,11 +183,11 @@
         <!-- {{ cursoseleccionado }} -->
         <div class="mt-3" >
 
-        <DataTable 
-          selectionMode="single" 
-          :value="detalle_curso" 
-          :class="'p-datatable-sm'"  
-          tableStyle="min-width: 50rem" 
+        <DataTable
+          selectionMode="single"
+          :value="detalle_curso"
+          :class="'p-datatable-sm'"
+          tableStyle="min-width: 50rem"
           style="font-size: .9rem;"
           :paginator="true" :rows="9"
           >
@@ -198,7 +198,7 @@
             <Column field="materno" header="Materno"></Column>
             <Column field="curso" header="Curso"></Column>
             <Column field="nota" header="Nota"></Column>
-            <Column field="estado" style=" justify-content: center; display: flex;" header="Condición" width="70px"> 
+            <Column field="estado" style=" justify-content: center; display: flex;" header="Condición" width="70px">
             <template #body="{ data }">
               <div class="flex" style="justify-content: center;">
                 <div v-if="data.nota >= 10.50">
@@ -210,7 +210,7 @@
               </div>
             </template>
             </Column>
-          </DataTable> 
+          </DataTable>
         </div>
         </div>
 
@@ -218,7 +218,7 @@
 
       <Toast />
       <ConfirmPopup></ConfirmPopup>
-      
+
       <!--- MODAL -->
       <Dialog v-model:visible="visible" modal :header="!curso.id?'Curso nuevo':'Editar Curso'" :style="{ width: '750px' }">
 
@@ -229,19 +229,19 @@
           </Message>
         </div> -->
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
-            <label>Estado</label> 
-            <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>  
+            <label>Estado</label>
+            <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>
         </div>
- 
+
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 68%;">
-              <div><label>Nombre del Curso.</label></div>  
+              <div><label>Nombre del Curso.</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="curso.nombre" />
             </div>
-    
+
             <div class="mb-3" style="width: 28%;">
-              <div><label>Grupo</label></div>  
-              <Dropdown v-model="curso.grupo" :options="grupos" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">            
+              <div><label>Grupo</label></div>
+              <Dropdown v-model="curso.grupo" :options="grupos" optionLabel="label" optionValue="value"  placeholder="Selecciona una competencia" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style=" font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -253,8 +253,8 @@
 
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
-              <div><label>Competencia</label></div>  
-              <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Seleccione una competencia" style="width:100%;" class="w-full md:w-11rem">            
+              <div><label>Competencia</label></div>
+              <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Seleccione una competencia" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -266,8 +266,8 @@
 
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
-              <div><label>Programa de estudio</label></div>  
-              <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">            
+              <div><label>Programa de estudio</label></div>
+              <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -280,8 +280,8 @@
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
-            <div><label>Docente</label></div>  
-              <Dropdown v-model="curso.id_docente" :options="docentes2" filter optionLabel="nombres" optionValue="id"  placeholder="Selecciona un docente" style="width:100%;" class="w-full md:w-11rem">            
+            <div><label>Docente</label></div>
+              <Dropdown v-model="curso.id_docente" :options="docentes2" filter optionLabel="nombres" optionValue="id"  placeholder="Selecciona un docente" style="width:100%;" class="w-full md:w-11rem">
                   <template #option="slotProps">
                       <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                           <div>{{ slotProps.option.nombres }}</div>
@@ -290,7 +290,7 @@
               </Dropdown>
             </div>
           </div>
- 
+
           <template #footer>
             <div class="flex" style="justify-content: flex-end;">
               <div>
@@ -301,7 +301,7 @@
           </template>
 
       </Dialog>
-  
+
       <!--- END MODAL -->
 
 
@@ -311,18 +311,18 @@
       <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
 
         <div v-if="alumnosregistro">
-        
-          <DataTable 
+
+          <DataTable
             v-model:selection="alumnos_seleccionados_registro"
-            selectionMode="multiple" 
+            selectionMode="multiple"
             dataKey="id"
-            :metaKeySelection="false" 
+            :metaKeySelection="false"
             :row-selection="false"
-            :value="alumnosregistro" 
-            :class="'p-datatable-sm'"  
-            tableStyle="min-width: 50rem" 
+            :value="alumnosregistro"
+            :class="'p-datatable-sm'"
+            tableStyle="min-width: 50rem"
             style="font-size: .9rem;"
-            :paginator="true" 
+            :paginator="true"
             :rows="10"
           >
               <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
@@ -332,8 +332,8 @@
               <Column field="nombres" header="Nombres"></Column>
               <Column field="paterno" header="Paterno"></Column>
               <Column field="materno" header="Materno"></Column>
-          </DataTable> 
-        </div>    
+          </DataTable>
+        </div>
         <div class="flex" style="width: 100%; justify-content: flex-end;">
           <Button severity="primary" style="font-size: 0.9rem"  text @click="asignar"> Asignar </Button>
         </div>
@@ -343,7 +343,7 @@
   </div>
   </AuthenticatedLayout>
 </template>
-  
+
 <script setup>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
   import { Head } from '@inertiajs/vue3';
@@ -365,8 +365,8 @@
   const escuela = ref(null);
 
   const temps = ref(null);
-  
-  
+
+
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -386,11 +386,11 @@
   const seleccionadosTemp = ref([])
 
   const competencia = ref(null)
-  
-  const docentes = ref([]) 
+
+  const docentes = ref([])
   const visible = ref(false);
   const temp = ref("");
-  
+
   const grupo = ref('A');
   const grupos = ref([
     {value:"A", label:"Grupo A"},
@@ -464,13 +464,13 @@
     grupo:"A",
     estado:true
   })
-  
+
   const getDocentes =  async () => {
     let res = await axios.post( "/coordinador/get-docentes?page=" + pagina.value, { term: buscar.value, } );
     docentes.value = res.data.datos.data;
     totalpaginas.value = res.data.datos.total;
   }
-  
+
   const getProgramas =  async () => {
     let res = await axios.post( "/get-programas?page=" + pagina.value, { term: "" } );
     programas.value = res.data.datos.data;
@@ -480,7 +480,7 @@
     let res = await axios.post( "/get-escuelas", { term: buscarescuela.value } );
     escuelas.value = res.data.datos.data;
   }
-  
+
   const getCompetencias =  async () => {
     let res = await axios.post( "/coordinador/get-competencias?page=",{ term: "" } );
     competencias.value = res.data.datos;
@@ -490,7 +490,7 @@
     let res = await axios.post( "/get-docente-competencia?page=",{ term: "", competencia:cursocompetencia.value });
     docentes2.value = res.data.datos.data;
     docente2.value = res.data.datos.data[0].id;
-  }  
+  }
 
   const getCursos =  async () => {
     let res = await axios.post( "get-cursos?page=",{ term: buscarcurso.value, competencia:competencia.value, escuela:escuela.value.escuela} );
@@ -518,7 +518,7 @@
   const guardar =  async () => {
     let res = await axios.post(
       "save-curso",
-      { 
+      {
         id: curso.value.id,
         nombre: curso.value.nombre,
         id_competencia: cursocompetencia.value,
@@ -526,7 +526,7 @@
         escuela: escuela.value.escuela,
         grupo: curso.value.grupo,
         estado: curso.value.estado,
-        id_programa: prog.value 
+        id_programa: prog.value
       }
 
 
@@ -541,7 +541,7 @@
     // prog.value = null;
 
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getCursos()  
+    getCursos()
     visible.value = false
     limpiar()
     // roles.value = res.data.datos.data;
@@ -569,9 +569,9 @@
         diferencia2: diferenciaBA.value
       }
     );
-  
+
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getDetalleCurso()  
+    getDetalleCurso()
     modal_registro.value = false
     //limpiar()
   }
@@ -590,11 +590,11 @@
     console.log('Elementos en array1 que no están en array2:', diferenciaBA.value);
   };
 
-  
+
   const eliminar =  async (id) => {
     let res = await axios.get("delete-docente/"+id );
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getDocentes() 
+    getDocentes()
   }
 
   const eliminarcurso =  async (id) => {
@@ -607,7 +607,7 @@
     let res = await axios.post( "/get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia });
     alumnosregistro.value = res.data.datos;
   }
-  
+
   watch(visible, ( newValue, oldValue ) => {
       if(emod.value == true  && visible.value == false ){
         curso.value.id = null;
@@ -635,11 +635,11 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
 
  });
 
-    
+
   watch(buscarescuela, ( newValue, oldValue ) => { getEscuelas() })
-  watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })  
+  watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })
   watch(buscar, ( newValue, oldValue ) => { getDocentes(); })
-  watch(cursocompetencia, ( newValue, oldValue ) => { getDocenteXcompetencia(); })  
+  watch(cursocompetencia, ( newValue, oldValue ) => { getDocenteXcompetencia(); })
   watch(competencia, ( newValue, oldValue ) => { getCursos(); })
   watch(escuela, ( newValue, oldValue ) => { if (escuela.value != null){ getCursos();} })
   watch(pageSize, (newValue, oldValue) => { getDocumentos(); })
@@ -655,7 +655,7 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
 
   const abrirseleccionar = () => {  modal_registro.value = true  }
 
-  const limpiar = () => {  
+  const limpiar = () => {
     cursocompetencia.value = null
     curso.value.id = null
     curso.value.nombre = ""
@@ -664,11 +664,11 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
     curso.value.estado = true
     prog.value = null
    }
-  
+
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
   };
-  
+
   const confirm2 = (event,doc) => {
       confirm.require({
           target: event.currentTarget,
@@ -683,7 +683,7 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
           }
       });
   };
-  
+
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
   const resEsuela = () => { cursoseleccionado.value = null }
 
@@ -697,7 +697,7 @@ watch(cursoseleccionado, ( newValue, oldValue ) => { getDocentes() })
   getProgramas()
   getCompetencias()
   getEscuelas()
-  
+
   // getAlumnosRegistros()
 
 </script>

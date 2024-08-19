@@ -28,14 +28,22 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
+
     public function store(LoginRequest $request): RedirectResponse
     {
+        $credentials = $request->only('email', 'password');
+        if (!Auth::attempt($credentials)) {
+            return back()->withErrors([
+                'email' => 'Credenciales incorrectas.',
+        ]);
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();
 
         if( auth()->user()->rol == 1 ) { return redirect('/dashboard'); }
-        
+
         if( auth()->user()->rol == 4){ return redirect('/docente'); }
 
         if( auth()->user()->rol == 5 ){ return redirect('/estudiante/inicio'); }
