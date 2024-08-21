@@ -19,6 +19,7 @@ class Documento extends Model
         'id_escuela',
         'tipo',
         'obser',
+        'periodo',
         'aceptado'
     ];
 

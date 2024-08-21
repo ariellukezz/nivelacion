@@ -106,7 +106,7 @@
             :class="'p-datatable-sm'"
             tableStyle="min-width: 50rem"
             style="font-size: .9rem;"
-            :paginator="true" :rows="9"
+            :paginator="true" :rows="6"
             >
                 <Column field="nombre" header="Nombre del Curso"></Column>
                 <Column field="competencia" header="(Competencia) Curso"></Column>

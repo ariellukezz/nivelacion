@@ -36,6 +36,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/resoluciones/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Resolucion',
+                    'periodo' => '2024-II',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -66,6 +67,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/planes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Plan',
+                    'periodo' => '2024-II',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -96,6 +98,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/informes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Informe',
+                    'periodo' => '2024-II',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -126,6 +129,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/dictantes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Dictantes',
+                    'periodo' => '2024-II',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -157,6 +161,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/otros/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Otros',
+                    'periodo' => '2024-II',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -173,7 +178,7 @@ class DocumentoController extends Controller
 
     public function getResoluciones(Request $request){
 
-        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado')
+        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado','periodo')
         ->where('tipo','=','Resolucion')
         ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
@@ -198,7 +203,7 @@ class DocumentoController extends Controller
 
     public function getPlanes(Request $request){
 
-        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado')
+        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado','periodo')
         ->where('tipo','=','Plan')
         ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
@@ -222,7 +227,7 @@ class DocumentoController extends Controller
 
     public function getInformes(Request $request){
 
-        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado')
+        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado','periodo')
         ->where('tipo','=','Informe')
         ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
@@ -246,7 +251,7 @@ class DocumentoController extends Controller
 
     public function getDictantes(Request $request){
 
-        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado')
+        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado','periodo')
         ->where('tipo','=','Dictantes')
         ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {
@@ -269,7 +274,7 @@ class DocumentoController extends Controller
     }
     public function getOtros(Request $request){
 
-        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado')
+        $res = Documento::select('id','nombre','url','fecha_subida as fecha','tipo', 'obser','aceptado','periodo')
         ->where('tipo','=','Otros')
         ->where('id_usuario','=', auth()->id())
         ->where(function ($query) use ($request) {

@@ -37,6 +37,7 @@
                   <Column field="nombre" header="Nombre"></Column>
                   <Column field="tipo" header="Tipo"></Column>
                   <Column field="fecha" header="Fecha"></Column>
+                  <Column field="periodo" header="periodo"></Column>
                   <Column header="estado">
                     <template #body="{ data }">
                       <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
@@ -98,6 +99,7 @@
                   <Column field="nombre" header="Nombre"></Column>
                   <Column field="tipo" header="Tipo"></Column>
                   <Column field="fecha" header="Fecha"></Column>
+                  <Column field="periodo" header="periodo"></Column>
                   <Column header="estado">
                     <template #body="{ data }">
                       <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
@@ -159,6 +161,7 @@
                   <Column field="nombre" header="Nombre"></Column>
                   <Column field="tipo" header="Tipo"></Column>
                   <Column field="fecha" header="Fecha"></Column>
+                  <Column field="periodo" header="periodo"></Column>
                   <Column header="estado">
                     <template #body="{ data }">
                       <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
@@ -221,6 +224,7 @@
                   <Column field="nombre" header="Nombre"></Column>
                   <Column field="tipo" header="Tipo"></Column>
                   <Column field="fecha" header="Fecha"></Column>
+                  <Column field="periodo" header="periodo"></Column>
                   <Column header="estado">
                     <template #body="{ data }">
                       <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
@@ -279,6 +283,7 @@
                   <Column field="nombre" header="Nombre"></Column>
                   <Column field="tipo" header="Tipo"></Column>
                   <Column field="fecha" header="Fecha"></Column>
+                  <Column field="periodo" header="periodo"></Column>
                   <Column header="estado">
                     <template #body="{ data }">
                       <div v-if="data.aceptado == 0" style="color: red; font-weight: bold">
