@@ -36,6 +36,7 @@
                 :class="'p-datatable-sm'"
                 tableStyle="min-width: 50rem"
                 style="font-size: .9rem;">
+                <Column field="periodo" header="Periodo"></Column>
                 <Column field="tipo" header="TIPO"></Column>
                 <Column field="escuela" header="ESCUELA PROFESIONAL"></Column>
                 <Column field="fecha_subida" header="FECHA"></Column>

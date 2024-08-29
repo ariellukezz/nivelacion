@@ -54,6 +54,7 @@ class SupervisorController extends Controller
             'escuela.nombre AS escuela',
             'escuela.nombre_corto',
             'documento.fecha_subida',
+            'documento.periodo',
             'users.nombres AS username',
             'users.apellidos AS userlastname',
             'documento.url',

@@ -7,7 +7,7 @@
       <Button severity="secondary" style="font-size: 0.9rem"  text @click="Inicio"> Inicio </Button>
       <div v-if="cursoseleccionado !== null" class="flex justify-content-center" style="align-items:center;">
         <i class="pi pi-angle-right " />
-        <Button severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text> 
+        <Button severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text>
           <div style=" max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
               <span> {{ cursoseleccionado.nombre }} </span>
           </div>
@@ -19,7 +19,7 @@
 
   <div class="bg-white shadow-xs p-4" style=" height: calc(100vh - 110px); font-family: Arial, Helvetica, sans-serif;">
     <Toast />
-    <!-- CURSOS  1 -->  
+    <!-- CURSOS  1 -->
     <div v-if="cursoseleccionado === null">
         <div>
           <div class="flex" style="justify-content: flex-end;">
@@ -32,20 +32,21 @@
 
         <div>
           <div class="card" >
-
-            <DataTable 
+            <!-- <pre>{{ cursos }}</pre> -->
+            <DataTable
               selectionMode="single"
               v-model:selection="cursoseleccionado"
-              :value="cursos" 
-              :class="'p-datatable-sm mt-4'"  
-              tableStyle="min-width: 50rem" 
+              :value="cursos"
+              :class="'p-datatable-sm mt-4'"
+              tableStyle="min-width: 50rem"
               style="font-size: .9rem;">
-            
+
                 <Column field="nombre" header="Curso"></Column>
                 <Column field="grupo" header="Grupo"></Column>
                 <Column field="escuela" header="Escuela"></Column>
+                <Column field="programa" header="programa"></Column>
 
-                <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
+                <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px">
                     <template #body="{ data }">
                         <div class="flex" style="justify-content: center;">
                         <div v-if="data.estado === 1">
@@ -57,8 +58,8 @@
                         </div>
                     </template>
                 </Column>
-                    
-                <Column field="id_programa" header="Acciones" width="90px"> 
+
+                <Column field="id_programa" header="Acciones" width="90px">
                   <template #body="{ data }">
                     <div class="flex">
                       <Button class="" severity="help" icon="pi pi-eye" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;" />                    </div>
@@ -71,7 +72,7 @@
     <!-- END PASO 1 -->
 
     <!--- PASO 2 -->
-  
+
     <div v-if="cursoseleccionado != null">
         <div>
           <div class="flex mb-3" style="justify-content: space-between;">
@@ -101,8 +102,8 @@
                       {{ data.ant }}
                     </div>
                   </template>
-                </Column> 
-                <Column field="nota" header="Nota" > 
+                </Column>
+                <Column field="nota" header="Nota" >
                   <template #editor="{ data, field }">
                     <InputNumber style="width:100px;" v-model="data[field]" inputId="minmaxfraction" :max="20" :min="0" :maxFractionDigits="2" autofocus />
                   </template>
@@ -111,7 +112,7 @@
                     <div v-else> {{ Number(data[field]).toFixed(2) }} </div>
                   </template>
                 </Column>
-                <Column field="id_programa" header="Condición" > 
+                <Column field="id_programa" header="Condición" >
                     <template #body="{ data }">
                       <div class="flex justify-center" v-if="data.condicion === 1" >
                         <Tag severity="info" value="Aprobado"></Tag>
@@ -193,7 +194,7 @@ const descargarPDF =  async ( ) => {
 
 watch(buscar, ( newValue, oldValue ) => { getCursos() })
 watch(cursoseleccionado, ( newValue, oldValue ) => { getAlumnosXcurso() })
-watch(buscarAlumno, ( newValue, oldValue ) => { getAlumnosXcurso() }) 
+watch(buscarAlumno, ( newValue, oldValue ) => { getAlumnosXcurso() })
 
 getCursos()
 
@@ -203,7 +204,7 @@ const columns = ref([
     { field: 'nombres', header: 'Nombres' },
     { field: 'paterno', header: 'Paterno' },
     { field: 'materno', header: 'Materno' }
-    
+
 ]);
 
 const onCellEditComplete = (event) => {
@@ -234,5 +235,5 @@ const isPositiveInteger = (val) => {
 const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
 };
-  
+
 </script>

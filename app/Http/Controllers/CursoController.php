@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class CursoController extends Controller
 {
-    //DOCENTE 
+    //DOCENTE
     public function cursoDocente()
     {
         return Inertia::render('Docente/Cursos/cursos');
@@ -20,8 +20,9 @@ class CursoController extends Controller
 
     public function getCursos(Request $request){
 
-        $res = Curso::select('curso.id', 'curso.nombre','curso.grupo', 'curso.escuela', 'curso.estado', 'curso.editable')
+        $res = Curso::select('curso.id', 'curso.nombre','curso.grupo', 'curso.escuela', 'curso.estado', 'curso.editable','programa.programa')
         ->join('docente','curso.id_docente','docente.id')
+        ->join('programa', 'programa.id', '=', 'curso.id_programa')
         ->where('curso.estado',"=",1)
         ->where('docente.usuario_id',"=", auth()->user()->id)
         ->where(function ($query) use ($request) {
@@ -31,11 +32,11 @@ class CursoController extends Controller
                 ->orWhere('curso.escuela', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -60,11 +61,11 @@ class CursoController extends Controller
                 ->orWhere('estudiante.paterno', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.paterno', 'ASC')
         ->paginate(200);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -89,10 +90,10 @@ class CursoController extends Controller
     }
 
     //END DOCENTE
-    
 
 
-    //ALUMNO 
+
+    //ALUMNO
 
     public function getNotasByAlumno(Request $request ) {
 
@@ -108,7 +109,7 @@ class CursoController extends Controller
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
@@ -118,7 +119,7 @@ class CursoController extends Controller
     // SELECT curso_detalle.encuesta, curso.id, curso.nombre FROM curso
     // JOIN curso_detalle ON curso_detalle.id_curso = curso.id
     // WHERE curso_detalle.id_alumno = 1000
-    
+
 
     public function getCursosEncuesta() {
 
@@ -129,7 +130,7 @@ class CursoController extends Controller
         ->where('curso.estado',"=",1)
         ->where('curso_detalle.id_alumno',"=", $alumno[0]->id)
         ->get();
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
@@ -142,7 +143,7 @@ class CursoController extends Controller
         ->where('curso.estado',"=",1)
         ->where('id_docente',"=", $docente[0]->id)
         ->get();
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
@@ -162,7 +163,7 @@ class CursoController extends Controller
     }
 
 
-    
+
     //
 
 

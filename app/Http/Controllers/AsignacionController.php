@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 
 class AsignacionController extends Controller
 {
-    
+
     public function index()
     {
         return Inertia::render('Asignacion/index');
@@ -24,7 +24,7 @@ class AsignacionController extends Controller
         $query_where = [];
 
         if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
-        
+
         $res = Curso::select(
             'curso.id', 'curso.nombre',
             'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
@@ -47,18 +47,18 @@ class AsignacionController extends Controller
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
     public function getDetalleCurso(Request $request){
 
         $query_where = [];
         //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
-        
-        
+
+
         $res = CursoDetalle::select(
             'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
-            'curso.nombre as curso',  
+            'curso.nombre as curso',
             'curso_detalle.nota'
         )
         ->join('curso','curso_detalle.id_curso','curso.id')
@@ -83,13 +83,13 @@ class AsignacionController extends Controller
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('curso.id', 'DESC')
         ->paginate(200);
-        
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         $this->response['registrados'] = $registrados;
 
         return response()->json($this->response, 200);
-      
+
     }
 
 
@@ -154,11 +154,11 @@ class AsignacionController extends Controller
                 ->orWhere('docente.nro_doc', 'LIKE', '%' . $request->term . '%');
         })->orderBy('docente.id', 'DESC')
         ->paginate(1000);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
     public function asignarCursoNivelacion(Request $request){
@@ -184,7 +184,7 @@ class AsignacionController extends Controller
         } catch (\Throwable $e) {
           echo "Error en la transacción: " . $e->getMessage();
       }
-    
+
     }
 
     public function asignarCurso($id_curso, $id_alumno){
@@ -219,7 +219,7 @@ public function pdf($curso){
         'curso.ciclo',
         'competencia.id AS id_competencia',
         'competencia.nombre AS competencia',
-        'docente.nro_doc AS dni_docente', 
+        'docente.nro_doc AS dni_docente',
         'docente.nombres AS nombre',
         'docente.paterno as paterno',
         'docente.materno as materno',
@@ -235,16 +235,16 @@ public function pdf($curso){
 
     $estudiantes = CursoDetalle::select(
         'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
-        'curso_detalle.nota', 'curso_detalle.condicion' 
+        'curso_detalle.nota', 'curso_detalle.condicion'
     )
     ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
     ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
     ->where('curso_detalle.id_curso','=',$curso)
     ->get();
-    
+
     $data = $res[0];
     $pdf = pdf::loadView('RepCursoPDF/indexcursos', compact('data','estudiantes'));
-    
+
     return $pdf->download('Reporte.pdf');
 
 }
