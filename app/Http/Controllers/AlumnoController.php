@@ -58,6 +58,10 @@ class AlumnoController extends Controller
 
     public function getAlumnosRegistro(Request $request){
 
+
+        $query_where = [];
+
+        if ($request->programa) array_push($query_where,[DB::raw('programa.id'), '=', $request->programa]);
         $id_competencia = $request->curso;
         $id_escuela = $request->escuela;
         $competencia = "";
@@ -72,19 +76,24 @@ class AlumnoController extends Controller
         if( $id_competencia === 9 ) { $competencia = 'C9_R';}
         if( $id_competencia === 10 ) { $competencia = 'C10_R';}
         if( $id_competencia === 11 ) { $competencia = 'C11_R';}
-
-        $res = DB::select("SELECT estudiante.id, programa.programa,datos_ingreso.semestre, estudiante.dni, estudiante.nombres, estudiante.paterno, estudiante.materno from matriz
-        JOIN datos_ingreso ON matriz.dni = datos_ingreso.dni
-        JOIN competencia_programa ON datos_ingreso.id_programa = competencia_programa.id_programa
-        jOIN estudiante ON estudiante.dni = datos_ingreso.dni
-        JOIN programa ON programa.id = datos_ingreso.id_programa
-        WHERE datos_ingreso.dni  IN  (
-        SELECT estudiante.dni FROM estudiante
-        JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
-        JOIN programa ON programa.id = datos_ingreso.id_programa
-        JOIN escuela ON escuela.id = programa.id_escuela
-        WHERE escuela.id = ".$id_escuela.' ) AND competencia_programa.id_competencia = '.$id_competencia."
-        AND matriz.".$competencia." <= 10.49");
+        $res = DB::table('matriz')
+        ->join('datos_ingreso', 'matriz.dni', '=', 'datos_ingreso.dni')
+        ->join('competencia_programa', 'datos_ingreso.id_programa', '=', 'competencia_programa.id_programa')
+        ->join('estudiante', 'estudiante.dni', '=', 'datos_ingreso.dni')
+        ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
+        ->where($query_where)
+        ->whereIn('datos_ingreso.dni', function($query) use ($id_escuela) {
+            $query->select('estudiante.dni')
+                ->from('estudiante')
+                ->join('datos_ingreso', 'estudiante.dni', '=', 'datos_ingreso.dni')
+                ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
+                ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
+                ->where('escuela.id', $id_escuela);
+        })
+        ->where('competencia_programa.id_competencia', $id_competencia)
+        ->where('matriz.' . $competencia, '<=', 10.49)
+        ->select('estudiante.id', 'programa.programa', 'datos_ingreso.semestre', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+        ->get();
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;

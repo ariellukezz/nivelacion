@@ -67,6 +67,7 @@
             style="font-size: .9rem;"
             :paginator="true" :rows="10" :filters="filters"
             >
+              <Column field="filial" header="Ubicación"></Column>
               <Column field="escuela" header="Escuela"></Column>
               <Column field="facultad" header="Facultad"></Column>
               <Column field="area" header="Area"></Column>
@@ -125,29 +126,32 @@
 
 
                 <Column field="estado" header="Lista" style="text-align: center;">
-  <template #body="{ data }">
-    <div class="flex" style="justify-content: center;">
-      <div v-if="data.estado === 1">
-        <!-- <Button  @click="descargarPDF(data.id)" label="Generar PDF" /> -->
-        <Button class="secondary" severity="success" icon="pi pi-print" aria-label="Submit" @click="descargarPDF(data.id)" size="small" style="width: 25px; height: 25px;"/>
+                    <template #body="{ data }">
+                        <div class="flex" style="justify-content: center;">
+                        <div v-if="data.estado === 1">
+                            <!-- <Button  @click="descargarPDF(data.id)" label="Generar PDF" /> -->
+                            <Button class="secondary" severity="success" icon="pi pi-print" aria-label="Submit" @click="descargarPDF(data.id)" size="small" style="width: 25px; height: 25px;"/>
 
-      </div>
-    </div>
-  </template>
-</Column>
+                        </div>
+                        <div v-else>
+                            <Button disabled class="secondary" severity="success" icon="pi pi-print" aria-label="Submit" @click="descargarPDF(data.id)" size="small" style="width: 25px; height: 25px;"/>
+                        </div>
+                        </div>
+                    </template>
+                    </Column>
 
-<Column field="estado" header="Estado" style="text-align: center;">
-  <template #body="{ data }">
-    <div class="flex" style="justify-content: center;">
-      <div v-if="data.estado === 1">
-        <Tag severity="info" value="Activo"></Tag>
-      </div>
-      <div v-else>
-        <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
-      </div>
-    </div>
-  </template>
-</Column>
+                    <Column field="estado" header="Estado" style="text-align: center;">
+                    <template #body="{ data }">
+                        <div class="flex" style="justify-content: center;">
+                        <div v-if="data.estado === 1">
+                            <Tag severity="info" value="Activo"></Tag>
+                        </div>
+                        <div v-else>
+                            <Tag :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
+                        </div>
+                        </div>
+                    </template>
+                </Column>
                 <Column field="id_programa" header="Acciones" width="90px">
                   <template #body="{ data }">
                     <div class="flex">
@@ -256,7 +260,7 @@
               <div><label>Competencia</label></div>
               <Dropdown v-model="cursocompetencia" :options="competencias" optionLabel="label" optionValue="value"  placeholder="Seleccione una competencia" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
-                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                    <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
                     </div>
                 </template>
@@ -269,7 +273,7 @@
               <div><label>Programa de estudio</label></div>
               <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
-                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                    <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
                     </div>
                 </template>
@@ -283,7 +287,7 @@
             <div><label>Docente</label></div>
               <Dropdown v-model="curso.id_docente" :options="docentes2" filter optionLabel="nombres" optionValue="id"  placeholder="Selecciona un docente" style="width:100%;" class="w-full md:w-11rem">
                   <template #option="slotProps">
-                      <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                      <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                           <div>{{ slotProps.option.nombres }}</div>
                       </div>
                   </template>
@@ -309,6 +313,20 @@
 
             <!--- MODAL -->
       <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
+
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+            <div class="mb-3" style="width: 100%;">
+              <div><label>Programa de estudio</label></div>
+              <Dropdown v-model="progselection" :options="programasAsignacion" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
+                <template #option="slotProps">
+                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                        <div>{{ slotProps.option.label }}</div>
+                    </div>
+                </template>
+              </Dropdown>
+            </div>
+        </div>
 
         <div v-if="alumnosregistro">
 
@@ -401,56 +419,64 @@
   ])
 
   const prog = ref(null);
+  const progselection = ref(null);
   const programasselect = ref([
-    {value:1, label:"INGENIERIA AGRONOMICA"},
-    {value:2, label:"INGENIERIA AGROINDUSTRIAL"},
-    {value:3, label:"INGENIERIA TOPOGRAFICA Y AGRIMENSURA"},
-    {value:4, label:"MEDICINA VETERINARIA Y ZOOTECNIA"},
-    {value:5, label:"INGENIERIA ECONOMICA"},
-    {value:6, label:"CIENCIAS CONTABLES"},
-    {value:7, label:"ADMINISTRACION"},
-    {value:8, label:"TRABAJO SOCIAL"},
-    {value:9, label:"ENFERMERIA"},
-    {value:10, label:"INGENIERIA DE MINAS"},
-    {value:11, label:"HUMANIDADES"},
-    {value:12, label:"SOCIOLOGIA"},
-    {value:13, label:"TURISMO"},
-    {value:14, label:"ANTROPOLOGIA"},
-    {value:15, label:"CIENCIAS DE LA COMUNICACION SOCIAL"},
-    {value:16, label:"ARTE: ARTES PLASTICAS"},
-    {value:17, label:"ARTE: MUSICA"},
-    {value:18, label:"ARTE: DANZA"},
-    {value:19, label:"BIOLOGIA: ECOLOGIA"},
-    {value:20, label:"BIOLOGIA: MICROBIOLOGIA Y LABORATORIO CLINICO"},
-    {value:21, label:"BIOLOGIA: PESQUERIA"},
-    {value:22, label:"EDUC. SEC.: CIENCIA, TECNOLOGIA Y AMBIENTE"},
-    {value:23, label:"EDUC. SEC.: CIENCIAS SOCIALES"},
-    {value:24, label:"EDUC. SEC.: LIT. PSICOLOGIA Y FILOSOFIA"},
-    {value:25, label:"EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA"},
-    {value:26, label:"EDUCACION PRIMARIA"},
-    {value:27, label:"EDUCACION INICIAL"},
-    {value:28, label:"EDUCACION FISICA"},
-    {value:29, label:"INGENIERIA ESTADISTICA E INFORMATICA"},
-    {value:30, label:"DERECHO"},
-    {value:31, label:"INGENIERIA QUIMICA"},
-    {value:32, label:"ODONTOLOGIA"},
-    {value:33, label:"NUTRICION HUMANA"},
-    {value:34, label:"INGENIERIA GEOLOGICA"},
-    {value:35, label:"INGENIERIA METALURGICA"},
-    {value:36, label:"INGENIERIA CIVIL"},
-    {value:37, label:"ARQUITECTURA Y URBANISMO"},
-    {value:38, label:"CIENCIAS FISICO MATEMATICAS: FISICA"},
-    {value:39, label:"CIENCIAS FISICO MATEMATICAS: MATEMATICAS "},
-    {value:40, label:"INGENIERIA AGRICOLA"},
-    {value:41, label:"MEDICINA HUMANA"},
-    {value:42, label:"INGENIERIA MECANICA ELECTRICA"},
-    {value:43, label:"INGENIERIA ELECTRONICA"},
-    {value:44, label:"INGENIERIA DE SISTEMAS"},
-    {value:45, label:"PSICOLOGIA"},
-  ])
+    {value:1, label:"INGENIERIA AGRONOMICA - PUNO"},
+    {value:2, label:"INGENIERIA AGROINDUSTRIAL - PUNO"},
+    {value:3, label:"INGENIERIA TOPOGRAFICA Y AGRIMENSURA - PUNO"},
+    {value:4, label:"MEDICINA VETERINARIA Y ZOOTECNIA - PUNO"},
+    {value:5, label:"INGENIERIA ECONOMICA - PUNO"},
+    {value:6, label:"CIENCIAS CONTABLES - PUNO"},
+    {value:7, label:"ADMINISTRACION - PUNO"},
+    {value:8, label:"TRABAJO SOCIAL - PUNO"},
+    {value:9, label:"ENFERMERIA - PUNO"},
+    {value:10, label:"INGENIERIA DE MINAS - PUNO"},
+    {value:11, label:"HUMANIDADES - PUNO"},
+    {value:12, label:"SOCIOLOGIA - PUNO"},
+    {value:13, label:"TURISMO - PUNO"},
+    {value:14, label:"ANTROPOLOGIA - PUNO"},
+    {value:15, label:"CIENCIAS DE LA COMUNICACION SOCIAL - PUNO"},
+    {value:16, label:"ARTE: ARTES PLASTICAS - PUNO"},
+    {value:17, label:"ARTE: MUSICA - PUNO"},
+    {value:18, label:"ARTE: DANZA - PUNO"},
+    {value:19, label:"BIOLOGIA: ECOLOGIA - PUNO"},
+    {value:20, label:"BIOLOGIA: MICROBIOLOGIA Y LABORATORIO CLINICO - PUNO"},
+    {value:21, label:"BIOLOGIA: PESQUERIA - PUNO"},
+    {value:22, label:"EDUC. SEC.: CIENCIA, TECNOLOGIA Y AMBIENTE - PUNO"},
+    {value:23, label:"EDUC. SEC.: CIENCIAS SOCIALES - PUNO"},
+    {value:24, label:"EDUC. SEC.: LIT. PSICOLOGIA Y FILOSOFIA - PUNO"},
+    {value:25, label:"EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA - PUNO"},
+    {value:26, label:"EDUCACION PRIMARIA - PUNO"},
+    {value:27, label:"EDUCACION INICIAL - PUNO"},
+    {value:28, label:"EDUCACION FISICA - PUNO"},
+    {value:29, label:"INGENIERIA ESTADISTICA E INFORMATICA - PUNO"},
+    {value:30, label:"DERECHO - PUNO"},
+    {value:31, label:"INGENIERIA QUIMICA - PUNO"},
+    {value:32, label:"ODONTOLOGIA - PUNO"},
+    {value:33, label:"NUTRICION HUMANA - PUNO"},
+    {value:34, label:"INGENIERIA GEOLOGICA - PUNO"},
+    {value:35, label:"INGENIERIA METALURGICA - PUNO"},
+    {value:36, label:"INGENIERIA CIVIL - PUNO"},
+    {value:37, label:"ARQUITECTURA Y URBANISMO - PUNO"},
+    {value:38, label:"CIENCIAS FISICO MATEMATICAS: FISICA - PUNO"},
+    {value:39, label:"CIENCIAS FISICO MATEMATICAS: MATEMATICAS - PUNO"},
+    {value:40, label:"INGENIERIA AGRICOLA - PUNO"},
+    {value:41, label:"MEDICINA HUMANA - PUNO"},
+    {value:42, label:"INGENIERIA MECANICA ELECTRICA - PUNO"},
+    {value:43, label:"INGENIERIA ELECTRONICA - PUNO"},
+    {value:44, label:"INGENIERIA DE SISTEMAS - PUNO"},
+    {value:45, label:"PSICOLOGIA - PUNO"},
+    {value:46, label:"INGENIERIA ECONOMICA - AZANGARO"},
+    {value:47, label:"INGENIERIA DE MINAS - AZANGARO"},
+    {value:48, label:"INGENIERIA TELECOMUNICACIONES - AZANGARO"},
+    {value:49, label:"CIENCIAS CONTABLES - JULI"},
+    {value:50, label:"ARQUITECTURA Y URBANISMO - JULI"},
+    {value:51, label:"INGENIERIA AGROINDUSTRIAL - JULI"},
+]);
+
 
   const alumnosregistro = ref([])
-
+  const programasAsignacion = ref([])
   const docentes2 = ref([])
   const docente2 = ref(null)
   const escuelas = ref([])
@@ -475,6 +501,12 @@
     let res = await axios.post( "/get-programas?page=" + pagina.value, { term: "" } );
     programas.value = res.data.datos.data;
   }
+
+  const getProgramasEscuela =  async () => {
+    let res = await axios.post( "/get-programas-escuela?page=" + pagina.value, { term: "", id_escuela: escuela.value.id } );
+    programasAsignacion.value = res.data.datos.data;
+  }
+
 
   const getEscuelas =  async () => {
     let res = await axios.post( "/get-escuelas", { term: buscarescuela.value } );
@@ -501,7 +533,7 @@
 
   const editar =  async (item) => {
     limpiar()
-    temps.value = item;
+    //temps.value = item;
     visible.value = true;
     emod.value = true;
     curso.value.id = item.id;
@@ -604,7 +636,7 @@
   }
 
   const getAlumnosRegistros =  async () => {
-    let res = await axios.post( "/get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia });
+    let res = await axios.post( "/get-alumnos-registro?page=",{ term: "", escuela: escuela.value.id, curso: cursoseleccionado.value.id_competencia, programa: progselection.value });
     alumnosregistro.value = res.data.datos;
   }
 
@@ -653,7 +685,16 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
 
   })
 
-  const abrirseleccionar = () => {  modal_registro.value = true  }
+  watch(progselection, ( newValue, oldValue ) => {
+   getAlumnosRegistros()
+
+  })
+
+
+  const abrirseleccionar = () => {
+    modal_registro.value = true;
+    getProgramasEscuela()
+ }
 
   const limpiar = () => {
     cursocompetencia.value = null
@@ -685,7 +726,10 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
   };
 
   const Inicio = () => { escuela.value = null; cursoseleccionado.value = null  }
-  const resEsuela = () => { cursoseleccionado.value = null }
+  const resEsuela = () => {
+    cursoseleccionado.value = null;
+    getCursos()
+  }
 
 
   const descargarPDF =  async ( id ) => {
