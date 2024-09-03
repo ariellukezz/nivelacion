@@ -19,7 +19,18 @@ class TeController extends Controller {
       WHERE curso.escuela = '".$escuela[0]->nombre."'
       ORDER BY curso.id_competencia ASC");
 
+
+    //   SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
+    //     estudiante.paterno, estudiante.materno, programa.programa, datos_ingreso.semestre AS semestre
+    //     FROM curso
+    //     JOIN curso_detalle ON curso.id = curso_detalle.id_curso
+    //     JOIN estudiante ON estudiante.id = curso_detalle.id_alumno
+    //     JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
+    //     JOIN programa ON datos_ingreso.id_programa=programa.id
+    //     WHERE curso.escuela = '".$escuela[0]->nombre
+
         $alumnos = [];
+
 
         foreach ($competencias as $competencia) {
         $res = DB::select("SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
@@ -29,8 +40,9 @@ class TeController extends Controller {
         JOIN estudiante ON estudiante.id = curso_detalle.id_alumno
         JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
         JOIN programa ON datos_ingreso.id_programa=programa.id
-        WHERE curso.escuela = '".$escuela[0]->nombre."'
-        AND curso.id_competencia = :competencia
+        JOIN escuela ON programa.id_escuela = escuela.id AND escuela.nombre = curso.escuela
+        WHERE escuela.id = ".auth()->user()->id_escuela.
+        " AND curso.id_competencia = :competencia
         ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
 
         foreach ($res as $row) {
