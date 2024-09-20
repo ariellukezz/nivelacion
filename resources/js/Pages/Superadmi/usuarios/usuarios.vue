@@ -22,22 +22,32 @@
         </span>
       </div>
     </div>
+     <!-- <pre>{{ usuarios }}</pre> -->
 
-      <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem"
-        style="font-size: 0.8rem;">
+     <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
         <Column field="nombres" header="nombres"></Column>
         <Column field="apellidos" header="apellidos"></Column>
         <Column field="email" header="email"></Column>
-        <Column field="estado_contraseña" header="estado_contraseña"></Column>
+
+        <!-- Columna personalizada para estado_contraseña -->
+        <Column header="Estado Contraseña">
+        <template #body="{ data }">
+            <span :class="data.estado_contraseña === 1 ? 'text-green-500' : 'text-red-500'">
+            {{ data.estado_contraseña === 1 ? 'No Cambiado' : 'Cambiado' }}
+            </span>
+        </template>
+        </Column>
+
         <Column field="programa" header="Opciones" width="80px">
             <template #body="{ data }">
-              <div class="flex">
-                <Button class="text-6xl text-primary-500" severity="help" aria-label="Submit" @click="restablecer(data)" size="small">restablecer</Button>
-              </div>
+            <div class="flex">
+                <Button class="text-6xl text-primary-500" severity="help" aria-label="Submit" @click="restablecer(data)" size="small">
+                Restablecer
+                </Button>
+            </div>
             </template>
-          </Column>
-
-      </DataTable>
+        </Column>
+     </DataTable>
     </div>
   </AuthenticatedLayout>
 </template>
@@ -85,9 +95,13 @@ const getUsuarios = async (event) => {
 }
 
 const restablecer = async (data) => {
-  let res = await axios.post(
-    "restablecerContraseña", { id: data.id}
+  let res = await axios.post("restablecerContraseña", { id: data.id}
   );
+  if (res.status === 200) {
+    // Suponiendo que restablecer la contraseña fue exitoso
+    // Vuelve a cargar la lista de usuarios
+    await getUsuarios();
+  }
 }
 
 

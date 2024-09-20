@@ -37,53 +37,71 @@ class SupervisorController extends Controller
 
 //     }
 
-    public function getDocumentos(Request $request) {
-        // Definir las condiciones iniciales
-        $conditions = [];
+public function getDocumentos(Request $request) {
+    $conditions = [];
 
-        if ($request->programa) array_push($conditions,[DB::raw('documento.id_escuela'), '=', $request->programa]);
-        // Filtrar por programa si está presente en la solicitud
-        // if ($request->has('programa')) {
-        //     $conditions[] = ['documento.id_escuela', '=', $request->programa];
-        // }
-
-        // Realizar la consulta de manera más legible
-        $query = Documento::select(
-            'documento.id',
-            'documento.tipo',
-            'escuela.nombre AS escuela',
-            'escuela.nombre_corto',
-            'documento.fecha_subida',
-            'documento.periodo',
-            'users.nombres AS username',
-            'users.apellidos AS userlastname',
-            'documento.url',
-            'documento.aceptado',
-            'documento.aceptado as aceptados',
-            'documento.obser'
-        )
-        ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
-        ->join('users', 'users.id', '=', 'documento.id_usuario')
-        ->where(function ($query) use ($request) {
-            $query->where('escuela.nombre', 'LIKE', '%' . $request->term . '%')
-                ->orWhere('documento.tipo', 'LIKE', '%' . $request->term . '%')
-                ->orWhere('users.nombres', 'LIKE', '%' . $request->term . '%');
-        });
-
-        // Aplicar condiciones adicionales si las hay
-        if (!empty($conditions)) {
-            $query->where($conditions);
-        }
-
-        // $res = $query->paginate($request->paginashoja);
-        $res = $query->paginate(200);
-
-        // Devolver una respuesta JSON
-        return response()->json([
-            'estado' => true,
-            'datos' => $res,
-        ], 200);
+    // Condición por programa
+    if ($request->programa) {
+        array_push($conditions, [DB::raw('documento.id_escuela'), '=', $request->programa]);
     }
+
+    // Condición por periodo
+    if ($request->periodo) {
+        array_push($conditions, ['documento.periodo', '=', $request->periodo]);
+    }
+
+    // Condición por tipo de documento
+    if ($request->tipo) {
+        array_push($conditions, ['documento.tipo', '=', $request->tipo]);
+    }
+
+    // Condición por aceptado
+    if ($request->aceptado === 'null') {
+        // Si aceptado es 'null', buscamos los documentos con valor null en la columna aceptado
+        $query->whereNull('documento.aceptado');
+    } elseif (isset($request->aceptado)) {
+        // Si se proporciona un valor diferente de null (1 o 0), filtramos por ese valor
+        array_push($conditions, ['documento.aceptado', '=', $request->aceptado]);
+    }
+
+    // Construir la consulta principal
+    $query = Documento::select(
+        'documento.id',
+        'documento.tipo',
+        'escuela.nombre AS escuela',
+        'escuela.nombre_corto',
+        'documento.fecha_subida',
+        'documento.periodo',
+        'users.nombres AS username',
+        'users.apellidos AS userlastname',
+        'documento.url',
+        'documento.aceptado',
+        'documento.aceptado as aceptados',
+        'documento.obser'
+    )
+    ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
+    ->join('users', 'users.id', '=', 'documento.id_usuario')
+    ->where(function ($query) use ($request) {
+        $query->where('escuela.nombre', 'LIKE', '%' . $request->term . '%')
+            ->orWhere('documento.tipo', 'LIKE', '%' . $request->term . '%')
+            ->orWhere('users.nombres', 'LIKE', '%' . $request->term . '%')
+            ->orWhere('documento.aceptado', 'LIKE', '%' . $request->term . '%');
+    });
+
+    // Aplicar las condiciones adicionales si existen
+    if (!empty($conditions)) {
+        $query->where($conditions);
+    }
+
+    // Paginación de resultados
+    $res = $query->paginate(200);
+
+    // Respuesta en formato JSON
+    return response()->json([
+        'estado' => true,
+        'datos' => $res,
+    ], 200);
+}
 
     public function ObservarDocumento(Request $request){
 

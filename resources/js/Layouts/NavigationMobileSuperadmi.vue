@@ -38,7 +38,7 @@
         <ul class="mt-6">
 
           <li class="relative px-6 py-3">
-            <ResponsiveNavLink :href="route('supervisor-inicio')" :active="route().current('supervisor-inicio')">
+            <ResponsiveNavLink :href="route('superadmi-inicio')" :active="route().current('superadmi-inicio')">
               <template #icon>
                 <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                      stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,13 +46,13 @@
                       d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
               </template>
-              Inicio Supervosor
+              Inicio
             </ResponsiveNavLink>
           </li>
 
 
           <li class="relative px-6 py-3">
-            <ResponsiveNavLink :href="route('supervisor-asignacion')" :active="route().current('supervisor-asignacion')">
+            <ResponsiveNavLink :href="route('superadmi-usuarios')" :active="route().current('superadmi-usuarios')">
               <template #icon>
                 <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
                      stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,13 +60,66 @@
                       d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
                 </svg>
               </template>
-              documento Cargados
+              Usuarios restablecer
             </ResponsiveNavLink>
           </li>
 
 
           <li class="relative px-6 py-3">
-            <ResponsiveNavLink :href="route('supervisor-avance')" :active="route().current('supervisor-avance')">
+            <ResponsiveNavLink :href="route('superadmi-estudiante')" :active="route().current('superadmi-estudiante')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Estudiantes
+            </ResponsiveNavLink>
+          </li>
+
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('superadmi-docentes')" :active="route().current('superadmi-docentes')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Docentes
+            </ResponsiveNavLink>
+          </li>
+
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('superadmi-avance')" :active="route().current('superadmi-avance')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Documentos
+            </ResponsiveNavLink>
+          </li>
+
+
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('pregun')" :active="route().current('pregun')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Preguntas
+            </ResponsiveNavLink>
+          </li>
+
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('superadmi-documento')" :active="route().current('superadmi-documento')">
               <template #icon>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                      xmlns="http://www.w3.org/2000/svg">
@@ -78,9 +131,8 @@
             </ResponsiveNavLink>
           </li>
 
-
           <li class="relative px-6 py-3">
-            <ResponsiveNavLink :href="route('notas-todosest-supervisor')" :active="route().current('notas-todosest-supervisor')">
+            <ResponsiveNavLink :href="route('notas-todosest')" :active="route().current('notas-todosest')">
               <template #icon>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                      xmlns="http://www.w3.org/2000/svg">
@@ -88,13 +140,36 @@
                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                 </svg>
               </template>
-              Notas Perfil
+              final notas perfil
+            </ResponsiveNavLink>
+          </li>
+
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('asignacion-superadmi')" :active="route().current('asignacion-superadmi')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Asignación docentes
             </ResponsiveNavLink>
           </li>
 
 
-
-
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('super-docente')" :active="route().current('super-docente')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Super docente
+            </ResponsiveNavLink>
+          </li>
 
 
 <!--

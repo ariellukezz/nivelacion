@@ -31,7 +31,7 @@
 <script setup>
 import Navigation from './NavigationDocente.vue';
 import TopMenu from "./TopMenu.vue";
-import NavigationMobile from './NavigationMobile.vue';
+import NavigationMobile from './NavigationMobileDocente.vue';
 import {ref, onMounted} from 'vue'
 
 const sidewidth = ref('230px')
