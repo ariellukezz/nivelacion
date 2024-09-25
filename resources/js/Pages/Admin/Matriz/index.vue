@@ -11,6 +11,7 @@
                 <tr style="font-size: .9rem;">
                     <th style="border: 1px solid #d9d9d9;">DNI</th>
                     <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
+                    <th style="border: 1px solid #d9d9d9;">UBICACION</th>
                     <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
                     <th style="border: 1px solid #d9d9d9;">INGRESO</th>
                     <th style="border: 1px solid #d9d9d9;">C1</th>
@@ -30,6 +31,7 @@
                 <tr v-for="item in estudiantes" :key="item.id" style="font-size: .9rem;">
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.dni }}</div></td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .7rem;"><div class="pl-1 pr-1"> {{ item.paterno }} {{ item.materno }},  {{item.nombre }}</div> </td>
+                    <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.filial }}</div></td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.programa }}</div></td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.semestre }}</div></td>
                     <td v-for="(ite,index) in 11" :key="index" style="border: 1px solid #d9d9d9; min-width:40px;" >
@@ -45,7 +47,7 @@
                         <div v-else style="text-align: center;">
                             - -
                         </div>
-                    </td> 
+                    </td>
                 </tr>
 
             </tbody>
@@ -93,6 +95,7 @@ const generarObjetosEstudiantes = () => {
       dni: item.dni,
       programa: item.programa,
       semestre: item.semestre,
+      filial: item.filial,
       nombreCompleto: `${item.paterno} ${item.materno},  ${item.nombre}`,
     };
 

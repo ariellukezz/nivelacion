@@ -1,65 +1,58 @@
 <template>
     <Head title="Documentos" />
     <AuthenticatedLayout>
-        <div class="flex justify-between">
+        <div class="flex justify-between items-start">
+    <!-- Filtros alineados a la izquierda -->
+            <div class="flex flex-wrap items-start" style="gap: 1rem;">
+                <!-- Filtro de escuela profesional -->
+                <div class="mb-3" style="width: 240px;">
+                    <Dropdown v-model="programa" :options="programasselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione escuela profesional" style="width:100%;" class="w-full md:w-11rem">
+                        <template #option="slotProps">
+                            <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                <div>{{ slotProps.option.label }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
+                </div>
 
-        <!-- Filtro de escuela profesional -->
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-3" style="width: 240px;">
-              <Dropdown v-model="programa" :options="programasselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione escuela profesional" style="width:100%;" class="w-full md:w-11rem">
-                <template #option="slotProps">
-                    <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                        <div>{{ slotProps.option.label }}</div>
-                    </div>
-                </template>
-              </Dropdown>
+                <!-- Filtro de periodo -->
+                <div class="mb-3" style="width: 240px;">
+                    <Dropdown v-model="periodo" :options="periodosselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione periodo" style="width:100%;" class="w-full md:w-11rem">
+                        <template #option="slotProps">
+                            <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                <div>{{ slotProps.option.label }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
+                </div>
+
+                <!-- Filtro de tipo -->
+                <div class="mb-3" style="width: 240px;">
+                    <Dropdown v-model="tipo" :options="tiposselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione tipo de documento" style="width:100%;" class="w-full md:w-11rem">
+                        <template #option="slotProps">
+                            <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                <div>{{ slotProps.option.label }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
+                </div>
+
+                <!-- Botón para limpiar filtros -->
+                <Button
+                    label="Limpiar filtros"
+                    icon="pi pi-filter-slash"
+                    class="p-button-secondary"
+                    @click="limpiarFiltros"
+                />
             </div>
-        </div>
 
-        <!-- Filtro de periodo -->
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-3" style="width: 240px;">
-                <Dropdown v-model="periodo" :options="periodosselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione periodo" style="width:100%;" class="w-full md:w-11rem">
-                    <template #option="slotProps">
-                        <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                            <div>{{ slotProps.option.label }}</div>
-                        </div>
-                    </template>
-                </Dropdown>
+            <!-- Búsqueda alineada a la derecha -->
+            <div>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search" />
+                    <InputText v-model="buscar" placeholder="Search" />
+                </span>
             </div>
-        </div>
-
-        <!-- Filtro de tipo -->
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-3" style="width: 240px;">
-                <Dropdown v-model="tipo" :options="tiposselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione tipo de documento" style="width:100%;" class="w-full md:w-11rem">
-                    <template #option="slotProps">
-                        <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                            <div>{{ slotProps.option.label }}</div>
-                        </div>
-                    </template>
-                </Dropdown>
-            </div>
-        </div>
-
-        <!-- Filtro de aceptado -->
-        <!-- <div class="flex" style="width: 100%; justify-content: space-between;">
-            <div class="mb-3" style="width: 240px;">
-                <Dropdown v-model="aceptado" :options="aceptadoselect" placeholder="Seleccione estado" style="width:100%;" class="w-full md:w-11rem">
-                    <template #option="slotProps">
-                        <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                            <div>{{ slotProps.option.label }}</div>
-                        </div>
-                    </template>
-                </Dropdown>
-            </div>
-        </div> -->
-
-        <span class="p-input-icon-left">
-            <i class="pi pi-search" />
-            <InputText v-model="buscar" placeholder="Search" />
-        </span>
-
         </div>
 
 <!-- {{ documentos }} -->
@@ -266,6 +259,16 @@ const editar = (item) => {
     modaleditar.value = true;
     archivo.value = item;
 }
+
+const limpiarFiltros = () => {
+    programa.value = null;
+    periodo.value = null;
+    tipo.value = null;
+    aceptado.value = null;
+    buscar.value = null;
+    getDocumentos();  // Llama la función para recargar los documentos sin filtros
+};
+
 // Escuchar cambios en los filtros
 watch(buscar, () => { getDocumentos(); });
 watch(programa, () => { getDocumentos(); });
@@ -275,58 +278,51 @@ watch(aceptado, () => { getDocumentos(); }); // Watch para "aceptado"
 watch(pageSize, () => { getDocumentos(); });
 
 const programasselect = ref([
-    {value:1, label:"INGENIERIA AGRONOMICA - PUNO"},
-    {value:2, label:"INGENIERIA AGROINDUSTRIAL - PUNO"},
-    {value:3, label:"INGENIERIA TOPOGRAFICA Y AGRIMENSURA - PUNO"},
-    {value:4, label:"MEDICINA VETERINARIA Y ZOOTECNIA - PUNO"},
-    {value:5, label:"INGENIERIA ECONOMICA - PUNO"},
-    {value:6, label:"CIENCIAS CONTABLES - PUNO"},
-    {value:7, label:"ADMINISTRACION - PUNO"},
-    {value:8, label:"TRABAJO SOCIAL - PUNO"},
-    {value:9, label:"ENFERMERIA - PUNO"},
-    {value:10, label:"INGENIERIA DE MINAS - PUNO"},
-    {value:11, label:"HUMANIDADES - PUNO"},
-    {value:12, label:"SOCIOLOGIA - PUNO"},
-    {value:13, label:"TURISMO - PUNO"},
-    {value:14, label:"ANTROPOLOGIA - PUNO"},
-    {value:15, label:"CIENCIAS DE LA COMUNICACION SOCIAL - PUNO"},
-    {value:16, label:"ARTE: ARTES PLASTICAS - PUNO"},
-    {value:17, label:"ARTE: MUSICA - PUNO"},
-    {value:18, label:"ARTE: DANZA - PUNO"},
-    {value:19, label:"BIOLOGIA: ECOLOGIA - PUNO"},
-    {value:20, label:"BIOLOGIA: MICROBIOLOGIA Y LABORATORIO CLINICO - PUNO"},
-    {value:21, label:"BIOLOGIA: PESQUERIA - PUNO"},
-    {value:22, label:"EDUC. SEC.: CIENCIA, TECNOLOGIA Y AMBIENTE - PUNO"},
-    {value:23, label:"EDUC. SEC.: CIENCIAS SOCIALES - PUNO"},
-    {value:24, label:"EDUC. SEC.: LIT. PSICOLOGIA Y FILOSOFIA - PUNO"},
-    {value:25, label:"EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA - PUNO"},
-    {value:26, label:"EDUCACION PRIMARIA - PUNO"},
-    {value:27, label:"EDUCACION INICIAL - PUNO"},
-    {value:28, label:"EDUCACION FISICA - PUNO"},
-    {value:29, label:"INGENIERIA ESTADISTICA E INFORMATICA - PUNO"},
-    {value:30, label:"DERECHO - PUNO"},
-    {value:31, label:"INGENIERIA QUIMICA - PUNO"},
-    {value:32, label:"ODONTOLOGIA - PUNO"},
-    {value:33, label:"NUTRICION HUMANA - PUNO"},
-    {value:34, label:"INGENIERIA GEOLOGICA - PUNO"},
-    {value:35, label:"INGENIERIA METALURGICA - PUNO"},
-    {value:36, label:"INGENIERIA CIVIL - PUNO"},
-    {value:37, label:"ARQUITECTURA Y URBANISMO - PUNO"},
-    {value:38, label:"CIENCIAS FISICO MATEMATICAS: FISICA - PUNO"},
-    {value:39, label:"CIENCIAS FISICO MATEMATICAS: MATEMATICAS - PUNO"},
-    {value:40, label:"INGENIERIA AGRICOLA - PUNO"},
-    {value:41, label:"MEDICINA HUMANA - PUNO"},
-    {value:42, label:"INGENIERIA MECANICA ELECTRICA - PUNO"},
-    {value:43, label:"INGENIERIA ELECTRONICA - PUNO"},
-    {value:44, label:"INGENIERIA DE SISTEMAS - PUNO"},
-    {value:45, label:"PSICOLOGIA - PUNO"},
-    {value:46, label:"INGENIERIA ECONOMICA - AZANGARO"},
-    {value:47, label:"INGENIERIA DE MINAS - AZANGARO"},
-    {value:48, label:"INGENIERIA TELECOMUNICACIONES - AZANGARO"},
-    {value:49, label:"CIENCIAS CONTABLES - JULI"},
-    {value:50, label:"ARQUITECTURA Y URBANISMO - JULI"},
-    {value:51, label:"INGENIERIA AGROINDUSTRIAL - JULI"},
+    { value: 1, label: "INGENIERIA AGRONOMICA - PUNO" },
+    { value: 2, label: "INGENIERIA AGROINDUSTRIAL - PUNO" },
+    { value: 3, label: "INGENIERIA TOPOGRAFICA Y AGRIMENSURA - PUNO" },
+    { value: 4, label: "MEDICINA VETERINARIA Y ZOOTECNIA - PUNO" },
+    { value: 5, label: "INGENIERIA ECONOMICA - PUNO" },
+    { value: 6, label: "CIENCIAS CONTABLES - PUNO" },
+    { value: 7, label: "ADMINISTRACION - PUNO" },
+    { value: 8, label: "TRABAJO SOCIAL - PUNO" },
+    { value: 9, label: "ENFERMERIA - PUNO" },
+    { value: 10, label: "INGENIERIA DE MINAS - PUNO" },
+    { value: 11, label: "HUMANIDADES - PUNO" },
+    { value: 12, label: "SOCIOLOGIA - PUNO" },
+    { value: 13, label: "TURISMO - PUNO" },
+    { value: 14, label: "ANTROPOLOGIA - PUNO" },
+    { value: 15, label: "CIENCIAS DE LA COMUNICACION SOCIAL - PUNO" },
+    { value: 16, label: "ARTE - PUNO" },
+    { value: 17, label: "BIOLOGIA - PUNO" },
+    { value: 18, label: "EDUCACION SECUNDARIA - PUNO" },
+    { value: 19, label: "EDUCACION PRIMARIA - PUNO" },
+    { value: 20, label: "EDUCACION INICIAL - PUNO" },
+    { value: 21, label: "EDUCACION FISICA - PUNO" },
+    { value: 22, label: "INGENIERIA ESTADISTICA E INFORMATICA - PUNO" },
+    { value: 23, label: "DERECHO - PUNO" },
+    { value: 24, label: "INGENIERIA QUIMICA - PUNO" },
+    { value: 25, label: "ODONTOLOGIA - PUNO" },
+    { value: 26, label: "NUTRICION HUMANA - PUNO" },
+    { value: 27, label: "INGENIERIA GEOLOGICA - PUNO" },
+    { value: 28, label: "INGENIERIA METALURGICA - PUNO" },
+    { value: 29, label: "INGENIERIA CIVIL - PUNO" },
+    { value: 30, label: "ARQUITECTURA Y URBANISMO - PUNO" },
+    { value: 31, label: "CIENCIAS FISICO MATEMATICAS - PUNO" },
+    { value: 32, label: "INGENIERIA AGRICOLA - PUNO" },
+    { value: 33, label: "MEDICINA HUMANA - PUNO" },
+    { value: 34, label: "INGENIERIA MECANICA ELECTRICA - PUNO" },
+    { value: 35, label: "INGENIERIA ELECTRONICA - PUNO" },
+    { value: 36, label: "INGENIERIA DE SISTEMAS - PUNO" },
+    { value: 37, label: "PSICOLOGIA - PUNO" },
+    { value: 38, label: "INGENIERIA ECONOMICA - AZANGARO" },
+    { value: 39, label: "INGENIERIA DE MINAS - AZANGARO" },
+    { value: 40, label: "INGENIERIA TELECOMUNICACIONES - AZANGARO" },
+    { value: 41, label: "CIENCIAS CONTABLES - JULI" },
+    { value: 42, label: "ARQUITECTURA Y URBANISMO - JULI" },
+    { value: 43, label: "INGENIERIA AGROINDUSTRIAL - JULI" }
 ]);
+
 
 
 getDocumentos()

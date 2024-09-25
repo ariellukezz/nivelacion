@@ -20,6 +20,7 @@
                     <tr style="font-size: .9rem;">
                         <th style="border: 1px solid #d9d9d9;">DNI</th>
                         <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
+                        <th style="border: 1px solid #d9d9d9;">UBICACION</th>
                         <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
                         <th style="border: 1px solid #d9d9d9;">INGRESO</th>
                         <th style="border: 1px solid #d9d9d9;">C1</th>
@@ -43,6 +44,10 @@
                         <td style="border: 1px solid #d9d9d9; font-weight: .7rem;">
                             <div class="pl-1 pr-1">{{ item.paterno }} {{ item.materno }},  {{ item.nombre }}</div>
                         </td>
+                        <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;">
+                            <div class="pl-1 pr-1">{{ item.filial }}</div>
+                        </td>
+
                         <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;">
                             <div class="pl-1 pr-1">{{ item.programa }}</div>
                         </td>
@@ -127,6 +132,7 @@ const generarObjetosEstudiantes = () => {
             dni: item.dni,
             programa: item.programa,
             semestre: item.semestre,
+            filial: item.filial,
             nombreCompleto: `${item.paterno} ${item.materno},  ${item.nombre}`,
         };
 
