@@ -211,6 +211,8 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('/observar-documento', [SupervisorController::class, 'ObservarDocumento']);
 
     Route::post('/cambiar-estado-documento', [SupervisorController::class, 'cambiarEstado']);
+    Route::post('/cambiar-periodo-documento', [SupervisorController::class, 'cambiarPeriodo']);
+
 
     Route::get('/notasperf-supervisor', [SupervisorController::class, 'getTestResultsvisor']);
 Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/notasper/index'))->name('notas-todosest-supervisor');
@@ -300,7 +302,9 @@ Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/no
 Route::get('/notasperf', [SuperadmiController::class, 'getTestResults']);
 Route::get('/notas-todosest', fn () => Inertia::render('Superadmi/notasperfiles/notasperfil'))->name('notas-todosest');
 
-
+// -------------------info estidiantes----------------
+Route::get('/get-estudiantes', [SuperadmiController::class, 'getEstudiantes']);
+Route::get('/estudiantesinfo', fn () => Inertia::render('Superadmi/Informacion/informacion'))->name('info_est');
 
 
 

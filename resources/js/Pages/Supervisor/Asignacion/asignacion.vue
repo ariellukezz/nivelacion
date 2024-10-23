@@ -2,6 +2,7 @@
     <Head title="Documentos" />
     <AuthenticatedLayout>
         <div class="flex justify-between items-start">
+            <ConfirmDialog />
     <!-- Filtros alineados a la izquierda -->
             <div class="flex flex-wrap items-start" style="gap: 1rem;">
                 <!-- Filtro de escuela profesional -->
@@ -50,7 +51,7 @@
             <div>
                 <span class="p-input-icon-left">
                     <i class="pi pi-search" />
-                    <InputText v-model="buscar" placeholder="Search" />
+                    <InputText v-model="buscar" placeholder="Buscar" />
                 </span>
             </div>
         </div>
@@ -69,6 +70,20 @@
                 tableStyle="min-width: 50rem"
                 style="font-size: .9rem;">
                 <Column field="periodo" header="Periodo"></Column>
+                <Column field="periodo" header="Periodo Mod" width="150px">
+    <template #body="{ data }">
+        <Dropdown
+            v-model="data.periodo"
+            :options="periodosselect"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione periodo"
+            @change="cambiarPeriodo(data)"
+            style="width:100%;"
+            class="w-full md:w-11rem"
+        />
+    </template>
+</Column>
                 <Column field="tipo" header="TIPO"></Column>
                 <Column field="escuela" header="ESCUELA PROFESIONAL"></Column>
                 <Column field="fecha_subida" header="FECHA"></Column>
@@ -186,6 +201,8 @@ import Paginator from 'primevue/paginator';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
+import { useConfirm } from 'primevue/useconfirm';
+import ConfirmDialog from 'primevue/confirmdialog';
 
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
@@ -196,6 +213,8 @@ const showToast = (tipo, titulo, detalle) => {
 
 
 const modaleditar = ref(false);
+
+const confirm = useConfirm();
 
 const pagina = ref(1);
 const buscar = ref(null);
@@ -254,6 +273,32 @@ const cambiarEstado = async (item) => {
     getDocumentos();
     showToast('info', 'ESTADO MODIFICADO', '');
 }
+
+const cambiarPeriodo = (item) => {
+    confirm.require({
+        message: '¿Está seguro de cambiar el período?',
+        header: 'Confirmar cambio de período',
+        icon: 'pi pi-exclamation-triangle',
+        accept: async () => {
+            try {
+                // Realiza la solicitud para cambiar el periodo en el backend
+                await axios.post('cambiar-periodo-documento', { id: item.id, periodo: item.periodo });
+
+                // Recarga los documentos después de la actualización
+                getDocumentos();
+
+                // Muestra una notificación de éxito
+                showToast('info', 'PERIODO MODIFICADO', '');
+            } catch (error) {
+                showToast('error', 'ERROR', 'No se pudo cambiar el periodo.');
+            }
+        },
+        reject: () => {
+            // Muestra un mensaje si se cancela el cambio
+            showToast('info', 'Cambio cancelado', 'No se realizó ningún cambio.');
+        }
+    });
+};
 
 const editar = (item) => {
     modaleditar.value = true;

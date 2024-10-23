@@ -49,7 +49,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;">{{ $data->programa }}</span>
+                            <span style="font-size:10pt;">{{ $data->programa }} : {{ $data->filial}} </span>
                         </div>
                     </td>
                 </tr>

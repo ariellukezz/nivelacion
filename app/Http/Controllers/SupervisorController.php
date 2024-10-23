@@ -135,6 +135,35 @@ public function getDocumentos(Request $request) {
 
     }
 
+    public function cambiarPeriodo(Request $request){
+    // Buscar el documento por ID
+    $doc = Documento::find($request->id);
+
+    // Verificar si el documento existe
+    if (!$doc) {
+        $this->response['tipo'] = 'error';
+        $this->response['titulo'] = '!ERROR!';
+        $this->response['mensaje'] = 'Documento no encontrado.';
+        $this->response['estado'] = false;
+        return response()->json($this->response, 404);
+    }
+
+    // Cambiar el período del documento
+    $doc->periodo = $request->periodo;
+    $doc->save();
+
+    // Preparar la respuesta JSON
+    $this->response['tipo'] = 'info';
+    $this->response['titulo'] = '!PERIODO MODIFICADO!';
+    $this->response['mensaje'] = ' ';
+    $this->response['estado'] = true;
+    $this->response['datos'] = $doc;
+
+    // Devolver la respuesta en formato JSON
+    return response()->json($this->response, 200);
+}
+
+
 
     public function getTestResultsvisor() {
         $competencias = DB::select("SELECT DISTINCT curso.id_competencia

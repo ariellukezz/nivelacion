@@ -586,4 +586,56 @@ public function getTestResults() {
 }
 
 
+
+public function getEstudiantes(Request $request) {
+    //$term = $request->input('buscar');  // Término de búsqueda desde la solicitud
+    $term = $request->buscar;
+
+    // Consulta original sin modificaciones
+    $estudiantes = DB::table('estudiante')
+        ->select(
+            'estudiante.dni',
+            'estudiante.nombres',
+            'estudiante.paterno',
+            'estudiante.materno',
+            'estudiante.sexo',
+            'estudiante.telefono',
+            'estudiante.email',
+            'estudiante.direccion',
+            'datos_ingreso.semestre',
+            'datos_ingreso.modalidad',
+            'datos_ingreso.anio',
+            'programa.programa AS nombre_programa',
+            'programa.escuela AS nombre_escuela',
+            'matriz.c1_R AS competencia_1',
+            'matriz.c2_R AS competencia_2',
+            'matriz.c3_R AS competencia_3',
+            'matriz.c4_R AS competencia_4',
+            'matriz.c5_R AS competencia_5',
+            'matriz.c6_R AS competencia_6',
+            'matriz.c7_R AS competencia_7',
+            'matriz.c8_R AS competencia_8',
+            'matriz.c9_R AS competencia_9',
+            'matriz.c10_R AS competencia_10',
+            'matriz.c11_R AS competencia_11'
+        )
+        ->join('datos_ingreso', 'estudiante.dni', '=', 'datos_ingreso.dni')
+        ->join('programa', 'datos_ingreso.id_programa', '=', 'programa.id')
+        ->join('matriz', 'datos_ingreso.dni', '=', 'matriz.dni')
+        ->where(function ($query) use ($term) {
+            $query->orWhere('estudiante.dni', 'LIKE', '%' . $term . '%')
+                ->orWhere(DB::raw("CONCAT(estudiante.nombres, ' ', estudiante.paterno, ' ', estudiante.materno)"), 'LIKE', '%' . $term . '%');
+        })
+        ->get();
+
+    // Devolvemos la respuesta en formato JSON
+    return response()->json([
+        'estado' => true,
+        'datos' => $estudiantes,
+    ], 200);
+}
+
+
+
+
 }

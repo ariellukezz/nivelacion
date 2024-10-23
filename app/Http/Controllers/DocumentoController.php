@@ -31,16 +31,19 @@ class DocumentoController extends Controller
                 $file_name =$file->getClientoriginalName();
                 $file->move(public_path('documentos/resoluciones/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
 
+              //  $periodo = $request->input('periodo', '2024-II'); // '2024-II' como valor predeterminado
+
                 $doc = Documento::create([
                     'nombre' => $file_name,
                     'url' => 'documentos/resoluciones/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Resolucion',
                     'periodo' => '2024-II',
+                   // 'periodo' => $periodo, // Usar el periodo proporcionado
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
-                return response()->json(['menssje'=>'file upload success'], 200);
+                return response()->json(['menssje'=>'archivo subido con éxito'], 200);
             }
         }catch(\Exception $e){
             return response()->json([
