@@ -1,1 +1,0 @@
-import{_ as o}from"./_plugin-vue_export-helper-c27b6911.js";import{c as e,o as c}from"./app-2aa09894.js";const n={};function r(t,s){return c(),e("h1",null,"Alumnos")}const l=o(n,[["render",r]]);export{l as default};
