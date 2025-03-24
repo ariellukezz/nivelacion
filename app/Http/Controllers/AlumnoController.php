@@ -93,6 +93,7 @@ class AlumnoController extends Controller
         ->where('competencia_programa.id_competencia', $id_competencia)
         ->where('matriz.' . $competencia, '<=', 10.49)
         ->select('estudiante.id', 'programa.programa', 'datos_ingreso.semestre', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+        ->distinct() // Se añade distinct para eliminar registros duplicados
         ->get();
 
         $this->response['estado'] = true;

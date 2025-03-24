@@ -313,8 +313,7 @@
 
             <!--- MODAL -->
       <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
-
-
+        <!-- {{ programasAsignacion }} -->
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
               <div><label>Programa de estudio</label></div>
@@ -329,6 +328,7 @@
         </div>
 
         <div v-if="alumnosregistro">
+            <!-- {{ alumnosregistro }} -->
 
           <DataTable
             v-model:selection="alumnos_seleccionados_registro"
