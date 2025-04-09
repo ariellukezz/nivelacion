@@ -230,6 +230,7 @@ const pageSize = ref(10);
 const periodosselect = ref([
     { value: '2024-I', label: '2024-I' },
     { value: '2024-II', label: '2024-II' },
+    { value: '2025-I', label: '2025-I' },
 ]);
 
 const tiposselect = ref([

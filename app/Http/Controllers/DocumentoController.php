@@ -38,7 +38,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/resoluciones/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Resolucion',
-                    'periodo' => '2024-II',
+                    'periodo' => '2025-I',
                    // 'periodo' => $periodo, // Usar el periodo proporcionado
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
