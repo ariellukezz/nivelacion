@@ -215,7 +215,11 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
 
 
     Route::get('/notasperf-supervisor', [SupervisorController::class, 'getTestResultsvisor']);
-Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/notasper/index'))->name('notas-todosest-supervisor');
+    Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/notasper/index'))->name('notas-todosest-supervisor');
+
+    Route::get('/docentes-competencias', [SupervisorController::class, 'docentesCompetencias'])
+    ->name('supervisor-docentes-competencias');
+
 
 
 });

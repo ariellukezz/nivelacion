@@ -35,7 +35,8 @@
                 <!-- <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" /> -->
             </div>
             <DataTable :value="usuarios" :class="'p-datatable-sm'"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
-                <Column field="dni" header="Dni"></Column>
+                <Column field="codigo_est" header="codigo_est"></Column>
+                <!-- <Column field="dni" header="Dni"></Column> -->
                 <Column v-if="conf_codigo === true" field="codigo" header="Código"></Column>
                 <Column field="nombres" header="Nombres">
                     <template #body="{ data }">

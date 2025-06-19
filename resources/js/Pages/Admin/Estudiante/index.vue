@@ -6,7 +6,7 @@
         <div>
           <div class="flex" style="justify-content: space-between;">
             <Button label="Lista de Estudiantes" @click="visible = true" size="small" style="height: 40px;"/>
-          
+
             <span class="p-input-icon-left ">
                 <i class="pi pi-search" />
                 <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Search" />
@@ -19,13 +19,14 @@
         </div>
         <Toast />
         <ConfirmPopup></ConfirmPopup>
-    
+
         <div>
           <div class="card">
             <div class="flex justify-content-center mb-4">
             </div>
             <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10"  tableStyle="min-width: 50rem" style="font-size: .9rem;">
-                <Column field="dni" header="Dni"></Column>
+                <!--bdhh <Column field="dni" header="Dni"></Column> -->
+                <Column field="codigo_est" header="codigo_est"></Column>
                 <Column field="semestre" header="Ingreso"></Column>
                 <Column v-if="conf_codigo === true" field="codigo" header="Código"></Column>
                 <Column field="nombres" header="Nombres">
@@ -69,11 +70,11 @@
                 <div class="flex mt-1" style="justify-content: flex-end;">modalidad: <InputSwitch v-model="conf_modalidad" /></div>
             </div>
         </OverlayPanel>
-    
+
     </div>
     </AuthenticatedLayout>
     </template>
-    
+
     <script setup>
     import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
     import { Head } from '@inertiajs/vue3';
@@ -88,18 +89,18 @@
     import { useConfirm } from "primevue/useconfirm";
     import ConfirmPopup from 'primevue/confirmpopup';
     import OverlayPanel from 'primevue/overlaypanel';
-    
+
     const toast = useToast();
     const confirm = useConfirm();
-  
+
     const totalpaginas = ref(0)
     const pagina = ref(1)
     const buscar = ref("")
-    
-    const usuarios = ref([]) 
+
+    const usuarios = ref([])
     const visible = ref(false);
-    
-    
+
+
 
     const conf_telefono = ref(true);
     const conf_codigo = ref(false);
@@ -124,11 +125,11 @@
       password:"",
       estado:true
     })
-    
+
     const getAlumnos =  async (event) => {
       let res = await axios.post(
       "/coordinador/get-alumnos?page=" + pagina.value,
-      { 
+      {
         term: buscar.value,
         telefono: conf_telefono.value,
         codigo: conf_codigo.value,
@@ -142,11 +143,11 @@
       usuarios.value = res.data.datos.data;
       totalpaginas.value = res.data.datos.total;
     }
-    
+
     const guardar =  async () => {
       let res = await axios.post(
         "save-usuario",
-        { 
+        {
           id: usuario.value.id,
           nombres : usuario.value.nombres,
           apellidos : usuario.value.apellidos,
@@ -157,22 +158,22 @@
           rol : usuario.value.rol
         }
       );
-    
+
       showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-      getAlumnos()  
+      getAlumnos()
       visible.value = false
       limpiar()
 
     }
-    
+
     const eliminar =  async (id) => {
       let res = await axios.get(
       "delete-usuario/"+id);
       showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-      getAlumnos() 
+      getAlumnos()
     }
-    
-    
+
+
     const editar =  async (item) => {
       visible.value = true;
       usuario.value.id = item.id
@@ -183,20 +184,20 @@
       usuario.value.rol = item.id_rol
       console.log(item);
     }
-    
+
     const changeRol = (event) => {
       console.log("::ROL::",event);
     }
-    
+
     watch(buscar, ( newValue, oldValue ) => {
         getAlumnos()
     })
-    
-    
+
+
     const showToast = (tipo, titulo, detalle) => {
         toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
     };
-    
+
     const confirm2 = (event,user) => {
         confirm.require({
             target: event.currentTarget,
@@ -211,15 +212,15 @@
             }
         });
     };
-    
+
     watch(visible, ( newValue, oldValue ) => {
       if(visible.value == false && usuario.value.id != null ){
         limpiar()
-      }  
-    
+      }
+
     })
-    
-    const limpiar = () => { 
+
+    const limpiar = () => {
       usuario.value.id= null,
       usuario.value.nombres = "",
       usuario.value.apellidos = "",
@@ -229,7 +230,7 @@
       usuario.value.password = "",
       usuario.value.estado = true
     }
-    
+
     watch(conf_codigo, ( newValue, oldValue ) => { getAlumnos()})
     watch(conf_telefono, ( newValue, oldValue ) => { getAlumnos()})
     watch(conf_colegio, ( newValue, oldValue ) => { getAlumnos()})
@@ -237,9 +238,8 @@
     watch(conf_estado_civil, ( newValue, oldValue ) => { getAlumnos()})
     watch(conf_area, ( newValue, oldValue ) => { getAlumnos()})
     watch(conf_modalidad, ( newValue, oldValue ) => { getAlumnos()})
-    
-    
+
+
     getAlumnos()
-   
+
     </script>
-    

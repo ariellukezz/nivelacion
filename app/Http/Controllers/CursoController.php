@@ -47,16 +47,20 @@ class CursoController extends Controller
 
         $res = CursoDetalle::select(
             'curso_detalle.id','curso_detalle.nota', 'curso_detalle.condicion', 'curso_detalle.editable',
-            'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'matriz.C'.$comp->id_competencia.'_R as ant'
+            'estudiante.codigo_est', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'matriz.C'.$comp->id_competencia.'_R as ant'
+           //bdhh 'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'matriz.C'.$comp->id_competencia.'_R as ant'
             )
         ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
-        ->join('matriz','matriz.dni','estudiante.dni')
+        ->join('matriz','matriz.codigo_est','estudiante.codigo_est')
+       //dbhh ->join('matriz','matriz.dni','estudiante.dni')
         ->join('curso','curso.id','curso_detalle.id_curso')
-        ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
+        ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
+       //bdhh ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
         ->where('curso_detalle.id_curso',"=", $request->curso)
         ->where(function ($query) use ($request) {
             return $query
-                ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('estudiante.codigo_est', 'LIKE', '%' . $request->term . '%')
+               //bdhh ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.nombres', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.paterno', 'LIKE', '%' . $request->term . '%');
         })->orderBy('estudiante.paterno', 'ASC')

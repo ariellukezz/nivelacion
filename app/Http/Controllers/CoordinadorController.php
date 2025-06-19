@@ -15,7 +15,7 @@ use DB;
 
 class CoordinadorController extends Controller
 {
-    
+
     public function getEscuelas(Request $request){
 
         $res = Escuela::select( 'id as value', 'nombre as label')
@@ -25,18 +25,18 @@ class CoordinadorController extends Controller
                 ->orWhere('nombre', 'LIKE', '%' . $request->term . '%');
         })->orderBy('id', 'ASC')
         ->paginate(50);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
       }
 
     public function getCoordinadores(Request $request){
 
         $res = Coordinador::select(
-            'coordinador.id', 'coordinador.dni','coordinador.nombres', 'coordinador.apellidos', 'coordinador.celular', 'coordinador.correo', 
-            'escuela.id as id_escuela', 'escuela.nombre as escuela', 
+            'coordinador.id', 'coordinador.dni','coordinador.nombres', 'coordinador.apellidos', 'coordinador.celular', 'coordinador.correo',
+            'escuela.id as id_escuela', 'escuela.nombre as escuela',
             'users.estado as estado',)
         ->join('escuela','escuela.id','coordinador.id_escuela')
         ->join('users','users.id','coordinador.usuario_id')
@@ -49,17 +49,17 @@ class CoordinadorController extends Controller
                 ->orWhere('coordinador.dni', 'LIKE', '%' . $request->term . '%');
         })->orderBy('coordinador.id', 'DESC')
         ->paginate(10);
-    
+
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-      
+
     }
 
 
     public function save(Request $request ) {
 
-    
+
         $coordinador = null;
         if (!$request->id) {
 
@@ -80,7 +80,7 @@ class CoordinadorController extends Controller
                 'celular' => $request->celular,
                 'correo' => $request->email,
                 'id_escuela' => $request->escuela,
-                'usuario_id' => $usuario->id, 
+                'usuario_id' => $usuario->id,
                 'id_usuario' => auth()->id()
             ]);
             $this->response['tipo'] = 'success';
@@ -102,7 +102,7 @@ class CoordinadorController extends Controller
             $us->email = $request->email;
             $us->estado = $request->estado;
             $us->id_escuela = $request->escuela;
-            $us->save(); 
+            $us->save();
 
             $this->response['tipo'] = 'info';
             $this->response['titulo'] = '!REGISTRO MODIFICADO!';
@@ -116,7 +116,8 @@ class CoordinadorController extends Controller
 
     public function getAlumnos(Request $request){
 
-        $consulta = ['estudiante.id', 'estudiante.dni','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
+        $consulta = ['estudiante.id', 'estudiante.codigo_est','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
+       //bdhh $consulta = ['estudiante.id', 'estudiante.dni','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
         if($request->codigo == true) { array_push($consulta,'estudiante.codigo'); }
         if($request->telefono == true) { array_push($consulta,'estudiante.telefono'); }
         if($request->colegio == true) { array_push($consulta,'estudiante.nombre_colegio as colegio'); }
@@ -130,7 +131,8 @@ class CoordinadorController extends Controller
         $res = Alumno::select(
             $consulta
         )
-        ->join('datos_ingreso','estudiante.dni','datos_ingreso.dni')
+        ->join('datos_ingreso','estudiante.codigo_est','datos_ingreso.codigo_est')
+       //bdhh ->join('datos_ingreso','estudiante.dni','datos_ingreso.dni')
         ->join('programa','programa.id','datos_ingreso.id_programa')
         ->join('escuela','escuela.id','programa.id_escuela')
         ->where('escuela.id','=',auth()->user()->id_escuela)
@@ -139,7 +141,8 @@ class CoordinadorController extends Controller
                 ->orWhere('estudiante.nombres', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.paterno', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('estudiante.materno', 'LIKE', '%' . $request->term . '%')
-                ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%')
+                ->orWhere('estudiante.codigo_est', 'LIKE', '%' . $request->term . '%')
+               //bdhh ->orWhere('estudiante.dni', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('programa.programa', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('datos_ingreso.t_examen', 'LIKE', '%' . $request->term . '%')
                 ->orWhere('programa.area', 'LIKE', '%' . $request->term . '%');
@@ -149,7 +152,7 @@ class CoordinadorController extends Controller
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         return response()->json($this->response, 200);
-    
+
     }
 
     public function delete($id){
@@ -173,10 +176,10 @@ class CoordinadorController extends Controller
         JOIN programa ON programa.id = competencia_programa.id_programa
         JOIN escuela ON programa.id_escuela = escuela.id
         WHERE escuela.id = 26 AND  competencia_programa.estado = 1');
-        
+
         $competencias_lista = [];
         foreach($res as $item) {
-            if( $this->contar($item->id_competencia) > 0){           
+            if( $this->contar($item->id_competencia) > 0){
                 array_push($competencias_lista, $item->id_competencia);
             }
         }
@@ -190,15 +193,16 @@ class CoordinadorController extends Controller
 
     private function contar( $id){
         $res = DB::select(' SELECT COUNT(*) AS reg FROM matriz
-        JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
+        JOIN datos_ingreso ON datos_ingreso.codigo_est = matriz.codigo_est
         JOIN programa ON programa.id = datos_ingreso.id_programa
         JOIN escuela ON programa.id_escuela = escuela.id
         WHERE escuela.id = '.auth()->user()->id_escuela.' AND matriz.C'.$id.'_R <= 10.49');
 
         return $res[0]->reg;
     }
+    //bdhh JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
 
-    // DOCENTE 
+    // DOCENTE
     public function dashboardDocente()
     {
         return Inertia::render('Docente/Dashboard/index');
@@ -217,7 +221,7 @@ class CoordinadorController extends Controller
 // JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
 // JOIN programa ON programa.id = datos_ingreso.id_programa
 // JOIN escuela ON escuela.id = programa.id_escuela
-// WHERE escuela.id = 26) AND competencia_programa.id_competencia = 1 
+// WHERE escuela.id = 26) AND competencia_programa.id_competencia = 1
 // AND matriz.C1_R <= 10.49
 
 // SELECT * FROM estudiante

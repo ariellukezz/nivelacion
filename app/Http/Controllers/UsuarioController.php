@@ -156,7 +156,8 @@ class UsuarioController extends Controller
 
         $res = Alumno::select('estudiante.nombres', 'estudiante.paterno', 'estudiante.materno', 'programa.escuela', 'users.estado_contraseña as e_contra')
         ->join('users','users.id','estudiante.usuario_id')
-        ->join('datos_ingreso','datos_ingreso.dni','estudiante.dni')
+        ->join('datos_ingreso','datos_ingreso.codigo_est','estudiante.codigo_est')
+       //bdhh ->join('datos_ingreso','datos_ingreso.dni','estudiante.dni')
         ->join('programa','datos_ingreso.id_programa','programa.id')
         ->where('users.id','=', auth()->user()->id)->get();
 

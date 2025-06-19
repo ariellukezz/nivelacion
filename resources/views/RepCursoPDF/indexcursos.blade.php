@@ -113,7 +113,8 @@
                 <thead>
                     <tr style="border:solid 1px black;  height: 50px;">
                         <th style="border:solid 1px black; height: 24px;">N°</th>
-                        <th style="border:solid 1px black;">DNI</th>
+                        <th style="border:solid 1px black;">Codigo</th>
+                        {{-- <th style="border:solid 1px black;">DNI</th> --}}
                         <th style="border:solid 1px black;">Ingreso</th>
                         <th style="border:solid 1px black;">Apellidos</th>
                         <th style="border:solid 1px black;">Nombres</th>
@@ -126,7 +127,8 @@
                     @foreach($estudiantes as $index => $item)
                         <tr style="border:solid 1px black;">
                             <td style="border:solid 1px black; height: 24px;"> {{$index + 1 }}</td>
-                            <td style="border:solid 1px black;">{{ $item->dni }}</td>
+                            <td style="border:solid 1px black;">{{ $item->codigo_est }}</td>
+                            {{-- <td style="border:solid 1px black;">{{ $item->dni }}</td> --}}
                             <td style="border:solid 1px black;">{{ $item->semestre }}</td>
                             <td style="border:solid 1px black;">{{ $item->paterno }} {{ $item->materno }}</td>
                             <td style="border:solid 1px black;">{{ $item->nombres }}</td>

@@ -195,7 +195,8 @@
           style="font-size: .9rem;"
           :paginator="true" :rows="9"
           >
-            <Column field="dni" header="DNI"></Column>
+            <Column field="codigo_est" header="Codigo"></Column>
+            <!--bdhh <Column field="dni" header="DNI"></Column> -->
             <Column field="semestre" header="Ingreso"></Column>
             <Column field="nombres" header="Nombres"></Column>
             <Column field="paterno" header="Paterno"></Column>
@@ -345,7 +346,8 @@
           >
               <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
               <Column field="programa" header="Programa"></Column>
-              <Column field="dni" header="DNI"></Column>
+              <Column field="codigo_est" header="Codigo"></Column>
+              <!--bdhh <Column field="dni" header="DNI"></Column> -->
               <Column field="semestre" header="Ingreso"></Column>
               <Column field="nombres" header="Nombres"></Column>
               <Column field="paterno" header="Paterno"></Column>

@@ -66,7 +66,8 @@ class SuperadmiController extends Controller
         $estudiantes = DB::table('estudiante AS e')
             ->select(
                 'e.id',
-                'e.dni',
+                'e.codigo_est',
+                // bdhh 'e.dni',
                 'e.codigo',
                 'e.paterno',
                 'e.materno',
@@ -84,8 +85,10 @@ class SuperadmiController extends Controller
                 'c.id_competencia',
                 'm.C' . $competencia . '_R'
             )
-            ->join('datos_ingreso AS d', 'e.dni', '=', 'd.dni')
-            ->join('matriz AS m', 'e.dni', '=', 'm.dni')
+            ->join('datos_ingreso AS d', 'e.codigo_est', '=', 'd.codigo_est')
+           //bdhh ->join('datos_ingreso AS d', 'e.dni', '=', 'd.dni')
+            ->join('matriz AS m', 'e.codigo_est', '=', 'm.codigo_est')
+           //bdhh ->join('matriz AS m', 'e.dni', '=', 'm.dni')
             ->join('programa AS p', 'd.id_programa', '=', 'p.id')
             ->join('curso AS c', function ($join) use ($competencia) {
                 $join->on('p.id', '=', 'c.id_programa')
@@ -96,7 +99,8 @@ class SuperadmiController extends Controller
                     ->on('cd.id_curso', '=', 'c.id');
             })
             ->where(function ($query) use ($term) {
-                $query->orWhere('e.dni', 'LIKE', '%' . $term . '%')
+                $query->orWhere('e.codigo_est', 'LIKE', '%' . $term . '%')
+               //bdhh $query->orWhere('e.dni', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.codigo', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.nombres', 'LIKE', '%' . $term . '%')
                     ->orWhere('e.paterno', 'LIKE', '%' . $term . '%')
@@ -134,7 +138,8 @@ class SuperadmiController extends Controller
         $query->orWhere('d.nro_doc', 'LIKE', '%' . $term . '%')
             ->orWhere('d.nombres', 'LIKE', '%' . $term . '%')
             ->orWhere('d.paterno', 'LIKE', '%' . $term . '%')
-            ->orWhere('d.materno', 'LIKE', '%' . $term . '%');
+            ->orWhere('d.materno', 'LIKE', '%' . $term . '%')
+            ->orWhere('d.email', 'LIKE', '%' . $term . '%');
     })
     ->get();
 
@@ -353,7 +358,8 @@ public function getDetalleCurso(Request $request){
 
 
     $res = CursoDetalle::select(
-        'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+        'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+       //bdhh 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
         'curso.nombre as curso',
         'curso_detalle.nota'
     )
@@ -368,7 +374,8 @@ public function getDetalleCurso(Request $request){
     ->paginate(200);
 
     $registrados = CursoDetalle::select(
-        'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+        'estudiante.id', 'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+       //bdhh 'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
     ->join('curso','curso_detalle.id_curso','curso.id')
     ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
     ->where('curso.id',"=",$request->curso)
@@ -543,12 +550,14 @@ public function getTestResults() {
     $alumnos = [];
 
     foreach ($competencias as $competencia) {
-        $res = DB::select("SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
+       // $res = DB::select("SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
+       // bdhh JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
+        $res = DB::select("SELECT estudiante.id as estudiante, estudiante.codigo_est, estudiante.nombres, curso_detalle.nota,
         estudiante.paterno, estudiante.materno, programa.programa, datos_ingreso.semestre AS semestre
         FROM curso
         JOIN curso_detalle ON curso.id = curso_detalle.id_curso
         JOIN estudiante ON estudiante.id = curso_detalle.id_alumno
-        JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
+        JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
         JOIN programa ON datos_ingreso.id_programa=programa.id
         WHERE curso.id_competencia = :competencia
         ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
@@ -563,7 +572,8 @@ public function getTestResults() {
                     'nombre' => $row->nombres,
                     'programa' => $row->programa,
                     'semestre' => $row->semestre,
-                    'dni' => $row->dni,
+                    'codigo_est' => $row->codigo_est,
+                    //bdhh 'dni' => $row->dni,
                     'paterno' => $row->paterno,
                     'materno' => $row->materno,
                     'notas' => [],
@@ -594,7 +604,8 @@ public function getEstudiantes(Request $request) {
     // Consulta original sin modificaciones
     $estudiantes = DB::table('estudiante')
         ->select(
-            'estudiante.dni',
+            'estudiante.codigo_est',
+           // 'estudiante.dni',
             'estudiante.nombres',
             'estudiante.paterno',
             'estudiante.materno',
@@ -619,11 +630,14 @@ public function getEstudiantes(Request $request) {
             'matriz.c10_R AS competencia_10',
             'matriz.c11_R AS competencia_11'
         )
-        ->join('datos_ingreso', 'estudiante.dni', '=', 'datos_ingreso.dni')
+        ->join('datos_ingreso', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
+      //bdhh ->join('datos_ingreso', 'estudiante.dni', '=', 'datos_ingreso.dni')
         ->join('programa', 'datos_ingreso.id_programa', '=', 'programa.id')
-        ->join('matriz', 'datos_ingreso.dni', '=', 'matriz.dni')
+        ->join('matriz', 'datos_ingreso.codigo_est', '=', 'matriz.codigo_est')
+      //bdhh ->join('matriz', 'datos_ingreso.dni', '=', 'matriz.dni')
         ->where(function ($query) use ($term) {
-            $query->orWhere('estudiante.dni', 'LIKE', '%' . $term . '%')
+            $query->orWhere('estudiante.codigo_est', 'LIKE', '%' . $term . '%')
+           //bdhh $query->orWhere('estudiante.dni', 'LIKE', '%' . $term . '%')
                 ->orWhere(DB::raw("CONCAT(estudiante.nombres, ' ', estudiante.paterno, ' ', estudiante.materno)"), 'LIKE', '%' . $term . '%');
         })
         ->get();

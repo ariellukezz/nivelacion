@@ -220,11 +220,13 @@ class DocenteController extends Controller
         ->get();
 
         $estudiantes = CursoDetalle::select(
-            'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'estudiante.codigo_est', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+           //bdhh 'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
             'curso_detalle.nota', 'curso_detalle.condicion'
         )
         ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
-        ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
+        ->join('datos_ingreso', 'datos_ingreso.codigo_est', 'estudiante.codigo_est')
+      //bdhh  ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
         ->where('curso_detalle.id_curso','=',$curso)
         ->get();
 
@@ -344,7 +346,8 @@ class DocenteController extends Controller
             $usuario = Usuario::find($docente->usuario_id);
             $usuario->programa_id = $request->id_docente;
             $usuario->id_escuela = $esc->id_escuela;
-
+            $usuario->email = $request->correo;
+            
             $usuario->save();
             $this->response['tipo'] = 'info';
             $this->response['titulo'] = '!REGISTRO MODIFICADO!';

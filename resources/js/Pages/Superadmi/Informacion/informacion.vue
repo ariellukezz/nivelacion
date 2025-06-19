@@ -5,13 +5,14 @@
         <div class="flex justify-between mb-2">
           <span class="p-input-icon-left" style="font-size: 0.9rem;">
             <i class="pi pi-search" />
-            <InputText v-model="buscar" placeholder="Buscar por DNI o Nombres" style="font-size: 0.9rem;" />
+            <InputText v-model="buscar" placeholder="Buscar por DNIcoddd o Nombres" style="font-size: 0.9rem;" />
           </span>
         </div>
 
         <!-- Tabla de Estudiantes -->
         <DataTable :value="estudiantes" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem; font-size: 0.75rem;">
-          <Column field="dni" header="DNI"></Column>
+          <Column field="codigo_est" header="codigo_est"></Column>
+          <!-- <Column field="dni" header="DNI"></Column> -->
           <Column field="nombres" header="Nombres">
             <template #body="{ data }">
               {{ data.nombres }}, {{ data.paterno }} {{ data.materno }}

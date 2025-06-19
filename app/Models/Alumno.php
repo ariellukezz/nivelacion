@@ -14,6 +14,7 @@ class Alumno extends Model
     protected $fillable = [
         'codigo',
         'dni',
+        'codigo_est',
         'paterno',
         'materno',
         'nombres',

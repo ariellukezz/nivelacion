@@ -9,7 +9,8 @@
         <table style="border-radius: 4px; width: 100%; overflow: hidden;">
             <thead style="height: 30px; color: white; background-color: var(--primary-color); padding: 0px 10px;">
                 <tr style="font-size: .9rem;">
-                    <th style="border: 1px solid #d9d9d9;">DNI</th>
+                    <th style="border: 1px solid #d9d9d9;">CODIGO</th>
+                    <!-- <th style="border: 1px solid #d9d9d9;">DNI</th> -->
                     <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
                     <th style="border: 1px solid #d9d9d9;">UBICACION</th>
                     <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
@@ -29,7 +30,8 @@
             </thead>
             <tbody>
                 <tr v-for="item in estudiantes" :key="item.id" style="font-size: .9rem;">
-                    <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.dni }}</div></td>
+                    <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.codigo_est }}</div></td>
+                    <!-- bdhh <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.dni }}</div></td> -->
                     <td style="border: 1px solid #d9d9d9; font-weight: .7rem;"><div class="pl-1 pr-1"> {{ item.paterno }} {{ item.materno }},  {{item.nombre }}</div> </td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.filial }}</div></td>
                     <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;"><div class="pl-1 pr-1">{{item.programa }}</div></td>
@@ -92,7 +94,8 @@ const objetosEstudiantes = ref([]);
 const generarObjetosEstudiantes = () => {
   objetosEstudiantes.value = estudiantes.value.map(item => {
     const estudiante = {
-      dni: item.dni,
+     //bdhh dni: item.dni,
+      codigo_est: item.codigo_est,
       programa: item.programa,
       semestre: item.semestre,
       filial: item.filial,

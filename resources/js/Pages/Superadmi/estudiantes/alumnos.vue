@@ -31,7 +31,8 @@
 
       <DataTable :value="alumnos" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem"
         style="font-size: 0.8rem;">
-        <Column field="dni" header="Dni"></Column>
+        <Column field="codigo_est" header="codigo_est"></Column>
+        <!--bdhh <Column field="dni" header="Dni"></Column> -->
         <Column field="codigo" header="codigo"></Column>
         <Column v-if="conf_codigo === true" field="Codigo" header="Código"></Column>
         <Column field="nombres" header="Nombres">
@@ -64,7 +65,8 @@
 
   <Dialog v-model:visible="visible" maximizable modal header="Detalles del Alumno" :style="{ width: '50vw' }">
     <DataTable :value="alumnoSeleccionado" :class="'p-datatable-sm'" style="font-size: 0.8rem;">
-      <Column field="dni" header="Dni"></Column>
+      <Column field="codigo_est" header="codigo_est"></Column>
+      <!-- <Column field="dni" header="Dni"></Column> -->
       <Column field="nombre_colegio" header="Nombre del Colegio"></Column>
       <Column field="anio_egreso" header="anio_egreso"></Column>
       <Column field="semestre" header="semestre"></Column>

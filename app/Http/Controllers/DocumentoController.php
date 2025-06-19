@@ -9,6 +9,7 @@ use DB;
 
 class DocumentoController extends Controller
 {
+    protected $response = []; // Definimos la propiedad aquí
 
     public function download($uuid)
     {
@@ -70,7 +71,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/planes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Plan',
-                    'periodo' => '2024-II',
+                    'periodo' => '2025-I',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -101,7 +102,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/informes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Informe',
-                    'periodo' => '2024-II',
+                    'periodo' => '2025-I',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -132,7 +133,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/dictantes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Dictantes',
-                    'periodo' => '2024-II',
+                    'periodo' => '2025-I',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);
@@ -164,7 +165,7 @@ class DocumentoController extends Controller
                     'url' => 'documentos/otros/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
                     'fecha_subida' => date('Y-m-d'),
                     'tipo' => 'Otros',
-                    'periodo' => '2024-II',
+                    'periodo' => '2025-I',
                     'id_escuela'=> auth()->user()->id_escuela,
                     'id_usuario' => auth()->id()
                 ]);

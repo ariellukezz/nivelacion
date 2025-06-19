@@ -57,13 +57,15 @@ class AsignacionController extends Controller
 
 
         $res = CursoDetalle::select(
-            'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'estudiante.codigo_est', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+           //bdhh 'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
             'curso.nombre as curso',
             'curso_detalle.nota'
         )
         ->join('curso','curso_detalle.id_curso','curso.id')
         ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
-        ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
+        ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
+        //bdhh ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
         ->where('curso.id',"=",$request->curso)
         ->where($query_where)
         ->where(function ($query) use ($request) {
@@ -73,7 +75,8 @@ class AsignacionController extends Controller
         ->paginate(200);
 
         $registrados = CursoDetalle::select(
-            'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+            'estudiante.id', 'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+          //bdhh  'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
         ->join('curso','curso_detalle.id_curso','curso.id')
         ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
         ->where('curso.id',"=",$request->curso)
@@ -236,11 +239,13 @@ public function pdf($curso){
     ->get();
 
     $estudiantes = CursoDetalle::select(
-        'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+        'estudiante.codigo_est', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+       //bdhh 'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
         'curso_detalle.nota', 'curso_detalle.condicion'
     )
     ->join('estudiante','curso_detalle.id_alumno','estudiante.id')
-    ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
+    ->join('datos_ingreso', 'datos_ingreso.codigo_est', 'estudiante.codigo_est')
+   //bdhh ->join('datos_ingreso', 'datos_ingreso.dni', 'estudiante.dni')
     ->where('curso_detalle.id_curso','=',$curso)
     ->get();
 

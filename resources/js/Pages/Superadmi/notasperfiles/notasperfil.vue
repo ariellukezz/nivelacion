@@ -12,7 +12,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="busqueda">Buscar por Nombre o DNI: </label>
+                    <label for="busqueda">Buscar por Nombre o DNIcodii: </label>
                     <input id="busqueda" v-model="filtroBusqueda" @input="filtrarEstudiantes" type="text" placeholder="Buscar...">
                 </div>
                 <Button label="Exportar excel" @click="exportarExcel" size="small" style="height: 40px;"/>
@@ -21,7 +21,8 @@
             <table style="border-radius: 4px; width: 100%; overflow: hidden;">
                 <thead style="height: 30px; color: white; background-color: var(--primary-color); padding: 0px 10px;">
                     <tr style="font-size: .9rem;">
-                        <th style="border: 1px solid #d9d9d9;">DNI</th>
+                        <th style="border: 1px solid #d9d9d9;">CODIGO</th>
+                        <!--bdhh <th style="border: 1px solid #d9d9d9;">DNI</th> -->
                         <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
                         <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
                         <th style="border: 1px solid #d9d9d9;">INGRESO</th>
@@ -41,7 +42,8 @@
                 <tbody>
                     <tr v-for="item in estudiantesFiltrados" :key="item.id" style="font-size: .9rem;">
                         <td style="border: 1px solid #d9d9d9; font-weight: .8rem; text-align: center;">
-                            <div class="pl-1 pr-1">{{ item.dni }}</div>
+                            <div class="pl-1 pr-1">{{ item.codigo_est }}</div>
+                            <!--bdhh <div class="pl-1 pr-1">{{ item.dni }}</div> -->
                         </td>
                         <td style="border: 1px solid #d9d9d9; font-weight: .7rem;">
                             <div class="pl-1 pr-1">{{ item.paterno }} {{ item.materno }},  {{ item.nombre }}</div>
@@ -115,7 +117,8 @@ const filtrarEstudiantes = () => {
     estudiantesFiltrados.value = estudiantes.value.filter(item => {
         const coincidePrograma = filtroPrograma.value === '' || item.programa === filtroPrograma.value;
         const coincideBusqueda = filtroBusqueda.value === '' ||
-            item.dni.includes(filtroBusqueda.value) ||
+            item.codigo_est.includes(filtroBusqueda.value) ||
+            //bdhh item.dni.includes(filtroBusqueda.value) ||
             `${item.paterno} ${item.materno} ${item.nombre}`.toLowerCase().includes(filtroBusqueda.value.toLowerCase());
         return coincidePrograma && coincideBusqueda;
     });
@@ -125,7 +128,8 @@ const filtrarEstudiantes = () => {
 const generarObjetosEstudiantes = () => {
     objetosEstudiantes.value = estudiantesFiltrados.value.map(item => {
         const estudiante = {
-            dni: item.dni,
+            codigo_est: item.codigo_est,
+            //bdhh dni: item.dni,
             programa: item.programa,
             semestre: item.semestre,
             nombreCompleto: `${item.paterno} ${item.materno},  ${item.nombre}`,
