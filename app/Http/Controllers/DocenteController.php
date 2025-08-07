@@ -200,7 +200,7 @@ class DocenteController extends Controller
         $res = Curso::select(
             'curso.id AS id_curso',
             'curso.nombre AS curso',
-            'curso.ciclo',
+            'periodo.nombre AS ciclo',
             'competencia.id AS id_competencia',
             'competencia.nombre AS competencia',
             'docente.nro_doc AS dni_docente',
@@ -216,6 +216,7 @@ class DocenteController extends Controller
         ->join('docente','curso.id_docente','docente.id')
         ->join('programa','curso.id_programa','programa.id')
         ->join('escuela', 'programa.id_escuela', '=', 'escuela.id')
+        ->join('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
         ->where('curso.id','=',$curso)
         ->get();
 
@@ -251,6 +252,7 @@ class DocenteController extends Controller
     public function getDataPrisma($dni)
     {
         $url = "https://erpprisma.com/rucdni/l_dni.php?dni=" . $dni;
+       // $url = "https://mgg.com.pe/rucdni/l_dni.php?dni=" . $dni;
 
         $response = Http::get($url);
         $data = explode("|", $response->body());
@@ -262,6 +264,13 @@ class DocenteController extends Controller
             'paterno' => $data[3],
             'materno' => $data[4],
         ];
+        // $resultado = [
+
+        //     'dni' => $data[0],
+        //     'nombre' => $data[1],
+        //     'paterno' => $data[2],
+        //     'materno' => $data[3],
+        // ];
 
         return response()->json($resultado);
     }
@@ -347,7 +356,7 @@ class DocenteController extends Controller
             $usuario->programa_id = $request->id_docente;
             $usuario->id_escuela = $esc->id_escuela;
             $usuario->email = $request->correo;
-            
+
             $usuario->save();
             $this->response['tipo'] = 'info';
             $this->response['titulo'] = '!REGISTRO MODIFICADO!';

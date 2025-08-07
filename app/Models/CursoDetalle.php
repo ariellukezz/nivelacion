@@ -12,10 +12,19 @@ class CursoDetalle extends Model
     protected $table = 'curso_detalle';
 
     protected $fillable = [
-        'id_curso',
-        'id_alumno',
-        'nota',
-        'condicion',
-        'encuesta'
-    ];
+    'id_curso',
+    'id_alumno',
+    'nota',
+    'fecha',
+    'editable',
+    'condicion',
+    'ciclo',
+    'encuesta',
+    'id_periodo', // 👈 MUY IMPORTANTE
+];
+
+public function periodo()
+{
+    return $this->belongsTo(Periodo::class, 'id_periodo', 'id_periodo');
+}
 }

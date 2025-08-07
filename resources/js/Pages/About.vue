@@ -12,7 +12,7 @@
         </div>
         <div class="card">
           <TabView>
-            <TabPanel header="Resolución decanal">
+            <TabPanel header=" (1) R.D. Comisión">
               <div class="mb-3">
                 <form @submit.prevent="submit">
                   <div class="flex justify-between">
@@ -73,7 +73,7 @@
               </div>
             </TabPanel>
 
-            <TabPanel header="Plan de trabajo">
+            <TabPanel header="(2) Plan de Trabajo">
               <div class="mb-3">
                 <form @submit.prevent="submit2">
                   <div class="flex justify-between">
@@ -135,7 +135,7 @@
               </div>
             </TabPanel>
 
-            <TabPanel header="Informe">
+            <TabPanel header="(3) Informe">
               <div class="mb-3">
                 <form @submit.prevent="submit3">
                   <div class="flex justify-between">
@@ -197,7 +197,7 @@
               </div>
             </TabPanel>
 
-            <TabPanel header="Docentes de Nivelacion">
+            <TabPanel header="(4) R.D Felicitación Docentes">
               <div class="mb-3">
                 <form @submit.prevent="submit5">
                   <div class="flex justify-between">

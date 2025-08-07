@@ -1,6 +1,6 @@
 <template>
   <aside  class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: #3E5F8A; color: #FFFFFF; width: 230px; border-right: 1px solid #00000010;">
- 
+
 
     <div class="text-gray-200">
       <Link class="text-lg font-bold text-gray-100" :href="route('dashboard')">
@@ -59,6 +59,15 @@
             Coordinadores
           </NavLink>
         </li> -->
+
+        <li class="relative px-6 py-3" :class="[route().current('encargado-index')? 'activado':'']">
+          <NavLink :href="route('encargado-index')">
+            <template #icon>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            </template>
+            Encargado nivelación
+          </NavLink>
+        </li>
 
         <li class="relative px-6 py-3" :class="[route().current('coordinador-estudiante')? 'activado':'']">
           <NavLink :href="route('coordinador-estudiante')">
@@ -122,7 +131,7 @@
             Notas perfil
           </NavLink>
         </li>
-        
+
       </ul>
     </div>
   </aside>
@@ -153,7 +162,7 @@ export default {
 .activado{
   background: #5f08d131;
   background-color: var(--primary-color);
-  color: white;   
+  color: white;
 }
 .borderlef{
   border-left: 3px solid rgb(221, 24, 2);

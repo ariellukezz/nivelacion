@@ -5,9 +5,11 @@ use Illuminate\Http\Request;
 use App\Models\Curso;
 use App\Models\CursoDetalle;
 use App\Models\Alumno;
+use App\Models\Escuela;
 use App\Models\Documento;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class SupervisorController extends Controller
@@ -220,61 +222,194 @@ public function getDocumentos(Request $request) {
         return response()->json($this->response, 200);
     }
 
+    public function getDocentesCompetencias()
+{
+    try {
+        $query = "
+            SELECT
+                c.nombre AS curso_nombre,
+                c.grupo,
+                d.paterno,
+                d.materno,
+                d.nombres,
+                d.telefono,
+                d.email,
+                com.nombre AS competencia_nombre,
+                com.cod AS competencia_cod,
+                pro.id AS programa_id,
+                p.id_periodo,
+                p.nombre AS periodo_nombre,
+                c.id_competencia,
+                pro.programa,
+                pro.escuela
+            FROM curso AS c
+            LEFT JOIN docente AS d ON c.id_docente = d.id
+            JOIN competencia AS com ON c.id_competencia = com.id
+            LEFT JOIN programa AS pro ON c.id_programa = pro.id
+            JOIN periodo p ON p.id_periodo = c.id_periodo
+            ORDER BY d.paterno ASC, d.materno ASC
+        ";
 
-    public function docentesCompetencias(Request $request)
-    {
-        // Obtener filtros
-        $programaId = $request->input('programa_id');
-        $competenciaId = $request->input('competencia_id');
+        $docentes = DB::select($query);
 
-        // Consulta principal
-        $resultados = DB::table('curso as c')
-            ->select(
-                'c.nombre as curso_nombre',
-                'c.grupo',
-                'd.paterno',
-                'd.materno',
-                'd.nombres',
-                'd.telefono',
-                'd.email',
-                'com.nombre as competencia_nombre',
-                'com.cod as competencia_cod',
-                'pro.id as programa_id',
-                'pro.programa',
-                'pro.escuela'
-            )
-            ->leftJoin('docente as d', 'c.id_docente', '=', 'd.id')
-            ->join('competencia as com', 'c.id_competencia', '=', 'com.id')
-            ->leftJoin('programa as pro', 'c.id_programa', '=', 'pro.id')
-            ->when($programaId, function($query, $programaId) {
-                return $query->where('pro.id', $programaId);
-            })
-            ->when($competenciaId, function($query, $competenciaId) {
-                return $query->where('com.id', $competenciaId);
-            })
-            ->get();
+        // Obtener opciones para los filtros
+        $programas = DB::table('programa')->select('id AS programa_id', 'programa')->get();
+        $periodos = DB::table('periodo')->select('id_periodo', 'nombre as periodo_nombre')->orderByDesc('id_periodo')->get();
+        $competencias = DB::table('competencia')->select('id AS id_competencia', 'nombre AS competencia_nombre', 'cod AS competencia_cod')->get();
 
-        // Obtener opciones para filtros usando DB
-        $programas = DB::table('programa')
-            ->select('id', 'programa as nombre')
-            ->get();
-
-        $competencias = DB::table('competencia')
-            ->select('id', 'nombre', 'cod')
-            ->get();
-
-        return Inertia::render('Supervisor/cdocentes/Index', [
-            'resultados' => $resultados,
-            'filtros' => [
-                'programa_id' => $programaId ? (int)$programaId : null,
-                'competencia_id' => $competenciaId ? (int)$competenciaId : null,
-            ],
-            'opcionesFiltros' => [
-                'programas' => $programas,
-                'competencias' => $competencias,
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'docentes' => $docentes,
+                'filtros' => [
+                    'programas' => $programas,
+                    'periodos' => $periodos,
+                    'competencias' => $competencias,
+                ]
             ]
         ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener los datos: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+public function busquedaEstudiantes(Request $request)
+    {
+        try {
+            $search = $request->query('search', '');
+
+            $query = "
+                SELECT
+                    estudiante.codigo_est,
+                    estudiante.dni,
+                    estudiante.nombres,
+                    estudiante.paterno,
+                    estudiante.materno,
+                    estudiante.sexo,
+                    estudiante.telefono,
+                    estudiante.email,
+                    estudiante.direccion,
+                    datos_ingreso.semestre,
+                    datos_ingreso.modalidad,
+                    datos_ingreso.t_examen,
+                    datos_ingreso.anio,
+                    programa.programa AS nombre_programa,
+                    programa.escuela AS nombre_escuela,
+                    escuela.filial,
+                    matriz.c1_R AS competencia_1,
+                    matriz.c2_R AS competencia_2,
+                    matriz.c3_R AS competencia_3,
+                    matriz.c4_R AS competencia_4,
+                    matriz.c5_R AS competencia_5,
+                    matriz.c6_R AS competencia_6,
+                    matriz.c7_R AS competencia_7,
+                    matriz.c8_R AS competencia_8,
+                    matriz.c9_R AS competencia_9,
+                    matriz.c10_R AS competencia_10,
+                    matriz.c11_R AS competencia_11
+                FROM estudiante
+                INNER JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
+                INNER JOIN programa ON datos_ingreso.id_programa = programa.id
+                INNER JOIN escuela ON escuela.id = programa.id_escuela
+                INNER JOIN matriz ON datos_ingreso.codigo_est = matriz.codigo_est
+            ";
+
+            // Si hay un término de búsqueda, agregar condiciones WHERE
+            if ($search) {
+                $query .= " WHERE estudiante.codigo_est LIKE ?
+                           OR estudiante.dni LIKE ?
+                           OR estudiante.nombres LIKE ?
+                           OR estudiante.paterno LIKE ?
+                           OR estudiante.materno LIKE ?
+                           OR CONCAT(estudiante.nombres, ' ', estudiante.paterno, ' ', estudiante.materno) LIKE ?
+                           OR CONCAT(estudiante.paterno, ' ', estudiante.materno, ' ', estudiante.nombres) LIKE ?";
+                $searchTerm = "%$search%";
+                $estudiantes = DB::select($query, [
+                    $searchTerm, // codigo_est
+                    $searchTerm, // dni
+                    $searchTerm, // nombres
+                    $searchTerm, // paterno
+                    $searchTerm, // materno
+                    $searchTerm, // nombres + apellidos
+                    $searchTerm  // apellidos + nombres
+                ]);
+            } else {
+                $estudiantes = DB::select($query);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $estudiantes
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los datos: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 
+public function generateReport(Request $request)
+    {
+        // Obtener filtros del request
+        $periodo = $request->input('periodo');
+        $tipo = $request->input('tipo');
+        $escuela = $request->input('escuela');
+        $estado = $request->input('estado');
+
+        // Consulta principal para el reporte
+        $query = Documento::select(
+            'escuela.nombre AS escuela',
+            'documento.periodo',
+            'documento.tipo',
+            \DB::raw("
+                CASE
+                    WHEN documento.aceptado = 1 THEN 'Aceptado'
+                    WHEN documento.aceptado = 0 THEN 'Rechazado'
+                    ELSE 'Pendiente'
+                END AS estado
+            "),
+            \DB::raw('COUNT(*) AS cantidad')
+        )
+        ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
+        ->groupBy('escuela.nombre', 'documento.periodo', 'documento.tipo', 'documento.aceptado');
+
+        // Aplicar filtros si existen
+        if ($periodo) {
+            $query->where('documento.periodo', $periodo);
+        }
+        if ($tipo) {
+            $query->where('documento.tipo', $tipo);
+        }
+        if ($escuela) {
+            $query->where('escuela.nombre', $escuela);
+        }
+        if ($estado) {
+            $query->where('documento.aceptado', $estado === 'Aceptado' ? 1 : ($estado === 'Rechazado' ? 0 : null));
+        }
+
+        $reporte = $query->orderBy('escuela.nombre')
+                         ->orderBy('documento.periodo')
+                         ->orderBy('documento.tipo')
+                         ->orderBy('estado')
+                         ->get();
+
+        // Obtener datos para los filtros (selects en la vista)
+        $periodos = Documento::select('periodo')->distinct()->orderBy('periodo')->pluck('periodo');
+        $tipos = Documento::select('tipo')->distinct()->orderBy('tipo')->pluck('tipo');
+        $escuelas = Escuela::select('nombre')->orderBy('nombre')->pluck('nombre');
+
+        // Generar el PDF
+        $pdf = PDF::loadView('reportes.documentos', compact('reporte', 'periodos', 'tipos', 'escuelas', 'periodo', 'tipo', 'escuela', 'estado'));
+
+        return $pdf->stream('Reporte_Documentos.pdf');
+       // return $pdf->download('Reporte_Documentos.pdf');
+
+    }
 }

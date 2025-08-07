@@ -61,7 +61,7 @@
                     </td>
                     <td align="left">
                         <div style="text-align: left">
-                            <span style="font-size:10pt;"> 2025-I {{ $data->ciclo}} </span>
+                            <span style="font-size:10pt;">{{ $data->ciclo}} </span>
                         </div>
                     </td>
                 </tr>

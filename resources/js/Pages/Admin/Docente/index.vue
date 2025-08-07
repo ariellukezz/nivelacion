@@ -5,11 +5,11 @@
 
       <div>
         <div class="card" >
-          <Message severity="warn" sticky>Solo debe agregar al docente de su Escuela Profesional. 
+          <Message severity="warn" sticky>Solo debe agregar al docente de su Escuela Profesional.
             En caso de ser docente de servicio, comuníquese con el docente o el director de la escuela para su asignación en el sistema.</Message>
         </div>
         <div class="flex" style="justify-content: space-between;">
-          <Button label="Docente Nuevo" @click="visible = true" size="small" style="height: 40px;"/> 
+          <Button label="Docente Nuevo" @click="visible = true" size="small" style="height: 40px;"/>
 
           <span class="p-input-icon-left ">
               <i class="pi pi-search" />
@@ -17,11 +17,11 @@
           </span>
 
         </div>
-  
+
       </div>
       <Toast />
       <ConfirmPopup></ConfirmPopup>
-  
+
       <div>
         <div class="card">
           <div class="flex justify-content-center mb-4">
@@ -38,11 +38,11 @@
                           </div>
                       </div>
                   </template>
-              </Column> 
+              </Column>
               <Column field="sexo" header="Sexo"></Column>
               <Column field="telefono" header="Celular"></Column>
               <Column field="email" header="Correo"></Column>
-              <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px"> 
+              <Column field="estado" style=" justify-content: center; display: flex;" header="Estado" width="70px">
               <template #body="{ data }">
                 <div class="flex" style="justify-content: center;">
                   <div v-if="data.estado === 1">
@@ -55,23 +55,23 @@
               </template>
             </Column>
 
-              <Column field="id_programa" header="Acciones" width="90px"> 
+              <Column field="id_programa" header="Acciones" width="90px">
                 <template #body="{ data }">
                   <div class="flex">
                     <div class="mr-2">
                       <Button class="secondary" icon="pi pi-pencil" aria-label="Submit" @click="editar(data)" size="small" style="width: 25px; height: 25px;"/>
                     </div>
-                    <Button icon="pi pi-trash" severity="danger" aria-label="Submit" @click="confirm2($event, data)"  size="small"  style="width: 25px; height: 25px;"/>
+                    <!-- <Button icon="pi pi-trash" severity="danger" aria-label="Submit" @click="confirm2($event, data)"  size="small"  style="width: 25px; height: 25px;"/> -->
                   </div>
                 </template>
               </Column>
           </DataTable>
         </div>
       </div>
-  
+
       <Dialog v-model:visible="visible" header="Docente Nuevo" :style="{ width: '60vw', height:'600px' }">
-        
-        
+
+
 
         <div style="">
         <TabView>
@@ -81,7 +81,7 @@
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <div class="flex flex-wrap mr-0">
                 <div>
-                  <div class="mr-2"> <label>Tipo doc </label> </div>  
+                  <div class="mr-2"> <label>Tipo doc </label> </div>
                   <div class="flex">
                     <div class="flex align-items-center mr-2">
                         <RadioButton v-model="docente.tipo_doc" name="pizza" :value="1" />
@@ -95,11 +95,11 @@
                   </div>
                 </div>
             </div>
-            <Divider layout="vertical"/>  
+            <Divider layout="vertical"/>
 
             <div class="flex flex-wrap mr-0">
                 <div>
-                  <div class="mr-2"> <label>Sexo </label> </div>  
+                  <div class="mr-2"> <label>Sexo </label> </div>
                   <div class="flex">
                     <div class="flex align-items-center mr-2">
                         <RadioButton v-model="docente.sexo" name="pizza" value="M" />
@@ -113,46 +113,46 @@
                   </div>
                 </div>
             </div>
-            <Divider layout="vertical" />  
-          <div class="mr-3"> 
-            <label>Estado</label> 
+            <Divider layout="vertical" />
+          <div class="mr-3">
+            <label>Estado</label>
             <div> <InputSwitch v-model="docente.estado" /></div>
-          </div>  
+          </div>
 
         </div>
- 
+
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
-              <div><label>Nro documento (DNI)</label></div>  
+              <div><label>Nro documento (DNI)</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nro_doc" />
             </div>
-    
+
             <div class="mb-2" style="width: 48%;">
-              <div><label>Nombres</label></div>  
+              <div><label>Nombres</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.nombres" />
             </div>
           </div>
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
-              <div><label>Primer apellido</label></div>  
+              <div><label>Primer apellido</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.primer_apellido" />
             </div>
-    
+
             <div class="mb-2" style="width: 48%;">
-              <div><label>Segundo apellido</label></div>  
+              <div><label>Segundo apellido</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.segundo_apellido" />
             </div>
           </div>
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 23%;">
-              <div><label>Nro Celular</label></div>  
+              <div><label>Nro Celular</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.celular" />
             </div>
-    
+
             <div class="mb-2" style="width: 73%;">
-              <div><label>Correo (preferiblemente institucional)</label></div>  
+              <div><label>Correo (preferiblemente institucional)</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.correo" />
             </div>
           </div>
@@ -160,26 +160,26 @@
 
           <div class="flex" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
             <div class="" style="width: 100%;">
-              <div><label>Dirección</label></div>  
+              <div><label>Dirección</label></div>
               <InputText style="width: 100%; height: 40px;"  type="text" v-model="docente.direccion" />
             </div>
-    
+
             <!-- <div class="" style="width: 23%;">
-              <div><label>Fecha nacimiento</label></div>  
+              <div><label>Fecha nacimiento</label></div>
               <Calendar style="width: 100%; height: 40px;" dateFormat="dd/mm/yy" v-model="docente.fecha" />
             </div> -->
           </div>
- 
+
 
 
         </TabPanel>
         <TabPanel header="Cursos que puede dictar">
           <div style="height:340px;">
-            
+
 
             <div class="flex mt-5" style="width: 100%; justify-content: space-between; margin-bottom:-20px;" >
               <div class="" style="width: 100%;">
-                <div class="mb-2"><h2>Habilidades</h2></div>  
+                <div class="mb-2"><h2>Habilidades</h2></div>
                   <div style="column-count: 2;">
                   <div v-for="category of categories" :key="category.key" class="mb-2" style="font-size: .9rem" >
                         <div v-if="category.value % 2 === 0" class="flex">
@@ -204,11 +204,11 @@
 
           </div>
         </TabPanel>
-      
-      </TabView> 
+
+      </TabView>
       </div>
 
-        
+
 
         <template #footer style="margin-top: -10px">
             <div class="flex" style="justify-content: flex-end;">
@@ -220,11 +220,11 @@
           </template>
 
       </Dialog>
-  
+
   </div>
   </AuthenticatedLayout>
   </template>
-  
+
   <script setup>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
   import { Head } from '@inertiajs/vue3';
@@ -249,19 +249,19 @@
   import Checkbox from 'primevue/checkbox';
   import Message from 'primevue/message';
 
-  
+
   const toast = useToast();
   const confirm = useConfirm();
-  
+
   const programas = ref([])
   const totalpaginas = ref(0)
   const pagina = ref(1)
   const buscar = ref("")
-  
-  const docentes = ref([]) 
+
+  const docentes = ref([])
   const visible = ref(false);
   const temp = ref("");
-  
+
 
   const op = ref();
   const toggle = (event) => {
@@ -281,11 +281,11 @@
     sexo:"M",
     estado:true
   })
-  
+
   const getDocentes =  async (event) => {
     let res = await axios.post(
     "/coordinador/get-docentes?page=" + pagina.value,
-    { 
+    {
       term: buscar.value,
    }
     );
@@ -297,7 +297,7 @@
     let res = await axios.post( "/coordinador/get-competencia-x-docente?page=" + pagina.value, { id_docente: idd});
     selectedCategories.value = res.data.datos;
   }
-  
+
 
   const guardar =  async () => {
     // let fec = null;
@@ -310,7 +310,7 @@
 
     let res = await axios.post(
       "/coordinador/save-docente",
-      { 
+      {
         id: docente.value.id,
         tipo_doc: docente.value.tipo_doc,
         nro_doc: docente.value.nro_doc,
@@ -326,28 +326,28 @@
         competencias : selectedCategories.value
       }
     );
-  
+
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getDocentes()  
+    getDocentes()
     visible.value = false
     limpiar()
     // roles.value = res.data.datos.data;
   }
-  
+
   const eliminar =  async (id) => {
     let res = await axios.get(
     "delete-docente/"+id);
     showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getDocentes() 
-  }  
+    getDocentes()
+  }
 
   const getdataprisma =  async ( ) => {
     let res = await axios.get("get-data-docente/"+docente.value.nro_doc);
     docente.value.nombres = res.data.nombre;
     docente.value.primer_apellido = res.data.paterno;
     docente.value.segundo_apellido = res.data.materno;
-  }  
-  
+  }
+
   const emod = ref(false);
 
   const editar =  async (item) => {
@@ -399,11 +399,11 @@
       getdataprisma();
     }}
  });
-  
+
   const showToast = (tipo, titulo, detalle) => {
       toast.add({ severity: tipo, summary: titulo, detail: detalle, life: 3000 });
   };
-  
+
   const confirm2 = (event,doc) => {
       confirm.require({
           target: event.currentTarget,
@@ -456,4 +456,3 @@
   }
 
   </script>
-  

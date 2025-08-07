@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Documento;
+use App\Models\Periodo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use DB;
@@ -20,164 +21,218 @@ class DocumentoController extends Controller
     }
 
 
-    public function resolucion(Request $request)
-    {
-        $escuela = DB::select('SELECT programa.escuela FROM users
-        JOIN programa ON users.programa_id = programa.id
-        WHERE users.id = ' . auth()->id());
+public function resolucion(Request $request)
+{
+    // Escuela del usuario
+    $escuela = DB::table('users')
+                 ->join('programa', 'users.programa_id', '=', 'programa.id')
+                 ->where('users.id', auth()->id())
+                 ->value('programa.escuela');
 
-        try{
-            if($request->hasFile('img')){
-                $file = $request->file('img');
-                $file_name =$file->getClientoriginalName();
-                $file->move(public_path('documentos/resoluciones/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
-
-              //  $periodo = $request->input('periodo', '2024-II'); // '2024-II' como valor predeterminado
-
-                $doc = Documento::create([
-                    'nombre' => $file_name,
-                    'url' => 'documentos/resoluciones/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
-                    'fecha_subida' => date('Y-m-d'),
-                    'tipo' => 'Resolucion',
-                    'periodo' => '2025-I',
-                   // 'periodo' => $periodo, // Usar el periodo proporcionado
-                    'id_escuela'=> auth()->user()->id_escuela,
-                    'id_usuario' => auth()->id()
-                ]);
-                return response()->json(['menssje'=>'archivo subido con éxito'], 200);
-            }
-        }catch(\Exception $e){
-            return response()->json([
-                'mssage'=>$e->getMessage()
-            ]);
-        }
-
+    // Periodo activo
+    $periodoActivo = Periodo::where('estado', 'activo')->first();
+    if (!$periodoActivo) {
+        return response()->json(['message' => 'No existe un periodo activo'], 422);
     }
+
+    // Subida
+    if ($request->hasFile('img')) {
+        $file         = $request->file('img');
+        $originalName = $file->getClientOriginalName();          // → nombre.pdf
+        $timestamp    = time();
+        $fileName     = "{$periodoActivo->nombre}-{$timestamp}-{$originalName}";
+        $folder       = "documentos/resoluciones/{$escuela}/";
+        $file->move(public_path($folder), $fileName);
+
+        Documento::create([
+            'nombre'       => $originalName,                     // solo el nombre limpio
+            'url'          => $folder . $fileName,               // ruta + nombre largo
+            'fecha_subida' => now()->toDateString(),
+            'tipo'         => 'Resolucion',
+            'periodo'      => $periodoActivo->nombre,            // p.ej. 2025-I
+            'id_escuela'   => auth()->user()->id_escuela,
+            'id_usuario'   => auth()->id()
+        ]);
+
+        return response()->json(['message' => 'Archivo subido con éxito'], 200);
+    }
+
+    return response()->json(['message' => 'No se recibió ningún archivo'], 400);
+}
 
     public function plan(Request $request)
-    {
-        $escuela = DB::select('SELECT programa.escuela FROM users
-        JOIN programa ON users.programa_id = programa.id
-        WHERE users.id = ' . auth()->id());
+{
+    // 1. Obtener nombre de escuela del usuario
+    $escuelaNombre = DB::table('users')
+        ->join('programa', 'users.programa_id', '=', 'programa.id')
+        ->where('users.id', auth()->id())
+        ->value('programa.escuela');
 
-        try{
-            if($request->hasFile('img')){
-                $file = $request->file('img');
-                $file_name =$file->getClientoriginalName();
-                $file->move(public_path('documentos/planes/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
+    // Sanear nombre de carpeta
+    $escuelaSlug = Str::slug($escuelaNombre);  // para carpeta segura
 
-                $doc = Documento::create([
-                    'nombre' => $file_name,
-                    'url' => 'documentos/planes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
-                    'fecha_subida' => date('Y-m-d'),
-                    'tipo' => 'Plan',
-                    'periodo' => '2025-I',
-                    'id_escuela'=> auth()->user()->id_escuela,
-                    'id_usuario' => auth()->id()
-                ]);
-                return response()->json(['menssje'=>'Plan Guardado'], 200);
-            }
-        }catch(\Exception $e){
-            return response()->json([
-                'mssage'=>$e->getMessage()
-            ]);
-        }
-
+    // 2. Buscar periodo activo
+    $periodoActivo = Periodo::where('estado', 'activo')->first();
+    if (!$periodoActivo) {
+        return response()->json(['message' => 'No existe un periodo activo'], 422);
     }
+
+    // 3. Procesar archivo
+    if ($request->hasFile('img')) {
+        $file         = $request->file('img');
+        $originalName = $file->getClientOriginalName(); // nombre.pdf
+        $timestamp    = time();
+        $fileName     = "{$periodoActivo->nombre}-{$timestamp}-{$originalName}";
+        $folder       = "documentos/planes/{$escuelaSlug}/";
+
+        $file->move(public_path($folder), $fileName);
+
+        // 4. Registrar en base de datos
+        Documento::create([
+            'nombre'       => $originalName,
+            'url'          => $folder . $fileName,
+            'fecha_subida' => now()->toDateString(),
+            'tipo'         => 'Plan',
+            'periodo'      => $periodoActivo->nombre,
+            'id_escuela'   => auth()->user()->id_escuela,
+            'id_usuario'   => auth()->id()
+        ]);
+
+        return response()->json(['message' => 'Plan guardado'], 200);
+    }
+
+    return response()->json(['message' => 'No se recibió ningún archivo'], 400);
+}
 
     public function informe(Request $request)
-    {
-        $escuela = DB::select('SELECT programa.escuela FROM users
-        JOIN programa ON users.programa_id = programa.id
-        WHERE users.id = ' . auth()->id());
+{
+    // 1. Escuela del usuario (nombre limpio para carpeta)
+    $escuelaNombre = DB::table('users')
+        ->join('programa', 'users.programa_id', '=', 'programa.id')
+        ->where('users.id', auth()->id())
+        ->value('programa.escuela');
 
-        try{
-            if($request->hasFile('img')){
-                $file = $request->file('img');
-                $file_name =$file->getClientoriginalName();
-                $file->move(public_path('documentos/informes/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
+    $escuelaSlug = Str::slug($escuelaNombre);   // p.ej. “Ingeniería Civil” → “ingenieria-civil”
 
-                $doc = Documento::create([
-                    'nombre' => $file_name,
-                    'url' => 'documentos/informes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
-                    'fecha_subida' => date('Y-m-d'),
-                    'tipo' => 'Informe',
-                    'periodo' => '2025-I',
-                    'id_escuela'=> auth()->user()->id_escuela,
-                    'id_usuario' => auth()->id()
-                ]);
-                return response()->json(['menssje'=>'file upload success'], 200);
-            }
-        }catch(\Exception $e){
-            return response()->json([
-                'mssage'=>$e->getMessage()
-            ]);
-        }
-
+    // 2. Periodo activo
+    $periodoActivo = Periodo::where('estado', 'activo')->first();
+    if (!$periodoActivo) {
+        return response()->json(['message' => 'No existe un periodo activo'], 422);
     }
+
+    // 3. Procesar archivo
+    if ($request->hasFile('img')) {
+        $file         = $request->file('img');
+        $originalName = $file->getClientOriginalName();     // nombre.pdf
+        $timestamp    = time();
+        $fileName     = "{$periodoActivo->nombre}-{$timestamp}-{$originalName}";
+
+        $folder = "documentos/informes/{$escuelaSlug}/";
+        $file->move(public_path($folder), $fileName);
+
+        // 4. Guardar en BD
+        Documento::create([
+            'nombre'       => $originalName,                // solo nombre original
+            'url'          => $folder . $fileName,          // ruta + nombre largo
+            'fecha_subida' => now()->toDateString(),
+            'tipo'         => 'Informe',
+            'periodo'      => $periodoActivo->nombre,
+            'id_escuela'   => auth()->user()->id_escuela,
+            'id_usuario'   => auth()->id()
+        ]);
+
+        return response()->json(['message' => 'Informe guardado'], 200);
+    }
+
+    return response()->json(['message' => 'No se recibió ningún archivo'], 400);
+}
 
     public function dictantes(Request $request)
-    {
-        $escuela = DB::select('SELECT programa.escuela FROM users
-        JOIN programa ON users.programa_id = programa.id
-        WHERE users.id = ' . auth()->id());
+{
+    // 1. Obtener nombre de escuela (carpeta segura)
+    $escuelaNombre = DB::table('users')
+        ->join('programa', 'users.programa_id', '=', 'programa.id')
+        ->where('users.id', auth()->id())
+        ->value('programa.escuela');
 
-        try{
-            if($request->hasFile('img')){
-                $file = $request->file('img');
-                $file_name =$file->getClientoriginalName();
-                $file->move(public_path('documentos/dictantes/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
+    $escuelaSlug = Str::slug($escuelaNombre);  // Ej. "ingenieria-civil"
 
-                $doc = Documento::create([
-                    'nombre' => $file_name,
-                    'url' => 'documentos/dictantes/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
-                    'fecha_subida' => date('Y-m-d'),
-                    'tipo' => 'Dictantes',
-                    'periodo' => '2025-I',
-                    'id_escuela'=> auth()->user()->id_escuela,
-                    'id_usuario' => auth()->id()
-                ]);
-                return response()->json(['menssje'=>'file upload success'], 200);
-            }
-        }catch(\Exception $e){
-            return response()->json([
-                'mssage'=>$e->getMessage()
-            ]);
-        }
-
+    // 2. Obtener periodo activo
+    $periodoActivo = Periodo::where('estado', 'activo')->first();
+    if (!$periodoActivo) {
+        return response()->json(['message' => 'No existe un periodo activo'], 422);
     }
+
+    // 3. Procesar archivo
+    if ($request->hasFile('img')) {
+        $file         = $request->file('img');
+        $originalName = $file->getClientOriginalName();
+        $timestamp    = time();
+        $fileName     = "{$periodoActivo->nombre}-{$timestamp}-{$originalName}";
+        $folder       = "documentos/dictantes/{$escuelaSlug}/";
+
+        $file->move(public_path($folder), $fileName);
+
+        // 4. Registrar en BD
+        Documento::create([
+            'nombre'       => $originalName,
+            'url'          => $folder . $fileName,
+            'fecha_subida' => now()->toDateString(),
+            'tipo'         => 'Dictantes',
+            'periodo'      => $periodoActivo->nombre,
+            'id_escuela'   => auth()->user()->id_escuela,
+            'id_usuario'   => auth()->id()
+        ]);
+
+        return response()->json(['message' => 'Archivo de dictantes guardado correctamente'], 200);
+    }
+
+    return response()->json(['message' => 'No se recibió ningún archivo'], 400);
+}
 
 
     public function otros(Request $request)
-    {
-        $escuela = DB::select('SELECT programa.escuela FROM users
-        JOIN programa ON users.programa_id = programa.id
-        WHERE users.id = ' . auth()->id());
+{
+    // 1. Escuela del usuario
+    $escuelaNombre = DB::table('users')
+        ->join('programa', 'users.programa_id', '=', 'programa.id')
+        ->where('users.id', auth()->id())
+        ->value('programa.escuela');
 
-        try{
-            if($request->hasFile('img')){
-                $file = $request->file('img');
-                $file_name =$file->getClientoriginalName();
-                $file->move(public_path('documentos/otros/'.$escuela[0]->escuela.'/'), time().'-'.$file_name);
+    $escuelaSlug = Str::slug($escuelaNombre); // Carpeta segura
 
-                $doc = Documento::create([
-                    'nombre' => $file_name,
-                    'url' => 'documentos/otros/'.$escuela[0]->escuela.'/'.time().'-'.$file_name,
-                    'fecha_subida' => date('Y-m-d'),
-                    'tipo' => 'Otros',
-                    'periodo' => '2025-I',
-                    'id_escuela'=> auth()->user()->id_escuela,
-                    'id_usuario' => auth()->id()
-                ]);
-                return response()->json(['menssje'=>'file upload success'], 200);
-            }
-        }catch(\Exception $e){
-            return response()->json([
-                'mssage'=>$e->getMessage()
-            ]);
-        }
-
+    // 2. Periodo activo
+    $periodoActivo = Periodo::where('estado', 'activo')->first();
+    if (!$periodoActivo) {
+        return response()->json(['message' => 'No existe un periodo activo'], 422);
     }
+
+    // 3. Procesar archivo
+    if ($request->hasFile('img')) {
+        $file         = $request->file('img');
+        $originalName = $file->getClientOriginalName(); // nombre.pdf
+        $timestamp    = time();
+        $fileName     = "{$periodoActivo->nombre}-{$timestamp}-{$originalName}";
+        $folder       = "documentos/otros/{$escuelaSlug}/";
+
+        $file->move(public_path($folder), $fileName);
+
+        // 4. Insertar en la base de datos
+        Documento::create([
+            'nombre'       => $originalName,
+            'url'          => $folder . $fileName,
+            'fecha_subida' => now()->toDateString(),
+            'tipo'         => 'Otros',
+            'periodo'      => $periodoActivo->nombre,
+            'id_escuela'   => auth()->user()->id_escuela,
+            'id_usuario'   => auth()->id()
+        ]);
+
+        return response()->json(['message' => 'Archivo cargado con éxito'], 200);
+    }
+
+    return response()->json(['message' => 'No se recibió ningún archivo'], 400);
+}
 
 
     public function getResoluciones(Request $request){

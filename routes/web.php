@@ -127,6 +127,12 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-dictantes', [DocumentoController::class, 'getDictantes']);
     Route::post('get-otros', [DocumentoController::class, 'getOtros']);
 
+    // encargados
+    Route::get('encargados', fn () => Inertia::render('Admin/Encargado/index'))->name('encargado-index');
+    Route::post('get-encargados', [PreguntaController::class, 'getEncargados']);
+    Route::post('save-encargado', [PreguntaController::class, 'saveEncargado']);
+    Route::delete('delete-encargado/{id}', [PreguntaController::class, 'deleteEncargado']);
+
 
 });
 
@@ -214,12 +220,30 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('/cambiar-periodo-documento', [SupervisorController::class, 'cambiarPeriodo']);
 
 
+
+    //GET DATA
+    Route::post('get-programas', [DataController::class, 'getProgramas']);
+    Route::post('get-competencias', [DataController::class, 'getCompetencias']);
+    Route::get('/obtener-periodos', [SuperadmiController::class, 'obtenerListadoPeriodos']);
+
+
+
     Route::get('/notasperf-supervisor', [SupervisorController::class, 'getTestResultsvisor']);
     Route::get('/notas-todosest-supervisor', fn () => Inertia::render('Supervisor/notasper/index'))->name('notas-todosest-supervisor');
 
-    Route::get('/docentes-competencias', [SupervisorController::class, 'docentesCompetencias'])
-    ->name('supervisor-docentes-competencias');
+    // Ruta para la API (JSON) - sin cambios
+    Route::get('/docentes-competencias-data', [SupervisorController::class, 'getDocentesCompetencias']);
+    // Ruta para la vista (Inertia/Vue) - cambiamos la URL
+    Route::get('/docentes-competencias', fn () => Inertia::render('Supervisor/docentesCompetencias/index'))->name('docentes-competencias');
 
+    // Ruta para la API (JSON)
+    Route::get('/busqueda-estudiantes', [SupervisorController::class, 'busquedaEstudiantes']);
+    // Ruta para la vista (Inertia/Vue)
+    Route::get('/estudiantes', fn () => Inertia::render('Supervisor/Estudiantes/index'))->name('busqueda-estudiantes');
+
+
+    Route::get('/generar-reporte-documentos', [SupervisorController::class, 'generateReport'])->name('report.documents');
+    
 
 
 });
@@ -310,7 +334,28 @@ Route::get('/notas-todosest', fn () => Inertia::render('Superadmi/notasperfiles/
 Route::get('/get-estudiantes', [SuperadmiController::class, 'getEstudiantes']);
 Route::get('/estudiantesinfo', fn () => Inertia::render('Superadmi/Informacion/informacion'))->name('info_est');
 
+// ----------periodo ------------------------------
+Route::get('get-periodos', [SuperadmiController::class, 'getPeriodos']);
+Route::get('/periodos', fn () => Inertia::render('Superadmi/Periodos/Index'))->name('periodos');
+Route::post('guardar-periodo', [SuperadmiController::class, 'savePeriodo']);
+Route::get('eliminar-periodo/{id}', [SuperadmiController::class, 'eliminarPeriodo']);
+// ------------------- actulizar notas perido -------------------
+Route::get('/notas/actualizar', fn () => Inertia::render('Superadmi/Notas/Actualizar'))
+        ->name('superadmi.notas.actualizar');
 
+    Route::post('/notas/preview', [SuperadmiController::class, 'previewUpdate'])
+        ->name('superadmi.notas.preview');
+
+    Route::post('/notas/execute', [SuperadmiController::class, 'executeUpdate'])
+        ->name('superadmi.notas.execute');
+    Route::get('/obtener-escuelas', [SuperadmiController::class, 'obtenerListadoEscuelas']);
+    Route::get('/obtener-periodos', [SuperadmiController::class, 'obtenerListadoPeriodos']);
+
+        Route::get('/alumnos-importar', fn () => Inertia::render('Superadmi/Alumnos/index'))->name('alumnos-importar');
+   // Route::post('importar-excel-estudiante', [AlumnoController::class, 'excelEstudiante']);
+
+
+     Route::post('subir-estudiantes', [SuperadmiController::class, 'importarEstudiante']); //->name('alumnos-importar');
 
 });
 

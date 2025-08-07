@@ -7,6 +7,7 @@ use App\Models\Tutor;
 use App\Models\Docente;
 use App\Models\CursoDetalle;
 use App\Models\Curso;
+use App\Models\Periodo;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
@@ -29,13 +30,15 @@ class AsignacionController extends Controller
             'curso.id', 'curso.nombre',
             'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
             'competencia.id as id_competencia', 'competencia.nombre as competencia',
-            'curso.grupo','curso.id_programa', 'programa.programa', 'curso.escuela', 'curso.estado'
+            'curso.grupo','curso.id_programa', 'programa.programa', 'curso.escuela', 'curso.estado','periodo.id_periodo', 'periodo.nombre as periodo'
         )
         ->leftJoin('docente','docente.id','curso.id_docente')
         ->join('competencia','competencia.id','curso.id_competencia')
         ->join('programa', 'programa.id', '=', 'curso.id_programa')
+        ->join('periodo', 'curso.id_periodo', '=', 'periodo.id_periodo')
         ->where('curso.escuela',"=",$request->escuela)
         ->where('curso.id_usuario',"=",auth()->id())
+        ->where('periodo.estado', '=', 'activo') // 👈 FILTRAR SOLO PERIODO ACTIVO
         ->where($query_where)
         ->where(function ($query) use ($request) {
             return $query
@@ -109,6 +112,7 @@ class AsignacionController extends Controller
                 'estado' => $request->estado,
                 'id_programa' => $request->id_programa,
                 'id_usuario' => auth()->id(),
+                'id_periodo' => Periodo::activoId(), // ✅ AÑADIDO
             ]);
             $this->response['tipo'] = 'success';
             $this->response['titulo'] = 'REGISTRO NUEVO';
@@ -190,14 +194,23 @@ class AsignacionController extends Controller
 
     }
 
-    public function asignarCurso($id_curso, $id_alumno){
+    public function asignarCurso($id_curso, $id_alumno)
+{
+    // Buscar el curso y obtener su periodo
+    $curso = Curso::findOrFail($id_curso);
 
-        $curso = CursoDetalle::create([
-            'id_curso' => $id_curso,
-            'id_alumno' => $id_alumno,
-        ]);
-
+    // Verificar si el curso pertenece al periodo activo
+    if ($curso->id_periodo != Periodo::activoId()) {
+        abort(403, 'No se puede matricular en un curso que no pertenece al periodo activo.');
     }
+
+    // Crear el registro de matrícula
+    CursoDetalle::create([
+        'id_curso'   => $id_curso,
+        'id_alumno'  => $id_alumno,
+      //  'id_periodo' => $curso->id_periodo,
+    ]);
+}
 
     public function eliminarCurso($id_curso, $id_alumno) {
         $cursoDetalle = CursoDetalle::where('id_curso', $id_curso)
@@ -219,7 +232,7 @@ public function pdf($curso){
     $res = Curso::select(
         'curso.id AS id_curso',
         'curso.nombre AS curso',
-        'curso.ciclo',
+        'periodo.nombre AS ciclo',
         'competencia.id AS id_competencia',
         'competencia.nombre AS competencia',
         'docente.nro_doc AS dni_docente',
@@ -235,6 +248,7 @@ public function pdf($curso){
     ->leftjoin('docente','curso.id_docente','docente.id')
     ->join('programa','curso.id_programa','programa.id')
     ->join('escuela', 'programa.id_escuela', '=', 'escuela.id')
+    ->join('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
     ->where('curso.id','=',$curso)
     ->get();
 

@@ -1,6 +1,6 @@
 <template>
   <aside  class="z-20 hidden w-64 overflow-y-auto md:block flex-shrink-0" style="background: #3E5F8A; color: #FFFFFF; width: 230px; border-right: 1px solid #00000010;">
- 
+
     <div class="text-gray-200">
       <Link class="text-lg font-bold text-gray-100" :href="route('dashboard')">
         <div class="flex" style="align-items: center; margin-left: 20px; margin-top: 5px;">
@@ -60,9 +60,23 @@
           </NavLink>
         </li>
 
+
+        <!-- <li class="relative px-6 py-3" :class="[route().current('estudiante-historial')? 'activado':'']">
+          <NavLink :href="route('estudiante-historial')" :class="[route().current('estudiante-historial')? 'borderlef':'']">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            Notas Historial
+          </NavLink>
+        </li> -->
+
         <div style="border-bottom: 1px solid #f4f4f433; margin-top: 10px; margin-bottom: 20PX;"></div>
         <div class="ml-6" style="margin-bottom: 10px;"> <span style="font-weight: 700; letter-spacing: normal; font-family: Arial, Helvetica, sans-serif;"> OTRAS ACTIVIDADES </span> </div>
- 
+
         <li class="relative px-6 py-3" :class="[route().current('estudiante-encuestas')? 'activado':'']">
           <NavLink :href="route('estudiante-encuestas')" :class="[route().current('estudiante-encuestas')? 'borderlef':'']">
             <template #icon>
@@ -75,7 +89,7 @@
             Encuestas
           </NavLink>
         </li>
-        
+
       </ul>
     </div>
   </aside>
@@ -106,7 +120,7 @@ export default {
 .activado{
   background: #5f08d131;
   background-color: var(--primary-color);
-  color: white;   
+  color: white;
 }
 .borderlef{
   border-left: 3px solid rgb(221, 24, 2);

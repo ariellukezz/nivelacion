@@ -23,7 +23,9 @@ class CursoController extends Controller
         $res = Curso::select('curso.id', 'curso.nombre','curso.grupo', 'curso.escuela', 'curso.estado', 'curso.editable','programa.programa')
         ->join('docente','curso.id_docente','docente.id')
         ->join('programa', 'programa.id', '=', 'curso.id_programa')
+        ->join('periodo',  'periodo.id_periodo', '=', 'curso.id_periodo')
         ->where('curso.estado',"=",1)
+        ->where('periodo.estado', 'activo')
         ->where('docente.usuario_id',"=", auth()->user()->id)
         ->where(function ($query) use ($request) {
             return $query
@@ -106,8 +108,10 @@ class CursoController extends Controller
         ->join('curso','curso.id','curso_detalle.id_curso')
         ->join('users','users.id','estudiante.usuario_id')
         ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
+        ->join('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
         ->where('curso.estado',"=",1)
         ->where('estudiante.usuario_id',"=", auth()->user()->id)
+        ->where('periodo.estado', 'activo')
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
@@ -165,9 +169,6 @@ class CursoController extends Controller
         $this->response['datos'] = $p;
         return response()->json($this->response, 200);
     }
-
-
-
     //
 
 

@@ -92,7 +92,7 @@
             </ResponsiveNavLink>
           </li>
 
-          <li class="relative px-6 py-3">
+          <!-- <li class="relative px-6 py-3">
             <ResponsiveNavLink :href="route('supervisor-docentes-competencias')" :active="route().current('supervisor-docentes-competencias')">
               <template #icon>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -103,7 +103,7 @@
               </template>
               competecias y docentes
             </ResponsiveNavLink>
-          </li>
+          </li> -->
 
 
 

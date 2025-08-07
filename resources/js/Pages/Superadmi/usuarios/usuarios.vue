@@ -24,7 +24,7 @@
     </div>
      <!-- <pre>{{ usuarios }}</pre> -->
 
-     <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="10" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
+     <DataTable :value="usuarios" :class="'p-datatable-sm'" paginator :rows="15" tableStyle="min-width: 50rem" style="font-size: 0.8rem;">
         <Column field="nombres" header="nombres"></Column>
         <Column field="apellidos" header="apellidos"></Column>
         <Column field="email" header="email"></Column>

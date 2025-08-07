@@ -256,7 +256,7 @@ class AlumnoController extends Controller
                     'dni' => $dni,
                     'codigo_est' => $item['codigo_est'],
                     'anio' => $item['anio'] ?? date('Y'),
-                    'semestre' => $item['semestre'] ?? '2024-I',
+                    'semestre' => $item['semestre'] ?? '-',
                     'f_examen' => $item['f_examen'] ?? now(),
                     't_examen' => $item['t_examen'] ?? 'Ordinario',
                     'puntaje_examen' => $item['puntaje_examen'] ?? '0',

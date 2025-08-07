@@ -104,7 +104,30 @@ class DataController extends Controller
     return response()->json($this->response, 200);
 
   }
+public function getPeriodos(Request $request)
+{
+    // Obtener el último período activo
+    $periodoActivo = DB::table('periodo')
+        ->where('estado', 'activo')
+        ->orderBy('fecha_inicio', 'DESC')
+        ->first();
 
+    // Obtener todos los períodos para el dropdown (opcional)
+    $todosPeriodos = DB::table('periodo')
+        ->select(
+            'id_periodo as value',
+            'nombre as label',
+            'estado'
+        )
+        ->orderBy('fecha_inicio', 'DESC')
+        ->get();
+
+    $this->response['estado'] = true;
+    $this->response['periodo_activo'] = $periodoActivo;
+    $this->response['todos_periodos'] = $todosPeriodos;
+
+    return response()->json($this->response, 200);
+}
 
 
 

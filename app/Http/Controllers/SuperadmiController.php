@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use App\Models\Curso;
 use App\Models\CursoDetalle;
 use App\Models\Alumno;
+use App\Models\Matriz;
+use App\Models\DatoIngreso;
 use App\Models\Documento;
 use App\Models\Competencia;
 use App\Models\Programa;
@@ -13,6 +15,7 @@ use App\Models\Docente;
 use App\Models\Escuela;
 use App\Models\Pregunta;
 use App\Models\Usuario;
+use App\Models\Periodo;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -649,7 +652,389 @@ public function getEstudiantes(Request $request) {
     ], 200);
 }
 
+// En tu SuperadmiController
+public function getPeriodos()
+    {
+        $periodos = Periodo::all();
+        return response()->json($periodos);
+    }
 
+    /**
+     * Guarda o actualiza un periodo
+     */
+    public function savePeriodo(Request $request)
+{
+    $data = $request->validate([
+        'nombre' => 'required|string|max:255',
+        'fecha_inicio' => 'required|date',
+        'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+        'estado' => 'required|in:activo,inactivo'
+    ]);
+
+    if ($request->id_periodo) {
+        $periodo = Periodo::find($request->id_periodo);
+        $periodo->update($data);
+    } else {
+        // Generar un ID único si no es autoincremental
+        $data['id_periodo'] = Periodo::max('id_periodo') + 1;
+        $periodo = Periodo::create($data);
+    }
+
+    return $periodo;
+}
+
+    /**
+     * Elimina un periodo
+     */
+    public function eliminarPeriodo($id)
+{
+    try {
+        $periodo = Periodo::find($id);
+
+        if (!$periodo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Periodo no encontrado'
+            ], 404);
+        }
+
+        // Verificar si tiene relaciones antes de eliminar
+        if ($periodo->tieneRelaciones()) { // Debes implementar este método en tu modelo
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar el periodo porque tiene datos relacionados'
+            ], 409); // 409 Conflict
+        }
+
+        $periodo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Periodo eliminado exitosamente'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al eliminar el periodo: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// aqui actulizar estudiantes
+public function previewUpdate(Request $request)
+    {
+        $validated = $this->validateRequest($request);
+
+        list($query, $params) = $this->buildBaseQuery(
+            $validated['id_escuela'],
+            $validated['id_periodo'],
+            $validated['nota_minima'],
+            $validated['nota_maxima']
+        );
+
+        // Solo seleccionar datos para previsualización
+        $previewData = DB::select(
+            "SELECT n.codigo_est, n.C1, n.C2, n.C3, n.C4, n.C5, n.C6, n.C7, n.C8, n.C9, n.C10, n.C11,
+                    m.C1_R as actual_C1, m.C2_R as actual_C2, m.C3_R as actual_C3,
+                    m.C4_R as actual_C4, m.C5_R as actual_C5, m.C6_R as actual_C6,
+                    m.C7_R as actual_C7, m.C8_R as actual_C8, m.C9_R as actual_C9,
+                    m.C10_R as actual_C10, m.C11_R as actual_C11
+             FROM ($query) AS n
+             JOIN matriz m ON n.codigo_est = m.codigo_est",
+            $params
+        );
+
+        return response()->json([
+            'success' => true,
+            'preview' => true,
+            'data' => $previewData,
+            'filters' => [
+                'id_escuela' => $validated['id_escuela'],
+                'id_periodo' => $validated['id_periodo'],
+                'nota_minima' => $validated['nota_minima'],
+                'nota_maxima' => $validated['nota_maxima'],
+                'total_registros' => count($previewData)
+            ]
+        ]);
+    }
+
+    // Método para ejecutar la actualización
+    public function executeUpdate(Request $request)
+    {
+        $validated = $this->validateRequest($request);
+
+        list($query, $params) = $this->buildBaseQuery(
+            $validated['id_escuela'],
+            $validated['id_periodo'],
+            $validated['nota_minima'],
+            $validated['nota_maxima']
+        );
+
+        $affectedRows = DB::update(
+            "UPDATE matriz m
+             JOIN ($query) AS n ON n.codigo_est = m.codigo_est
+             SET
+                m.C1_R = COALESCE(n.C1, m.C1_R),
+                m.C2_R = COALESCE(n.C2, m.C2_R),
+                m.C3_R = COALESCE(n.C3, m.C3_R),
+                m.C4_R = COALESCE(n.C4, m.C4_R),
+                m.C5_R = COALESCE(n.C5, m.C5_R),
+                m.C6_R = COALESCE(n.C6, m.C6_R),
+                m.C7_R = COALESCE(n.C7, m.C7_R),
+                m.C8_R = COALESCE(n.C8, m.C8_R),
+                m.C9_R = COALESCE(n.C9, m.C9_R),
+                m.C10_R = COALESCE(n.C10, m.C10_R),
+                m.C11_R = COALESCE(n.C11, m.C11_R)",
+            $params
+        );
+
+        return response()->json([
+            'success' => true,
+            'updated' => true,
+            'affected_rows' => $affectedRows,
+            'filters' => [
+                'id_escuela' => $validated['id_escuela'],
+                'id_periodo' => $validated['id_periodo'],
+                'nota_minima' => $validated['nota_minima'],
+                'nota_maxima' => $validated['nota_maxima']
+            ]
+        ]);
+    }
+
+    // Métodos auxiliares
+    private function validateRequest(Request $request)
+    {
+        return $request->validate([
+            'id_escuela' => 'nullable|integer',
+            'id_periodo' => 'nullable|integer',
+            'nota_minima' => 'nullable|integer|min:0|max:20',
+            'nota_maxima' => 'nullable|integer|min:0|max:20'
+        ]);
+    }
+
+    private function buildBaseQuery($idEscuela, $idPeriodo, $notaMinima, $notaMaxima)
+    {
+        $query = "
+            SELECT
+                e.codigo_est,
+                MAX(IF(c.id_competencia = 1, cd.nota, NULL)) AS C1,
+                MAX(IF(c.id_competencia = 2, cd.nota, NULL)) AS C2,
+                MAX(IF(c.id_competencia = 3, cd.nota, NULL)) AS C3,
+                MAX(IF(c.id_competencia = 4, cd.nota, NULL)) AS C4,
+                MAX(IF(c.id_competencia = 5, cd.nota, NULL)) AS C5,
+                MAX(IF(c.id_competencia = 6, cd.nota, NULL)) AS C6,
+                MAX(IF(c.id_competencia = 7, cd.nota, NULL)) AS C7,
+                MAX(IF(c.id_competencia = 8, cd.nota, NULL)) AS C8,
+                MAX(IF(c.id_competencia = 9, cd.nota, NULL)) AS C9,
+                MAX(IF(c.id_competencia = 10, cd.nota, NULL)) AS C10,
+                MAX(IF(c.id_competencia = 11, cd.nota, NULL)) AS C11
+            FROM estudiante e
+            JOIN curso_detalle cd ON cd.id_alumno = e.id
+            JOIN curso c ON c.id = cd.id_curso
+            JOIN periodo per ON per.id_periodo = c.id_periodo
+            JOIN datos_ingreso di ON di.codigo_est = e.codigo_est
+            JOIN programa p ON p.id = di.id_programa
+            JOIN escuela esc ON esc.id = p.id_escuela
+            WHERE cd.nota BETWEEN ? AND ?
+        ";
+
+        $params = [$notaMinima, $notaMaxima];
+
+        if ($idPeriodo) {
+            $query .= " AND per.id_periodo = ?";
+            $params[] = $idPeriodo;
+        } else {
+            $query .= " AND per.estado = 'activo'";
+        }
+
+        if ($idEscuela) {
+            $query .= " AND esc.id = ?";
+            $params[] = $idEscuela;
+        }
+
+        $query .= " GROUP BY e.codigo_est";
+
+        return [$query, $params];
+    }
+public function obtenerListadoEscuelas()
+    {
+        $escuelas = DB::table('escuela')
+                    ->select('id', 'nombre')
+                    ->orderBy('nombre')
+                    ->get();
+
+        return response()->json($escuelas);
+    }
+
+    // Obtener listado de periodos académicos
+    public function obtenerListadoPeriodos()
+    {
+        $periodos = DB::table('periodo')
+                    ->select('id_periodo', 'nombre')
+                    ->orderBy('fecha_inicio', 'desc')
+                    ->get();
+
+        return response()->json($periodos);
+    }
+
+
+
+public function importarEstudiante(Request $request)
+    {
+        // Leer parámetro para ignorar duplicados (enviado desde el frontend)
+        $ignorar_duplicados = $request->input('ignorar_duplicados', false);
+
+        // Inicializar variables para el reporte
+        $reporte = [
+            'total_registros' => count($request->datos),
+            'registros_exitosos' => 0,
+            'duplicados' => [],
+            'errores' => [],
+            'detalle_errores' => []
+        ];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($request->datos as $index => $item) {
+                try {
+                    // Validar si el DNI ya existe en alguna tabla
+                    $dni = $item['dni'];
+                    $existeEnAlumnos = Alumno::where('dni', $dni)->exists();
+                    $existeEnMatriz = Matriz::where('dni', $dni)->exists();
+                    $existeEnDatosIngreso = DatoIngreso::where('dni', $dni)->exists();
+
+                    if ($existeEnAlumnos || $existeEnMatriz || $existeEnDatosIngreso) {
+                        $reporte['duplicados'][] = [
+                            'linea' => $index + 1,
+                            'dni' => $dni,
+                            'codigo_est' => $item['codigo_est'] ?? '',
+                            'nombre' => ($item['nombres'] ?? '') . ' ' . ($item['paterno'] ?? '') . ' ' . ($item['materno'] ?? ''),
+                            'tablas' => [
+                                'alumnos' => $existeEnAlumnos,
+                                'matriz' => $existeEnMatriz,
+                                'datos_ingreso' => $existeEnDatosIngreso
+                            ]
+                        ];
+
+                        // Si el usuario NO indicó que se ignoren, no procesar este registro
+                        if (!$ignorar_duplicados) {
+                            continue;
+                        }
+                    }
+
+                    // Crear usuario
+                    $usuario = Usuario::create([
+                        'email' => $item['codigo'],
+                        'password' => Hash::make($item['dni']),
+                        'rol' => 5,
+                        'estado' => 1,
+                        'estado_contraseña' => 1,
+                        'programa_id' => $item['id_programa'],
+                        'id_escuela' => $item['id_escuela']
+                    ]);
+
+                    // Crear alumno
+                    $alumno = new Alumno([
+                        'codigo' => $item['codigo'],
+                        'dni' => $dni,
+                        'codigo_est' => $item['codigo_est'],
+                        'paterno' => $item['paterno'],
+                        'materno' => $item['materno'],
+                        'nombres' => $item['nombres'],
+                        'sexo' => $item['sexo'],
+                        'email' => $item['email'],
+                        'f_nacimiento' => $item['f_nacimiento'],
+                        'ubigeo_nacimiento' => $item['ubigeo_nacimiento'],
+                        'estado_civil' => $item['estado_civil'],
+                        'anio_egreso' => $item['anio_egreso'],
+                        'tipo_colegio' => $item['tipo_colegio'],
+                        'nombre_colegio' => $item['nombre_colegio'],
+                        'ubigeo_colegio' => $item['ubigeo_colegio'],
+                        'apto' => $item['apto'],
+                        'direccion' => $item['direccion'],
+                        'telefono' => $item['telefono'],
+                        'usuario_id' => $usuario->id
+                    ]);
+                    $alumno->save();
+
+                    // Crear registro en matriz
+                    Matriz::create([
+                        'dni' => $dni,
+                        'codigo_est' => $item['codigo_est'],
+                        'C1' => $item['C1'] ?? 0,
+                        'C2' => $item['C2'] ?? 0,
+                        'C3' => $item['C3'] ?? 0,
+                        'C4' => $item['C4'] ?? 0,
+                        'C5' => $item['C5'] ?? 0,
+                        'C6' => $item['C6'] ?? 0,
+                        'C7' => $item['C7'] ?? 0,
+                        'C8' => $item['C8'] ?? 0,
+                        'C9' => $item['C9'] ?? 0,
+                        'C10' => $item['C10'] ?? 0,
+                        'C11' => $item['C11'] ?? 0,
+                        'C1_R' => $item['C1_R'] ?? 0,
+                        'C2_R' => $item['C2_R'] ?? 0,
+                        'C3_R' => $item['C3_R'] ?? 0,
+                        'C4_R' => $item['C4_R'] ?? 0,
+                        'C5_R' => $item['C5_R'] ?? 0,
+                        'C6_R' => $item['C6_R'] ?? 0,
+                        'C7_R' => $item['C7_R'] ?? 0,
+                        'C8_R' => $item['C8_R'] ?? 0,
+                        'C9_R' => $item['C9_R'] ?? 0,
+                        'C10_R' => $item['C10_R'] ?? 0,
+                        'C11_R' => $item['C11_R'] ?? 0,
+                        'nivelar' => $item['nivelar'] ?? 0,
+                        'no_nivelar' => $item['no_nivelar'] ?? 0
+                    ]);
+
+                    // Crear registro en datos_ingreso
+                    DatoIngreso::create([
+                        'dni' => $dni,
+                        'codigo_est' => $item['codigo_est'],
+                        'anio' => $item['anio'] ?? date('Y'),
+                        'semestre' => $item['semestre'] ?? '-',
+                        'f_examen' => $item['f_examen'] ?? now(),
+                        't_examen' => $item['t_examen'] ?? 'Ordinario',
+                        'puntaje_examen' => $item['puntaje_examen'] ?? '0',
+                        'modalidad' => $item['modalidad'] ?? 'Regular',
+                        'id_programa' => $item['id_programa'],
+                        'observacion' => $item['observacion'] ?? ''
+                    ]);
+
+                    $reporte['registros_exitosos']++;
+
+                } catch (\Exception $e) {
+                    $reporte['errores'][] = $index + 1;
+                    $reporte['detalle_errores'][] = [
+                        'linea' => $index + 1,
+                        'dni' => $dni ?? 'No identificado',
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ];
+                    Log::error("Error al importar estudiante en línea " . ($index + 1) . ": " . $e->getMessage());
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'estado' => true,
+                'mensaje' => 'Importación completada con el siguiente reporte',
+                'data' => $reporte
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'estado' => false,
+                'mensaje' => 'Error general al importar: ' . $e->getMessage(),
+                'reporte' => $reporte
+            ], 500);
+        }
+    }
 
 
 }

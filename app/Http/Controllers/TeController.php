@@ -42,8 +42,10 @@ class TeController extends Controller {
         JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
         JOIN programa ON datos_ingreso.id_programa=programa.id
         JOIN escuela ON programa.id_escuela = escuela.id AND escuela.nombre = curso.escuela
+        JOIN periodo ON curso.id_periodo = periodo.id_periodo
         WHERE escuela.id = ".auth()->user()->id_escuela.
         " AND curso.id_competencia = :competencia
+        AND periodo.estado = 'activo'
         ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
 
         foreach ($res as $row) {

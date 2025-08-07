@@ -75,8 +75,8 @@
           </NavLink>
         </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('supervisor-docentes-competencias')? 'activado':'']">
-          <NavLink :href="route('supervisor-docentes-competencias')" :active="route().current('supervisor-docentes-competencias')">
+        <li class="relative px-6 py-3" :class="[route().current('docentes-competencias')? 'activado':'']">
+          <NavLink :href="route('docentes-competencias')" :active="route().current('docentes-competencias')">
             <template #icon>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                    xmlns="http://www.w3.org/2000/svg">
@@ -85,6 +85,19 @@
               </svg>
             </template>
             Competencias y Docentes
+          </NavLink>
+        </li>
+
+        <li class="relative px-6 py-3" :class="[route().current('busqueda-estudiantes')? 'activado':'']">
+          <NavLink :href="route('busqueda-estudiantes')" :active="route().current('busqueda-estudiantes')">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            Buscar Estudiante
           </NavLink>
         </li>
 <!-- supervisor-docentes-competencias
