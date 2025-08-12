@@ -96,7 +96,7 @@ Complete todos los datos requeridos para asegurar una comunicación constante du
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-2" style="width: 48%;">
-              <div><label>Celular (Opcional)</label></div>
+              <div><label>Celular (Oblogatorio)</label></div>
               <InputText style="width: 100%; height: 40px;" type="text" v-model="encargado.num_celular" />
             </div>
             <div class="mb-2" style="width: 48%;">
@@ -117,7 +117,7 @@ Complete todos los datos requeridos para asegurar una comunicación constante du
           </div>
 
           <div class="mb-2" style="width: 100%;">
-            <div><label>Observaciones (Opcional)</label></div>
+            <div><label>Observaciones (Que periodo estara Encargo, Ejemplo : 2025-II y 2026-I u Otro sea necesario)</label></div>
             <InputText style="width: 100%; height: 40px;" type="text" v-model="encargado.observaciones" />
           </div>
         </div>

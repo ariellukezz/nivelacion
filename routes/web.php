@@ -48,6 +48,16 @@ Route::middleware('auth','admin')->group(function () {
     Route::get('/prueba2', [TeController::class, 'getTest']);
     Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
 
+    // NUEVO
+    Route::get('/ingresantes', [TeController::class, 'getIngresantes']);
+    Route::get('/data-ingreso', fn () => Inertia::render('Admin/Dataingreso/index'))->name('data-ingreso');
+
+    // Endpoint JSON
+    Route::get('/reprobados-nivelacion/data', [TeController::class, 'getReprobadosNivelacion'])->name('reprobados-nivelacion.data');
+// Página Inertia (ajusta el path si quieres otro nombre de carpeta)
+Route::get('/reprobados-nivelacion', fn () =>Inertia::render('Admin/Reprobados/index'))->name('reprobados-nivelacion');
+
+
     Route::get('/descargar-archivo/{nombreArchivo}', [ArchivoController::class, 'descargarArchivo']);
 
     //COORDINADOR
@@ -213,6 +223,7 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
 
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
+    Route::get('/periodos', [SupervisorController::class, 'getPeriodos']);
 
     Route::post('/observar-documento', [SupervisorController::class, 'ObservarDocumento']);
 
@@ -243,7 +254,14 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
 
 
     Route::get('/generar-reporte-documentos', [SupervisorController::class, 'generateReport'])->name('report.documents');
-    
+
+
+    // API JSON
+    Route::get('/encargados-sistema/data', [SupervisorController::class, 'listarEncargadosSistema'])->name('encargados-sistema.data');
+    // Vista Inertia/Vue
+    Route::get('/encargados-sistema', fn () =>Inertia::render('Supervisor/Encargados/index'))->name('encargados-sistema');
+
+
 
 
 });
@@ -297,6 +315,18 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
 
     Route::post('/get-documentos', [SupervisorController::class, 'getDocumentos']);
     Route::get('/documentos-avance', fn () => Inertia::render('Superadmi/documentos/index'))->name('superadmi-avance');
+
+
+    Route::post('/get-usuario',[UsuarioController::class,'getUsuarioSupervisor']);
+    Route::get('/periodos',[SupervisorController::class,'getPeriodos']);
+    Route::post('/observar-documento',[SupervisorController::class,'ObservarDocumento']);
+    Route::post('/cambiar-estado-documento',[SupervisorController::class,'cambiarEstado']);
+    Route::post('/cambiar-periodo-documento',[SupervisorController::class,'cambiarPeriodo']);
+
+
+
+
+
 
     Route::get('/get-avance', [AvanceController::class, 'getAvance']);
     Route::get('/avances', fn () => Inertia::render('Superadmi/Avance/index'))->name('superadmi-documento');

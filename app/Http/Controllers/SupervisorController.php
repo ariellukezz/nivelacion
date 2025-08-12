@@ -38,132 +38,199 @@ class SupervisorController extends Controller
 //         return response()->json($this->response, 200);
 
 //     }
+public function getDocumentos(Request $request)
+    {
+        $term   = trim((string) $request->input('term', ''));
+        $pageSz = (int) ($request->input('paginashoja') ?: 10);
 
-public function getDocumentos(Request $request) {
-    $conditions = [];
+        $query = Documento::select(
+            'documento.id',
+            'documento.tipo',
+            'escuela.nombre AS escuela',
+            'escuela.nombre_corto',
+            'documento.fecha_subida',
+            'documento.periodo',
+            'users.nombres AS username',
+            'users.apellidos AS userlastname',
+            'documento.url',
+            'documento.aceptado',
+            'documento.aceptado as aceptados',
+            'documento.obser'
+        )
+        ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
+        ->join('users', 'users.id', '=', 'documento.id_usuario');
 
-    // Condición por programa
-    if ($request->programa) {
-        array_push($conditions, [DB::raw('documento.id_escuela'), '=', $request->programa]);
-    }
-
-    // Condición por periodo
-    if ($request->periodo) {
-        array_push($conditions, ['documento.periodo', '=', $request->periodo]);
-    }
-
-    // Condición por tipo de documento
-    if ($request->tipo) {
-        array_push($conditions, ['documento.tipo', '=', $request->tipo]);
-    }
-
-    // Condición por aceptado
-    if ($request->aceptado === 'null') {
-        // Si aceptado es 'null', buscamos los documentos con valor null en la columna aceptado
-        $query->whereNull('documento.aceptado');
-    } elseif (isset($request->aceptado)) {
-        // Si se proporciona un valor diferente de null (1 o 0), filtramos por ese valor
-        array_push($conditions, ['documento.aceptado', '=', $request->aceptado]);
-    }
-
-    // Construir la consulta principal
-    $query = Documento::select(
-        'documento.id',
-        'documento.tipo',
-        'escuela.nombre AS escuela',
-        'escuela.nombre_corto',
-        'documento.fecha_subida',
-        'documento.periodo',
-        'users.nombres AS username',
-        'users.apellidos AS userlastname',
-        'documento.url',
-        'documento.aceptado',
-        'documento.aceptado as aceptados',
-        'documento.obser'
-    )
-    ->join('escuela', 'documento.id_escuela', '=', 'escuela.id')
-    ->join('users', 'users.id', '=', 'documento.id_usuario')
-    ->where(function ($query) use ($request) {
-        $query->where('escuela.nombre', 'LIKE', '%' . $request->term . '%')
-            ->orWhere('documento.tipo', 'LIKE', '%' . $request->term . '%')
-            ->orWhere('users.nombres', 'LIKE', '%' . $request->term . '%')
-            ->orWhere('documento.aceptado', 'LIKE', '%' . $request->term . '%');
-    });
-
-    // Aplicar las condiciones adicionales si existen
-    if (!empty($conditions)) {
-        $query->where($conditions);
-    }
-
-    // Paginación de resultados
-    $res = $query->paginate(200);
-
-    // Respuesta en formato JSON
-    return response()->json([
-        'estado' => true,
-        'datos' => $res,
-    ], 200);
-}
-
-    public function ObservarDocumento(Request $request){
-
-        $doc = Documento::find($request->id);
-        $doc->obser = $request->obser;
-        $doc->save();
-
-        $this->response['tipo'] = 'info';
-        $this->response['titulo'] = '!REGISTRO MODIFICADO!';
-        $this->response['mensaje'] = ' ';
-        $this->response['estado'] = true;
-        $this->response['datos'] = $doc;
-
-        return response()->json($this->response, 200);
-
-    }
-
-    public function cambiarEstado(Request $request){
-
-        $doc = Documento::find($request->id);
-        if($doc->aceptado  == 0 || $doc->aceptado == null ){
-            $doc->aceptado = 1;
-        }else{
-            $doc->aceptado = 0;
+        // Búsqueda libre
+        if ($term !== '') {
+            $query->where(function ($q) use ($term) {
+                $q->where('escuela.nombre', 'LIKE', "%{$term}%")
+                  ->orWhere('documento.tipo', 'LIKE', "%{$term}%")
+                  ->orWhere('users.nombres', 'LIKE', "%{$term}%")
+                  ->orWhere('users.apellidos', 'LIKE', "%{$term}%")
+                  ->orWhereRaw("CAST(documento.aceptado AS CHAR) LIKE ?", ["%{$term}%"]);
+            });
         }
+
+        // Filtros (si llegan)
+        if ($request->filled('programa')) {
+            $query->where('documento.id_escuela', '=', $request->programa);
+        }
+        if ($request->filled('periodo')) {
+            // documento.periodo es un texto tipo '2025-I'
+            $query->where('documento.periodo', '=', $request->periodo);
+        }
+        if ($request->filled('tipo')) {
+            $query->where('documento.tipo', '=', $request->tipo);
+        }
+        // Aceptado: 1, 0 o null ('null' string -> null real)
+        if ($request->exists('aceptado')) {
+            $val = $request->input('aceptado');
+            if ($val === 'null' || is_null($val)) {
+                $query->whereNull('documento.aceptado');
+            } else {
+                $query->where('documento.aceptado', '=', (int)$val);
+            }
+        }
+
+        // Orden: pendientes primero (NULL), luego por fecha
+        $query->orderByRaw('documento.aceptado IS NULL DESC')
+              ->orderByDesc('documento.fecha_subida');
+
+        $res = $query->paginate($pageSz);
+
+        return response()->json([
+            'estado' => true,
+            'datos'  => $res,
+        ], 200);
+    }
+
+    /**
+     * Devuelve periodos desde la tabla `periodo`
+     * Formato para dropdown: [{value:nombre, label:nombre}, ...]
+     */
+    public function getPeriodos()
+    {
+        $rows = DB::table('periodo')
+            ->orderByDesc('id_periodo') // ordena 5, 4, 3...
+            ->get(['id_periodo', 'nombre', 'estado']);
+
+        $options = $rows->map(fn($r) => [
+            'value' => $r->nombre,
+            'label' => $r->nombre
+        ]);
+
+        return response()->json([
+            'estado'  => true,
+            'raw'     => $rows,
+            'options' => $options,
+        ], 200);
+    }
+
+    /**
+     * Guardar observación y, opcionalmente, cambiar estado (aceptado).
+     * - Enviar aceptado = 1, 0 o 'null' (string) para ponerlo en NULL (Pendiente).
+     */
+    public function ObservarDocumento(Request $request)
+    {
+        $doc = Documento::find($request->id);
+        if (!$doc) {
+            return response()->json([
+                'tipo'   => 'error',
+                'titulo' => '!ERROR!',
+                'mensaje'=> 'Documento no encontrado.',
+                'estado' => false,
+            ], 404);
+        }
+
+        // Observación (permite string vacío)
+        if ($request->has('obser')) {
+            $doc->obser = $request->obser;
+        }
+
+        // Estado (opcional): 1, 0 o null
+        if ($request->has('aceptado')) {
+            $val = $request->input('aceptado');
+            $doc->aceptado = ($val === 'null' || is_null($val)) ? null : (int)$val;
+        }
+
         $doc->save();
-        $this->response['estado'] = true;
-        $this->response['datos'] = $doc;
 
-        return response()->json($this->response, 200);
-
+        return response()->json([
+            'tipo'   => 'info',
+            'titulo' => '!REGISTRO MODIFICADO!',
+            'mensaje'=> ' ',
+            'estado' => true,
+            'datos'  => [
+                'id'       => $doc->id,
+                'obser'    => $doc->obser,
+                'aceptado' => $doc->aceptado,
+                'label'    => is_null($doc->aceptado) ? 'Pendiente' : ($doc->aceptado ? 'Aceptado' : 'Rechazado'),
+            ],
+        ], 200);
     }
 
-    public function cambiarPeriodo(Request $request){
-    // Buscar el documento por ID
-    $doc = Documento::find($request->id);
+    /**
+     * Cambiar estado del documento.
+     * - Si llega 'aceptado', se asigna explícito (1, 0 o 'null' -> NULL).
+     * - Si NO llega 'aceptado', se hace toggle (NULL/0 -> 1 ; 1 -> 0).
+     */
+    public function cambiarEstado(Request $request)
+    {
+        $doc = Documento::find($request->id);
+        if (!$doc) {
+            return response()->json([
+                'estado' => false,
+                'mensaje'=> 'Documento no encontrado.',
+            ], 404);
+        }
 
-    // Verificar si el documento existe
-    if (!$doc) {
-        $this->response['tipo'] = 'error';
-        $this->response['titulo'] = '!ERROR!';
-        $this->response['mensaje'] = 'Documento no encontrado.';
-        $this->response['estado'] = false;
-        return response()->json($this->response, 404);
+        if ($request->has('aceptado')) {
+            $val = $request->input('aceptado');
+            $doc->aceptado = ($val === 'null' || is_null($val)) ? null : (int)$val;
+        } else {
+            // Toggle simple si no especifican estado
+            $doc->aceptado = ($doc->aceptado == 1) ? 0 : 1;
+        }
+
+        $doc->save();
+
+        return response()->json([
+            'estado' => true,
+            'datos'  => [
+                'id'       => $doc->id,
+                'aceptado' => $doc->aceptado,
+                'label'    => is_null($doc->aceptado) ? 'Pendiente' : ($doc->aceptado ? 'Aceptado' : 'Rechazado'),
+            ],
+        ], 200);
     }
 
-    // Cambiar el período del documento
-    $doc->periodo = $request->periodo;
-    $doc->save();
+    /**
+     * Cambiar periodo (texto) del documento.
+     * - Opcional: validar que exista en tabla `periodo.nombre`.
+     */
+    public function cambiarPeriodo(Request $request)
+    {
+        $doc = Documento::find($request->id);
+        if (!$doc) {
+            return response()->json([
+                'tipo'   => 'error',
+                'titulo' => '!ERROR!',
+                'mensaje'=> 'Documento no encontrado.',
+                'estado' => false,
+            ], 404);
+        }
 
-    // Preparar la respuesta JSON
-    $this->response['tipo'] = 'info';
-    $this->response['titulo'] = '!PERIODO MODIFICADO!';
-    $this->response['mensaje'] = ' ';
-    $this->response['estado'] = true;
-    $this->response['datos'] = $doc;
+        $doc->periodo = $request->periodo;
+        $doc->save();
 
-    // Devolver la respuesta en formato JSON
-    return response()->json($this->response, 200);
-}
+        return response()->json([
+            'tipo'   => 'info',
+            'titulo' => '!PERIODO MODIFICADO!',
+            'mensaje'=> ' ',
+            'estado' => true,
+            'datos'  => $doc,
+        ], 200);
+    }
 
 
 
@@ -412,4 +479,49 @@ public function generateReport(Request $request)
        // return $pdf->download('Reporte_Documentos.pdf');
 
     }
+
+
+
+     public function listarEncargadosSistema(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+
+        $sql = "
+            SELECT
+                es.nombres,
+                es.apellidos,
+                es.correo,
+                es.num_celular,
+                es.cargo,
+                es.estado,
+                es.observaciones,
+                p.escuela AS escuela
+            FROM encargados_sistema es
+            INNER JOIN users    us ON es.usuario_id = us.id
+            INNER JOIN programa p  ON us.id_escuela = p.id_escuela
+        ";
+
+        $params = [];
+        if ($q !== '') {
+            $sql .= "
+                WHERE es.nombres LIKE ?
+                   OR es.apellidos LIKE ?
+                   OR CONCAT(es.nombres, ' ', es.apellidos) LIKE ?
+                   OR CONCAT(es.apellidos, ' ', es.nombres) LIKE ?
+                   OR p.escuela LIKE ?
+            ";
+            $like = "%{$q}%";
+            $params = [$like, $like, $like, $like, $like];
+        }
+
+        $sql .= " ORDER BY p.escuela ASC, es.apellidos ASC, es.nombres ASC";
+
+        $rows = DB::select($sql, $params);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $rows,
+        ], 200);
+    }
+
 }
