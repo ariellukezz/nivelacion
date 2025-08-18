@@ -289,7 +289,7 @@ public function getProgramas(Request $request){
   }
 
   public function getEscuelas(Request $request){
-    $res = Escuela::select('escuela.id','escuela.nombre as escuela', 'programa.facultad', 'programa.area')
+    $res = Escuela::select('escuela.id','escuela.nombre as escuela', 'programa.facultad', 'escuela.filial', 'programa.area')
     ->join('programa','programa.id_escuela','escuela.id')
     ->where(function ($query) use ($request) {
         return $query
