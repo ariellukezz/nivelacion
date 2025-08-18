@@ -80,7 +80,7 @@
       <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button>
+          <!-- <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button> -->
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -233,7 +233,10 @@
           <Message severity="warn" sticky>llenar los datos completos (grupo solo para escuelas con progama de estudio)
           </Message>
         </div> -->
-        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
+
+
+        <!-- DESDE AQUI EMPIEZA PARA PODER EDITAR -->
+        <!-- <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label>
             <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>
         </div>
@@ -280,12 +283,116 @@
                 </template>
               </Dropdown>
             </div>
+        </div> -->
+        <!-- TERMINA AQUI PARA LA EDICION DEL CAMPO EDITAR -->
+
+
+
+        <!-- AQUI EMPIEZA SOLO PARA SOLO VISUALIZACION -->
+
+        <!-- Vista SOLO LECTURA -->
+        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;">
+        <label>Estado</label>
+        <div class="ml-3">
+            <!-- No usa v-model para evitar emisiones; solo muestra el valor actual -->
+            <InputSwitch :modelValue="curso.estado" disabled />
         </div>
+        </div>
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+        <div class="mb-3" style="width: 68%;">
+            <div><label>Nombre del Curso.</label></div>
+            <!-- Solo lectura y deshabilitado -->
+            <InputText
+            style="width: 100%; height: 40px;"
+            type="text"
+            v-model="curso.nombre"
+            readonly
+            disabled
+            />
+        </div>
+
+        <div class="mb-3" style="width: 28%;">
+            <div><label>Grupo</label></div>
+            <Dropdown
+            v-model="curso.grupo"
+            :options="grupos"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona una competencia"
+            style="width:100%;"
+            class="w-full md:w-11rem"
+            disabled
+            >
+            <template #option="slotProps">
+                <div
+                class="flex align-items-center"
+                style="font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
+                >
+                <div>{{ slotProps.option.label }}</div>
+                </div>
+            </template>
+            </Dropdown>
+        </div>
+        </div>
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+        <div class="mb-3" style="width: 100%;">
+            <div><label>Competencia</label></div>
+            <Dropdown
+            v-model="cursocompetencia"
+            :options="competencias"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione una competencia"
+            style="width:100%;"
+            class="w-full md:w-11rem"
+            disabled
+            >
+            <template #option="slotProps">
+                <div
+                class="flex align-items-center"
+                style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
+                >
+                <div>{{ slotProps.option.label }}</div>
+                </div>
+            </template>
+            </Dropdown>
+        </div>
+        </div>
+
+        <div class="flex" style="width: 100%; justify-content: space-between;">
+        <div class="mb-3" style="width: 100%;">
+            <div><label>Programa de estudio</label></div>
+            <Dropdown
+            v-model="prog"
+            :options="programasselect"
+            filter
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccione un programa de estudio"
+            style="width:100%;"
+            class="w-full md:w-11rem"
+            disabled
+            >
+            <template #option="slotProps">
+                <div
+                class="flex align-items-center"
+                style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
+                >
+                <div>{{ slotProps.option.label }}</div>
+                </div>
+            </template>
+            </Dropdown>
+        </div>
+        </div>
+
+         <!-- AQUI TERMINA SOLO PARA SOLO VISUALIZACION -->
 
 
           <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
-            <div><label>Docente</label></div>
+            <label style="font-weight: bold;">ASIGNAR DOCENTE</label>
               <Dropdown v-model="curso.id_docente" :options="docentes2" filter optionLabel="nombres" optionValue="id"  placeholder="Selecciona un docente" style="width:100%;" class="w-full md:w-11rem">
                   <template #option="slotProps">
                       <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
