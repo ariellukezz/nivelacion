@@ -40,7 +40,9 @@
               <!-- <Link v-if="canResetPassword" :href="route('password.request')" class="text-sm text-gray-600 underline  hover:text-gray-900">
                 Olvidaste tu contraseña?
               </Link> -->
-
+              <Link href="/recover" class="text-sm underline mt-2 block">
+                ¿Olvidaste tu contraseña?
+              </Link>
               <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Iniciar Sesion
               </PrimaryButton>

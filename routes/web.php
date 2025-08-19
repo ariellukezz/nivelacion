@@ -18,6 +18,7 @@ use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\SuperadmiController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RecoveryController;
 use App\Http\Controllers\Docente\DashboardController;
 use Inertia\Inertia;
 
