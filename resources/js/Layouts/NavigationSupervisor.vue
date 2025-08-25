@@ -116,6 +116,48 @@
             Buscar Estudiante
           </NavLink>
         </li>
+
+
+        <li class="relative px-6 py-3" :class="[route().current('ingresos')? 'activado':'']">
+          <NavLink :href="route('ingresos')" :active="route().current('ingresos')">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            Registrar Asistencia
+          </NavLink>
+        </li>
+
+
+        <li class="relative px-6 py-3" :class="[route().current('sorteo')? 'activado':'']">
+          <NavLink :href="route('sorteo')" :active="route().current('sorteo')">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            sorteo
+          </NavLink>
+        </li>
+
+
+        <li class="relative px-6 py-3" :class="[route().current('lista.ganadores')? 'activado':'']">
+          <NavLink :href="route('lista.ganadores')" :active="route().current('lista.ganadores')">
+            <template #icon>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </template>
+            Descargar sorteados
+          </NavLink>
+        </li>
 <!-- supervisor-docentes-competencias
         <li class="relative px-6 py-3" :class="[route().current('docente-curso')? 'activado':'']">
           <NavLink :href="route('docente-curso')" :active="route().current('docente-curso')">

@@ -172,6 +172,40 @@ class CursoController extends Controller
     //
 
 
+public function getEventoInduccionByAlumno(Request $request)
+{
+    $userId = auth()->id();
+
+    $query = DB::table('estudiante')
+        ->leftJoin('evento_est', 'evento_est.codigo_est', '=', 'estudiante.codigo_est')
+        ->where('estudiante.usuario_id', $userId);
+
+    // Si tu tabla evento_est tiene una columna que identifica el evento (p. ej. 'evento' o 'tipo'),
+    // descomenta y ajusta esta línea:
+    // $query->where('evento_est.evento', 'induccion');
+
+    $res = $query->select(
+            'evento_est.mesa',
+            'evento_est.numero',
+            'evento_est.firma_ingreso'
+        )
+        ->first();
+
+    // Siempre devuelve un objeto con las claves esperadas,
+    // aunque no exista registro en evento_est aún:
+    $payload = $res ?? (object)[
+        'mesa' => null,
+        'numero' => null,
+        'firma_ingreso' => null,
+    ];
+
+    return response()->json([
+        'estado' => true,
+        'datos'  => $payload,
+    ], 200);
+}
+
+
 
 
 

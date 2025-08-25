@@ -14,6 +14,7 @@ use App\Http\Controllers\TeController;
 use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\AvanceController;
 use App\Http\Controllers\ArchivoController;
+use App\Http\Controllers\SorteoController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\SuperadmiController;
 use Illuminate\Foundation\Application;
@@ -208,6 +209,11 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 
     Route::get('/get-preguntas/{encuesta}', [PreguntaController::class, 'getPreguntas']);
     Route::post('/save-encuesta-estudiante', [PreguntaController::class, 'saveRepuestasPostulante']);
+
+    Route::get('/evento', fn () => Inertia::render('Estudiante/Evento/index'))->name('estudiante-evento');
+    Route::post('/get-evento-induccion', [CursoController::class, 'getEventoInduccionByAlumno']);
+
+
 });
 
 Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
@@ -261,6 +267,45 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::get('/encargados-sistema/data', [SupervisorController::class, 'listarEncargadosSistema'])->name('encargados-sistema.data');
     // Vista Inertia/Vue
     Route::get('/encargados-sistema', fn () =>Inertia::render('Supervisor/Encargados/index'))->name('encargados-sistema');
+
+
+    //  // Vista del panel de ingresos (para supervisores)
+    // Route::get('ingresos', fn () => Inertia::render('Supervisor/Ingresos/Index'))->name('ingresos');
+    // // Registrar ingreso (escaneo de DNI)
+    // Route::post('registrar-ingreso', [SorteoController::class, 'registrarIngreso']);
+    // Route::get('get-eventos', [SorteoController::class, 'getEventos']);
+
+
+    // Rutas de Laravel
+Route::get('ingresos', fn () => Inertia::render('Supervisor/Ingresos/Index'))->name('ingresos'); // Vista del panel de ingresos
+Route::post('registrar-ingreso', [SorteoController::class, 'registrarIngreso']); // Registrar ingreso con escaneo de DNI
+Route::get('get-eventos', [SorteoController::class, 'getEventos']); // Obtener eventos disponibles
+Route::get('get-estudiante/{dni}', [SorteoController::class, 'obtenerEstudianteEvento']); // Obtener datos del estudiante por DNI
+
+
+
+ // Vista para el sorteo
+Route::get('sorteo', fn () => Inertia::render('Supervisor/Sorteo/Index'))->name('sorteo');
+// Obtener los participantes ingresados para el evento, con filtros
+Route::get('participantes-evento/{evento_id}', [SorteoController::class, 'participantesIngresados']);
+// Resumen de participantes ingresados por programa en un evento
+Route::get('participantes-evento/{evento_id}/resumen', [SorteoController::class, 'participantesIngresadosPorPrograma']);
+
+// Ejecutar sorteo y obtener los ganadores
+Route::post('ejecutar-sorteo', [SorteoController::class, 'ejecutarSorteo']);
+// Obtener los ganadores del sorteo
+Route::get('ganadores-evento/{evento_id}', [SorteoController::class, 'listarGanadores']);
+// Obtener los filtros disponibles
+Route::get('filtros', [SorteoController::class, 'obtenerFiltros']);
+Route::post('guardar-ganadores', [SorteoController::class, 'guardarGanadores']);
+
+
+
+Route::get('exportar-ganadores-pdf/{evento_id}', [SorteoController::class, 'exportarGanadoresPDF']);
+Route::get('exportar-ganadores-filtrado/{evento_id}', [SorteoController::class, 'exportarGanadoresFiltradoPDF']);
+Route::get('lista-ganadores', fn () => Inertia::render('Supervisor/Sorteo/ListaGanadores'))->name('lista.ganadores');
+
+
 
 
 
@@ -390,6 +435,13 @@ Route::get('/notas/actualizar', fn () => Inertia::render('Superadmi/Notas/Actual
 
 
      Route::post('subir-estudiantes', [SuperadmiController::class, 'importarEstudiante']); //->name('alumnos-importar');
+
+     // crear evento:
+    Route::get('/eventos', fn () => Inertia::render('Superadmi/Eventos/Index'))->name('eventos');
+    Route::get('get-eventos', [SorteoController::class, 'getEventos']);
+    Route::post('guardar-evento', [SorteoController::class, 'guardarEvento']);
+    Route::get('eliminar-evento/{id}', [SorteoController::class, 'eliminarEvento']);
+
 
 });
 

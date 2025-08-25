@@ -17,7 +17,7 @@
       leave-to-class="opacity-0 transform -translate-x-20">
     <aside v-show="$page.props.showingMobileMenu" class="fixed inset-y-0 z-20 flex-shrink-0 w-64 mt-16 overflow-y-auto bg-white md:hidden">
       <div class="py-4 text-gray-500 dark:text-gray-400">
-        
+
 
 
       <Link class="text-lg font-bold text-blue-500" :href="route('dashboard')">
@@ -78,12 +78,25 @@
             </ResponsiveNavLink>
           </li>
 
+          <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('estudiante-evento')" :active="route().current('estudiante-evento')">
+              <template #icon>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </template>
+              Encuesta
+            </ResponsiveNavLink>
+          </li>
 
 
 
 
 
-<!-- 
+
+<!--
 
           <li class="relative px-6 py-3">
             <ResponsiveNavLink :href="route('users.index')" :active="route().current('users.index')">
