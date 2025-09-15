@@ -117,47 +117,89 @@
           </NavLink>
         </li>
 
+<!-- Reemplaza los tres <li> por este bloque -->
+<li
+  class="relative px-6 py-3"
+  :class="[
+    route().current('ingresos') || route().current('sorteo') || route().current('lista.ganadores')
+      ? 'activado'
+      : ''
+  ]"
+>
+  <!-- Botón cabecera -->
+  <button
+    type="button"
+    class="w-full flex items-center justify-between"
+    @click="induccionOpen = !induccionOpen"
+    :aria-expanded="induccionOpen ? 'true' : 'false'"
+  >
+    <div class="flex items-center gap-3">
+      <!-- Icono de carpeta/menu -->
+      <svg class="w-5 h-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 7h18M3 12h18M3 17h18"/>
+      </svg>
+      <span>INDUCCIÓN</span>
+    </div>
 
-        <li class="relative px-6 py-3" :class="[route().current('ingresos')? 'activado':'']">
-          <NavLink :href="route('ingresos')" :active="route().current('ingresos')">
-            <template #icon>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-              </svg>
-            </template>
-            Registrar Asistencia
-          </NavLink>
-        </li>
+    <!-- Chevron -->
+    <svg
+      class="w-4 h-4 transition-transform duration-200"
+      :class="induccionOpen ? 'transform rotate-180' : ''"
+      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
 
+  <!-- Submenú -->
+  <ul
+    v-show="induccionOpen"
+    class="mt-2 ml-4 border-l border-white/20"
+    style="padding-left: 12px;"
+  >
+    <li class="mt-1">
+      <NavLink :href="route('ingresos')" :active="route().current('ingresos')">
+        <template #icon>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+               xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </template>
+        Registrar Asistencia
+      </NavLink>
+    </li>
 
-        <li class="relative px-6 py-3" :class="[route().current('sorteo')? 'activado':'']">
-          <NavLink :href="route('sorteo')" :active="route().current('sorteo')">
-            <template #icon>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-              </svg>
-            </template>
-            sorteo
-          </NavLink>
-        </li>
+    <li class="mt-1">
+      <NavLink :href="route('sorteo')" :active="route().current('sorteo')">
+        <template #icon>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+               xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </template>
+        sorteo
+      </NavLink>
+    </li>
 
+    <li class="mt-1">
+      <NavLink :href="route('lista.ganadores')" :active="route().current('lista.ganadores')">
+        <template #icon>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+               xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </template>
+        Descargar sorteados
+      </NavLink>
+    </li>
+  </ul>
+</li>
 
-        <li class="relative px-6 py-3" :class="[route().current('lista.ganadores')? 'activado':'']">
-          <NavLink :href="route('lista.ganadores')" :active="route().current('lista.ganadores')">
-            <template #icon>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-              </svg>
-            </template>
-            Descargar sorteados
-          </NavLink>
-        </li>
 <!-- supervisor-docentes-competencias
         <li class="relative px-6 py-3" :class="[route().current('docente-curso')? 'activado':'']">
           <NavLink :href="route('docente-curso')" :active="route().current('docente-curso')">
@@ -212,24 +254,30 @@
 
 <script>
 import NavLink from '@/Components/NavLink.vue'
-import { Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 export default {
-  components: {
-    NavLink,
-    Link,
-  },
-
+  components: { NavLink, Link },
   setup() {
-    let showingTwoLevelMenu = ref(false)
+    // ya tenías esto
+    const showingTwoLevelMenu = ref(false)
 
+    // 👇 agrega esto
+    const induccionOpen = ref(
+      // si quieres que abra cuando alguna ruta hija está activa:
+      !!(route().current('ingresos') || route().current('sorteo') || route().current('lista.ganadores'))
+    )
+
+    // 👇 IMPORTANTE: retornarlo
     return {
-      showingTwoLevelMenu
+      showingTwoLevelMenu,
+      induccionOpen,
     }
   },
 }
 </script>
+
 
 <style scoped>
 .activado{

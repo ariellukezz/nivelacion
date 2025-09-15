@@ -10,6 +10,8 @@ use App\Models\Documento;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 
 class SupervisorController extends Controller
@@ -232,6 +234,81 @@ public function getDocumentos(Request $request)
         ], 200);
     }
 
+public function eliminarDocumento(Request $request)
+{
+    $request->validate([
+        'id' => 'required|integer|exists:documento,id',
+    ]);
+
+    $doc = Documento::find($request->id);
+    if (!$doc) {
+        return response()->json([
+            'estado'  => false,
+            'tipo'    => 'error',
+            'titulo'  => '!ERROR!',
+            'mensaje' => 'Documento no encontrado.',
+        ], 404);
+    }
+
+    // --- 1) Normalizar ruta relativa guardada en BD ---
+    // En tu BD guardas algo como: "documentos/resoluciones/ESCUELA/archivo.pdf"
+    // (sin "../" al inicio). Nos aseguramos de eso aquí:
+    $relative = $doc->url ? trim(str_replace('\\', '/', $doc->url)) : '';
+    $relative = ltrim($relative, '/');                 // quitar "/" inicial si lo hubiera
+    $relative = str_replace(['..'], '', $relative);    // seguridad básica
+
+    // --- 2) Rutas posibles a probar ---
+    $pathsToTry = [];
+    // Tu caso principal: archivos subidos a public/<url>
+    $pathsToTry[] = public_path($relative);
+
+    // Si algún tipo lo guardaste en "storage/..." y lo sirves por el symlink public/storage:
+    if (Str::startsWith($relative, 'storage/')) {
+        $pathsToTry[] = storage_path('app/public/' . substr($relative, 8)); // quita "storage/"
+    }
+
+    // (Opcional) otra variante si alguien guardó con "public/" delante
+    if (Str::startsWith($relative, 'public/')) {
+        $pathsToTry[] = base_path($relative);              // /path/app/public/...
+        $pathsToTry[] = public_path(substr($relative, 7)); // quita "public/"
+    }
+
+    // --- 3) Borrar el archivo si existe en alguna ---
+    $fileExisted = false;
+    $fileDeleted = false;
+
+    foreach ($pathsToTry as $abs) {
+        try {
+            if (is_file($abs)) {
+                $fileExisted = true;
+                if (@unlink($abs)) {       // o File::delete($abs)
+                    $fileDeleted = true;
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            // opcional: \Log::warning('Delete failed: '.$abs.' -> '.$e->getMessage());
+        }
+    }
+
+    // --- 4) Borrar el registro en BD ---
+    $doc->delete();
+
+    return response()->json([
+        'estado'      => true,
+        'tipo'        => 'success',
+        'titulo'      => 'Eliminado',
+        'mensaje'     => 'Documento eliminado ' . ($fileDeleted ? 'y archivo borrado.' : '(archivo no encontrado o sin permisos).'),
+        'debug'       => [
+            // Útil si quieres inspeccionar en red; elimínalo en producción
+            // 'paths_checked' => $pathsToTry,
+            'file_existed'  => $fileExisted,
+            'file_deleted'  => $fileDeleted,
+        ],
+    ], 200);
+}
+
+
 
 
     public function getTestResultsvisor() {
@@ -252,7 +329,9 @@ public function getDocumentos(Request $request)
             JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
             JOIN programa ON datos_ingreso.id_programa=programa.id
             JOIN escuela ON programa.id_escuela = escuela.id
+            JOIN periodo ON curso.id_periodo = periodo.id_periodo
             WHERE curso.id_competencia = :competencia
+            AND periodo.estado = 'activo'
             ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
 
             foreach ($res as $row) {

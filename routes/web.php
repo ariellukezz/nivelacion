@@ -56,8 +56,8 @@ Route::middleware('auth','admin')->group(function () {
 
     // Endpoint JSON
     Route::get('/reprobados-nivelacion/data', [TeController::class, 'getReprobadosNivelacion'])->name('reprobados-nivelacion.data');
-// Página Inertia (ajusta el path si quieres otro nombre de carpeta)
-Route::get('/reprobados-nivelacion', fn () =>Inertia::render('Admin/Reprobados/index'))->name('reprobados-nivelacion');
+    // Página Inertia (ajusta el path si quieres otro nombre de carpeta)
+    Route::get('/reprobados-nivelacion', fn () =>Inertia::render('Admin/Reprobados/index'))->name('reprobados-nivelacion');
 
 
     Route::get('/descargar-archivo/{nombreArchivo}', [ArchivoController::class, 'descargarArchivo']);
@@ -237,6 +237,7 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('/cambiar-estado-documento', [SupervisorController::class, 'cambiarEstado']);
     Route::post('/cambiar-periodo-documento', [SupervisorController::class, 'cambiarPeriodo']);
 
+    Route::post('/eliminar-documento', [SupervisorController::class, 'eliminarDocumento']);
 
 
     //GET DATA
@@ -406,20 +407,20 @@ Route::get('lista-ganadores', fn () => Inertia::render('Supervisor/Sorteo/ListaG
     Route::get('eliminarp/{id}', [SuperadmiController::class, 'eliminarp']);
 
 // --------------------------------------------notas perfil
-Route::get('/notasperf', [SuperadmiController::class, 'getTestResults']);
-Route::get('/notas-todosest', fn () => Inertia::render('Superadmi/notasperfiles/notasperfil'))->name('notas-todosest');
+    Route::get('/notasperf', [SuperadmiController::class, 'getTestResults']);
+    Route::get('/notas-todosest', fn () => Inertia::render('Superadmi/notasperfiles/notasperfil'))->name('notas-todosest');
 
-// -------------------info estidiantes----------------
-Route::get('/get-estudiantes', [SuperadmiController::class, 'getEstudiantes']);
-Route::get('/estudiantesinfo', fn () => Inertia::render('Superadmi/Informacion/informacion'))->name('info_est');
+    // -------------------info estidiantes----------------
+    Route::get('/get-estudiantes', [SuperadmiController::class, 'getEstudiantes']);
+    Route::get('/estudiantesinfo', fn () => Inertia::render('Superadmi/Informacion/informacion'))->name('info_est');
 
-// ----------periodo ------------------------------
-Route::get('get-periodos', [SuperadmiController::class, 'getPeriodos']);
-Route::get('/periodos', fn () => Inertia::render('Superadmi/Periodos/Index'))->name('periodos');
-Route::post('guardar-periodo', [SuperadmiController::class, 'savePeriodo']);
-Route::get('eliminar-periodo/{id}', [SuperadmiController::class, 'eliminarPeriodo']);
-// ------------------- actulizar notas perido -------------------
-Route::get('/notas/actualizar', fn () => Inertia::render('Superadmi/Notas/Actualizar'))
+    // ----------periodo ------------------------------
+    Route::get('get-periodos', [SuperadmiController::class, 'getPeriodos']);
+    Route::get('/periodos', fn () => Inertia::render('Superadmi/Periodos/Index'))->name('periodos');
+    Route::post('guardar-periodo', [SuperadmiController::class, 'savePeriodo']);
+    Route::get('eliminar-periodo/{id}', [SuperadmiController::class, 'eliminarPeriodo']);
+    // ------------------- actulizar notas perido -------------------
+    Route::get('/notas/actualizar', fn () => Inertia::render('Superadmi/Notas/Actualizar'))
         ->name('superadmi.notas.actualizar');
 
     Route::post('/notas/preview', [SuperadmiController::class, 'previewUpdate'])
@@ -445,6 +446,8 @@ Route::get('/notas/actualizar', fn () => Inertia::render('Superadmi/Notas/Actual
 
 });
 
+Route::get('/dni/{dni}', [SuperadmiController::class, 'show'])
+    ->whereNumber('dni');
 
 require __DIR__.'/auth.php';
 

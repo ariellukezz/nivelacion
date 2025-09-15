@@ -18,6 +18,9 @@ use App\Models\Usuario;
 use App\Models\Periodo;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cache;
 
 
 class SuperadmiController extends Controller
@@ -1036,5 +1039,62 @@ public function importarEstudiante(Request $request)
         }
     }
 
+public function show(Request $request, string $dni)
+    {
+        // 1) Validación
+        if (!preg_match('/^\d{8}$/', $dni)) {
+            throw ValidationException::withMessages([
+                'dni' => 'El DNI debe tener 8 dígitos.',
+            ]);
+        }
+
+        // 2) (Opcional) Cachear 10 minutos para no golpear el externo
+        $cacheKey = "dni:$dni";
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($dni) {
+
+            // 3) Parámetros base / headers
+            $base = rtrim(config('services.upeu.base_url', env('UPEU_BASE_URL', 'https://api-lamb-academic.upeu.edu.pe')), '/');
+
+            $headers = [
+                'accept'     => 'application/json, text/plain, */*',
+                'origin'     => config('services.upeu.origin', env('UPEU_ORIGIN', 'https://lamb-unap.edu.pe')),
+                'referer'    => config('services.upeu.referer', env('UPEU_REFERER', 'https://lamb-unap.edu.pe/')),
+                'user-agent' => 'Mozilla/5.0',
+            ];
+
+            $client = Http::withHeaders($headers)->timeout(12);
+
+            // 4) Endpoints (los 2 que pasaste en tu cURL)
+            $res1 = $client->get($base . '/resources/api/resources/person-lamb/buscar-persona', [
+                'num_documento' => $dni
+            ]);
+
+            $res2 = $client->get($base . '/resources/api/resources/searchdocument/dni', [
+                'dni' => $dni,
+                'url' => 'https://lamb-admission.upeu.edu.pe/public/pages/form',
+            ]);
+
+            // 5) Si ambos fallan, propagamos error "Bad Gateway"
+            if ($res1->failed() && $res2->failed()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No se pudo consultar el servicio externo',
+                    'errors' => [
+                        'endpoint1' => $res1->status(),
+                        'endpoint2' => $res2->status(),
+                    ],
+                ], 502);
+            }
+
+            // 6) Respuesta combinada
+            return response()->json([
+                'ok' => true,
+                'dni' => $dni,
+                'fuente' => 'api-lamb-unap.edu.pe',
+                'person' => $res1->ok() ? $res1->json() : null,
+                'document' => $res2->ok() ? $res2->json() : null,
+            ]);
+        });
+    }
 
 }

@@ -137,6 +137,10 @@
               <!-- Acceso rápido: marcar aceptado o rechazado directamente -->
               <Button icon="pi pi-check" severity="success" @click="cambiarEstadoExplicito(data, 1)" size="small" style="width: 32px; height: 32px;" />
               <Button icon="pi pi-times" severity="danger" @click="cambiarEstadoExplicito(data, 0)" size="small" style="width: 32px; height: 32px;" />
+              <Button icon="pi pi-trash" severity="danger" outlined
+        @click="confirmarEliminar(data)"
+        size="small" style="width: 32px; height: 32px;" />
+
             </div>
           </template>
         </Column>
@@ -383,6 +387,27 @@ const cambiarPeriodo = (item) => {
     }
   });
 };
+
+const confirmarEliminar = (item) => {
+  confirm.require({
+    message: `¿Eliminar definitivamente el documento "${item.nombre}"?`,
+    header: 'Confirmar eliminación',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí, eliminar',
+    rejectLabel: 'Cancelar',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await axios.post('eliminar-documento', { id: item.id });
+        await getDocumentos();
+        showToast('success', 'Eliminado', 'Documento eliminado correctamente.');
+      } catch (e) {
+        showToast('error', 'Error', 'No se pudo eliminar el documento.');
+      }
+    }
+  });
+};
+
 
 const limpiarFiltros = () => {
   programa.value = null;

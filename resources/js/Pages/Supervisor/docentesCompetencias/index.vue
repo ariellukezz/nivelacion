@@ -56,14 +56,21 @@
       </div>
 
       <!-- Botón para limpiar filtros -->
-      <div class="mb-4">
+        <div class="mb-4 flex items-center gap-3">
         <Button
-          label="Limpiar Filtros"
-          icon="pi pi-times"
-          class="p-button-outlined p-button-sm"
-          @click="clearFilters"
+            label="Limpiar Filtros"
+            icon="pi pi-times"
+            class="p-button-outlined p-button-sm"
+            @click="clearFilters"
         />
-      </div>
+        <Button
+            icon="pi pi-file-excel"
+            label="Exportar Excel"
+            severity="success"
+            :loading="exportLoading"
+            @click="exportarExcel"
+        />
+        </div>
 
       <!-- Tabla de PrimeVue -->
       <DataTable
@@ -215,6 +222,71 @@ const clearFilters = () => {
 
 // Cargar datos al montar el componente
 onMounted(fetchDocentes);
+
+
+// 👇 Import dinámino de SheetJS para no engordar el bundle
+let XLSX = null;
+const exportLoading = ref(false);
+
+const exportarExcel = async () => {
+  try {
+    exportLoading.value = true;
+
+    // Carga SheetJS sólo cuando se necesita
+    if (!XLSX) {
+      XLSX = await import('xlsx');
+    }
+
+    const rows = filteredDocentes.value || [];
+    if (!rows.length) {
+      // Si quieres, muestra un toast/alert aquí
+      console.warn('No hay datos para exportar');
+      exportLoading.value = false;
+      return;
+    }
+
+    // Mapea las columnas que quieras en el Excel (orden definido aquí)
+    const dataForExcel = rows.map(r => ({
+      'Docente': `${r.paterno ?? ''} ${r.materno ?? ''}, ${r.nombres ?? ''}`.trim(),
+      'Email': r.email ?? '',
+      'Teléfono': r.telefono ?? '',
+      'Competencia': `${r.competencia_cod ?? ''}${r.competencia_cod ? ' - ' : ''}${r.competencia_nombre ?? ''}`.trim(),
+      'Curso': r.curso_nombre ?? '',
+      'Grupo': r.grupo ?? '',
+      'Programa': r.programa ?? '',
+      'Periodo': r.periodo_nombre ?? ''
+    }));
+
+    // Crea workbook/worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dataForExcel, { skipHeader: false });
+
+    // Auto-anchos simples por columna
+    const headers = Object.keys(dataForExcel[0]);
+    const colWidths = headers.map(h => {
+      const maxLen = Math.max(
+        h.length,
+        ...dataForExcel.map(row => String(row[h] ?? '').length)
+      );
+      return { wch: Math.min(Math.max(maxLen + 2, 12), 60) }; // min 12, max 60
+    });
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Docentes');
+
+    // Nombre de archivo con timestamp
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+    XLSX.writeFile(wb, `docentes_competencias_${stamp}.xlsx`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    exportLoading.value = false;
+  }
+};
+
 </script>
 
 <style scoped>
