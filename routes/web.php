@@ -1,27 +1,28 @@
 <?php
 
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TeController;
+use Illuminate\Foundation\Application;
+use App\Http\Controllers\DataController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\CursoController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\AvanceController;
+use App\Http\Controllers\SorteoController;
+use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DataController;
-use App\Http\Controllers\CursoController;
-use App\Http\Controllers\CoordinadorController;
-use App\Http\Controllers\DocumentoController;
-use App\Http\Controllers\AsignacionController;
-use App\Http\Controllers\TeController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PreguntaController;
-use App\Http\Controllers\AvanceController;
-use App\Http\Controllers\ArchivoController;
-use App\Http\Controllers\SorteoController;
-use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\SuperadmiController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AsignacionController;
+use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\CoordinadorController;
+use App\Http\Controllers\BotonControlController;
 use App\Http\Controllers\Auth\RecoveryController;
 use App\Http\Controllers\Docente\DashboardController;
-use Inertia\Inertia;
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -95,6 +96,8 @@ Route::middleware('auth','admin')->group(function () {
         //pdf
         Route::get('/generar-pdf/{id}', [AsignacionController::class, 'pdf']);
 
+
+
     });
 
 
@@ -138,6 +141,13 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-informes', [DocumentoController::class, 'getInformes']);
     Route::post('get-dictantes', [DocumentoController::class, 'getDictantes']);
     Route::post('get-otros', [DocumentoController::class, 'getOtros']);
+
+    // Route::get('estado-boton', [DocumentoController::class, 'estadoBoton']);
+    Route::get('/estado-boton/{modulo}', [BotonControlController::class, 'estadoBoton']);
+
+
+
+
 
     // encargados
     Route::get('encargados', fn () => Inertia::render('Admin/Encargado/index'))->name('encargado-index');
@@ -218,6 +228,10 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 
 Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
 
+
+Route::post('/get-noti', [UsuarioController::class, 'getNoti'])->middleware('auth');
+Route::post('/read-noti/{id}', [UsuarioController::class, 'readNoti'])->middleware('auth');
+
    //supervisor
 
 
@@ -240,7 +254,10 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     Route::post('/eliminar-documento', [SupervisorController::class, 'eliminarDocumento']);
 
 
-    //GET DATA
+     //GET DATA
+
+    Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
+
     Route::post('get-programas', [DataController::class, 'getProgramas']);
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::get('/obtener-periodos', [SuperadmiController::class, 'obtenerListadoPeriodos']);
@@ -267,7 +284,7 @@ Route::middleware('auth','supervisor')->prefix('supervisor')->group(function () 
     // API JSON
     Route::get('/encargados-sistema/data', [SupervisorController::class, 'listarEncargadosSistema'])->name('encargados-sistema.data');
     // Vista Inertia/Vue
-    Route::get('/encargados-sistema', fn () =>Inertia::render('Supervisor/Encargados/index'))->name('encargados-sistema');
+    Route::get('/encargados-sistema', fn () =>Inertia::render('Supervisor/Encargados/index'))->name('encargados-sistemas');
 
 
     //  // Vista del panel de ingresos (para supervisores)
@@ -307,6 +324,41 @@ Route::get('exportar-ganadores-filtrado/{evento_id}', [SorteoController::class, 
 Route::get('lista-ganadores', fn () => Inertia::render('Supervisor/Sorteo/ListaGanadores'))->name('lista.ganadores');
 
 
+
+
+
+        // Ruta para MOSTRAR la página (Renderiza la vista directamente desde aquí)
+    Route::get('controles', fn () => Inertia::render('Supervisor/Controles/Index'))->name('controles');
+
+    // Ruta para OBTENER los datos para la tabla (Vue llama a esta ruta)
+    Route::post('get-controles', [BotonControlController::class, 'listarReglas']);
+
+    // Ruta para ACTUALIZAR los datos (Vue llama a esta ruta para guardar)
+    Route::post('update-controles', [BotonControlController::class, 'actualizarReglas']);
+
+
+
+
+      // --- Panel de notificaciones ---
+    Route::get('notificaciones', fn () => Inertia::render('Supervisor/Notificaciones/Index'))->name('notificaciones');
+
+    // Listar notificaciones con filtros
+    Route::post('listar-notificaciones', [UsuarioController::class, 'listarNotificaciones']);
+
+    // Buscar usuarios para enviar notificación
+    Route::post('buscar-usuarios-notificaciones', [UsuarioController::class, 'buscarUsuariosNotificaciones']);
+
+    // Crear nueva notificación
+    Route::post('guardar-notificacion', [UsuarioController::class, 'guardarNotificacion']);
+
+    // Editar notificación existente
+    Route::post('actualizar-notificacion/{id}', [UsuarioController::class, 'actualizarNotificacion']);
+
+    // Eliminar notificación
+    Route::post('eliminar-notificacion/{id}', [UsuarioController::class, 'eliminarNotificacion']);
+
+    // Subir imagen de notificación
+    Route::post('subir-imagen-notificacion', [UsuarioController::class, 'subirImagenNotificacion']);
 
 
 
@@ -442,6 +494,54 @@ Route::get('lista-ganadores', fn () => Inertia::render('Supervisor/Sorteo/ListaG
     Route::get('get-eventos', [SorteoController::class, 'getEventos']);
     Route::post('guardar-evento', [SorteoController::class, 'guardarEvento']);
     Route::get('eliminar-evento/{id}', [SorteoController::class, 'eliminarEvento']);
+
+
+        // API JSON
+    Route::get('/encargados-sistema/data', [SupervisorController::class, 'listarEncargadosSistema'])->name('encargados-sistema.data');
+    // Vista Inertia/Vue
+    Route::get('/encargados-sistema', fn () =>Inertia::render('Superadmi/Encargados/index'))->name('encargados-sistema');
+
+
+
+            // Ruta para MOSTRAR la página (Renderiza la vista directamente desde aquí)
+    Route::get('controles', fn () => Inertia::render('Superadmi/Controles/Index'))->name('controlesadmin');
+
+    // Ruta para OBTENER los datos para la tabla (Vue llama a esta ruta)
+    Route::post('get-controles', [BotonControlController::class, 'listarReglas']);
+
+    // Ruta para ACTUALIZAR los datos (Vue llama a esta ruta para guardar)
+    Route::post('update-controles', [BotonControlController::class, 'actualizarReglas']);
+
+
+    // Ruta para la API (JSON) - sin cambios
+    Route::get('/docentes-competencias-data', [SupervisorController::class, 'getDocentesCompetencias']);
+    // Ruta para la vista (Inertia/Vue) - cambiamos la URL
+    Route::get('/docentes-competencias', fn () => Inertia::render('Superadmi/docentesCompetencias/index'))->name('docentes-competencia');
+
+
+    // Ruta para la API (JSON)
+    Route::get('/busqueda-estudiantes', [SupervisorController::class, 'busquedaEstudiantes']);
+    // Ruta para la vista (Inertia/Vue)
+    Route::get('/estudiantes', fn () => Inertia::render('Superadmi/Estudiante/index'))->name('busqueda-estudiante');
+
+
+
+         // --- Panel de notificaciones ---
+    Route::get('notificaciones', fn () => Inertia::render('Superadmi/Notificaciones/Index'))->name('notificaciones.admin');
+    // Listar notificaciones con filtros
+    Route::post('listar-notificaciones', [UsuarioController::class, 'listarNotificaciones']);
+    // Buscar usuarios para enviar notificación
+    Route::post('buscar-usuarios-notificaciones', [UsuarioController::class, 'buscarUsuariosNotificaciones']);
+    // Crear nueva notificación
+    Route::post('guardar-notificacion', [UsuarioController::class, 'guardarNotificacion']);
+    // Editar notificación existente
+    Route::post('actualizar-notificacion/{id}', [UsuarioController::class, 'actualizarNotificacion']);
+    // Eliminar notificación
+    Route::post('eliminar-notificacion/{id}', [UsuarioController::class, 'eliminarNotificacion']);
+    // Subir imagen de notificación
+    Route::post('subir-imagen-notificacion', [UsuarioController::class, 'subirImagenNotificacion']);
+
+
 
 
 });

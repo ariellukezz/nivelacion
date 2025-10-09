@@ -17,45 +17,42 @@
             @input="filterDocentes"
           />
         </span>
-            <!-- Filtro de Programa -->
-            <Dropdown
-            v-model="selectedPrograma"
-            :options="programas"
-            optionLabel="programa"
-            optionValue="programa_id"
-            placeholder="Seleccionar Programa"
-            class="w-full"
-            @change="filterDocentes"
-            showClear
-            filter
-            />
 
-            <!-- Filtro de Periodo -->
-            <Dropdown
-            v-model="selectedPeriodo"
-            :options="periodos"
-            optionLabel="periodo_nombre"
-            optionValue="id_periodo"
-            placeholder="Seleccionar Periodo"
-            class="w-full"
-            @change="filterDocentes"
-            showClear
-            filter
-            />
+        <!-- Filtro de Programa -->
+        <Dropdown
+          v-model="selectedPrograma"
+          :options="programas"
+          optionLabel="programa"
+          optionValue="programa_id"
+          placeholder="Seleccionar Programa"
+          class="w-full"
+          @change="filterDocentes"
+          showClear
+        />
 
-            <!-- Filtro de Competencia -->
-            <Dropdown
-            v-model="selectedCompetencia"
-            :options="competencias"
-            optionLabel="competencia_nombre"
-            optionValue="id_competencia"
-            placeholder="Seleccionar Competencia"
-            class="w-full"
-            @change="filterDocentes"
-            showClear
-            filter
-            />
+        <!-- Filtro de Periodo -->
+        <Dropdown
+          v-model="selectedPeriodo"
+          :options="periodos"
+          optionLabel="periodo_nombre"
+          optionValue="id_periodo"
+          placeholder="Seleccionar Periodo"
+          class="w-full"
+          @change="filterDocentes"
+          showClear
+        />
 
+        <!-- Filtro de Competencia -->
+        <Dropdown
+          v-model="selectedCompetencia"
+          :options="competencias"
+          optionLabel="competencia_nombre"
+          optionValue="id_competencia"
+          placeholder="Seleccionar Competencia"
+          class="w-full"
+          @change="filterDocentes"
+          showClear
+        />
       </div>
 
       <!-- Botón para limpiar filtros -->
@@ -136,7 +133,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import AuthenticatedLayout from '@/Layouts/LayoutSupervisor.vue';
+import AuthenticatedLayout from '@/Layouts/LayoutSuperadmi.vue';
 import { Head } from '@inertiajs/vue3';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';

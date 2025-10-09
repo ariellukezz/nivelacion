@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Documento;
 use App\Models\Periodo;
+use App\Models\BotonControl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use DB;
+use Carbon\Carbon;
 
 class DocumentoController extends Controller
 {
@@ -23,6 +25,11 @@ class DocumentoController extends Controller
 
 public function resolucion(Request $request)
 {
+    // <-- AÑADIR AQUÍ
+    if (!$this->verificarAccesoSimple('Resolucion')) {
+        return response()->json(['message' => 'Esta acción no está permitida en este momento.'], 403);
+    }
+    // FIN DEL BLOQUE DE SEGURIDAD
     // Escuela del usuario
     $escuela = DB::table('users')
                  ->join('programa', 'users.programa_id', '=', 'programa.id')
@@ -62,6 +69,11 @@ public function resolucion(Request $request)
 
     public function plan(Request $request)
 {
+    // <-- AÑADIR AQUÍ
+    if (!$this->verificarAccesoSimple('Plan')) {
+        return response()->json(['message' => 'Esta acción no está permitida en este momento.'], 403);
+    }
+    // FIN DEL BLOQUE DE SEGURIDAD
     // 1. Obtener nombre de escuela del usuario
     $escuelaNombre = DB::table('users')
         ->join('programa', 'users.programa_id', '=', 'programa.id')
@@ -106,6 +118,11 @@ public function resolucion(Request $request)
 
     public function informe(Request $request)
 {
+    // <-- AÑADIR AQUÍ
+    if (!$this->verificarAccesoSimple('Informe')) {
+        return response()->json(['message' => 'Esta acción no está permitida en este momento.'], 403);
+    }
+    // FIN DEL BLOQUE DE SEGURIDAD
     // 1. Escuela del usuario (nombre limpio para carpeta)
     $escuelaNombre = DB::table('users')
         ->join('programa', 'users.programa_id', '=', 'programa.id')
@@ -149,6 +166,11 @@ public function resolucion(Request $request)
 
     public function dictantes(Request $request)
 {
+    // <-- AÑADIR AQUÍ
+    if (!$this->verificarAccesoSimple('Dictantes')) {
+        return response()->json(['message' => 'Esta acción no está permitida en este momento.'], 403);
+    }
+    // FIN DEL BLOQUE DE SEGURIDAD
     // 1. Obtener nombre de escuela (carpeta segura)
     $escuelaNombre = DB::table('users')
         ->join('programa', 'users.programa_id', '=', 'programa.id')
@@ -193,6 +215,11 @@ public function resolucion(Request $request)
 
     public function otros(Request $request)
 {
+    // <-- AÑADIR AQUÍ
+    if (!$this->verificarAccesoSimple('Otros')) {
+        return response()->json(['message' => 'Esta acción no está permitida en este momento.'], 403);
+    }
+    // FIN DEL BLOQUE DE SEGURIDAD
     // 1. Escuela del usuario
     $escuelaNombre = DB::table('users')
         ->join('programa', 'users.programa_id', '=', 'programa.id')
@@ -357,4 +384,28 @@ public function resolucion(Request $request)
 
 
 
+    /**
+     * Función de ayuda PRIVADA para verificar el acceso.
+     * Solo funciona dentro de este controlador.
+     */
+    private function verificarAccesoSimple(string $modulo)
+    {
+        $escuelaId = auth()->user()->id_escuela;
+        $usuarioId = auth()->id();
+
+        $control = BotonControl::where('modulo', $modulo)
+            ->where(function ($query) use ($escuelaId, $usuarioId) {
+                $query->where('id_usuario', $usuarioId)
+                      ->orWhere('id_escuela', $escuelaId)
+                      ->orWhere(fn($q) => $q->whereNull('id_escuela')->whereNull('id_usuario'));
+            })
+            ->orderByRaw("CASE WHEN id_usuario = ? THEN 1 WHEN id_escuela = ? THEN 2 ELSE 3 END", [$usuarioId, $escuelaId])
+            ->first();
+
+        if ($control && $control->estado == 1 && Carbon::now()->between($control->fecha_inicio, $control->fecha_fin)) {
+            return true;
+        }
+
+        return false;
+    }
 }

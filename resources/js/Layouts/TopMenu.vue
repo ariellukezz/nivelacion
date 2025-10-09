@@ -1,7 +1,7 @@
 <template>
   <header class="z-10 py-4 bg-white shadow-md" style="background-color:white; height: 75px;" >
     <div class="container flex justify-between items-center px-6 mx-auto h-full text-purple-600 md:justify-end">
-      
+
       <!-- Mobile hamburger -->
       <button @click="$page.props.showingMobileMenu = !$page.props.showingMobileMenu" class="p-1 mr-5 -ml-1 rounded-md md:hidden focus:outline-none focus:shadow-outline-purple" aria-label="Menu">
         <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
@@ -13,7 +13,7 @@
           <div class="flex" style="align-items: center; height: 37px; color: #000000D9;">
           <div style="text-align: end;  margin-top: 0px;">
             <div style=" width: 200px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-              <span style="font-size: 0.9rem;">{{ usuario.usuario.escuela }}</span> 
+              <span style="font-size: 0.9rem;">{{ usuario.usuario.escuela }}</span>
             </div>
             <div style="margin-top: -7px;">
               <span style="font-size: 0.9rem; font-weight: bold;">{{ usuario.usuario.nombres }} </span>
@@ -51,7 +51,7 @@
         <div v-if="usuario.usuario.e_contra == 1">
           <Dialog v-model:visible="modalContra" modal header="Cambiar contraseña" :style="{ width: '360px' }">
             <label>Nueva contraseña</label>
-            <div style="width: 100%;"> 
+            <div style="width: 100%;">
               <InputText type="password" v-model="contra" style="width: 315px;"/>
             </div>
             <div class="flex justify-end mt-5">
@@ -60,6 +60,55 @@
           </Dialog>
         </div>
       </div>
+
+      <!-- Modal: Notificación al inicio -->
+      <!-- Modal: Notificación al inicio -->
+<Dialog v-model:visible="modalNoti" modal header="Notificación" :style="{ width: '520px' }">
+  <div v-if="loadingNoti" class="py-4 text-center">Cargando...</div>
+
+  <div v-else>
+    <div v-if="!noti" class="text-gray-500">No hay notificaciones pendientes.</div>
+
+    <div v-else
+         class="space-y-3 p-3 rounded-md"
+         :class="{
+           'border-l-4 border-green-500 bg-green-50': noti.tipo === 'success',
+           'border-l-4 border-yellow-500 bg-yellow-50': noti.tipo === 'warning' || noti.tipo === 'warn',
+           'border-l-4 border-red-500 bg-red-50': noti.tipo === 'error',
+           'border-l-4 border-blue-500 bg-blue-50': !['success','warning','warn','error'].includes(noti.tipo)
+         }">
+
+      <!-- Título -->
+      <div class="font-semibold text-base">{{ noti.titulo || 'Aviso' }}</div>
+
+      <!-- Imagen -->
+      <div v-if="noti.imagen_url" class="mt-1">
+        <img :src="noti.imagen_url"
+             alt="imagen de la notificación"
+             class="w-full rounded-md max-h-72 object-contain" />
+      </div>
+
+      <!-- Mensaje -->
+      <div class="font-bold text-sm whitespace-pre-line">{{ noti.mensaje }}</div>
+
+      <!-- Acciones -->
+      <div class="flex justify-end gap-2 mt-4">
+        <a v-if="noti.url"
+           :href="noti.url"
+           target="_blank"
+           rel="noopener"
+           class="px-3 py-2 rounded-md border text-sm hover:bg-gray-50 underline">
+          Ir al enlace
+        </a>
+        <Button @click="leerNoti">
+          Leí la notificación y estoy informado
+        </Button>
+      </div>
+    </div>
+  </div>
+</Dialog>
+
+
 
 
       <!-- <Dropdown v-else>
@@ -101,10 +150,10 @@
         </template>
       </Dropdown> -->
 
-      
+
 
     </div>
-    
+
   </header>
 </template>
 
@@ -113,12 +162,13 @@ import Dropdown from '@/Components/Dropdown.vue'
 import DropdownLink from '@/Components/DropdownLink.vue'
 import Button from 'primevue/button';
 import SplitButton from 'primevue/splitbutton';
-import { ref } from 'vue';
+import { ref, onMounted, computed  } from 'vue';
 import 'primeicons/primeicons.css';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
+import Tag from 'primevue/tag'
 
 
 const toast = useToast();
@@ -139,6 +189,57 @@ const saveContra =  async () => {
   showToast(res.data.tipo, res.data.titulo, res.data.mensaje);
 
 }
+
+
+
+const tagSeverity = computed(() => {
+  const t = (noti.value?.tipo || '').toLowerCase()
+  if (t === 'success') return 'success'
+  if (t === 'warning' || t === 'warn') return 'warning'
+  if (t === 'error' || t === 'danger') return 'danger'
+  return 'info' // default
+})
+
+
+
+
+// --- NOTIFICACIÓN INICIO ---
+const modalNoti = ref(false)
+const noti = ref(null)
+const loadingNoti = ref(false)
+
+const cargarNoti = async () => {
+  loadingNoti.value = true
+  try {
+    const { data } = await axios.post('/get-noti')
+    noti.value = data?.datos ?? null
+    if (noti.value) modalNoti.value = true
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loadingNoti.value = false
+  }
+}
+
+const leerNoti = async () => {
+  try {
+    if (noti.value?.id) {
+      await axios.post(`/read-noti/${noti.value.id}`)
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    modalNoti.value = false
+    noti.value = null
+  }
+}
+
+// Al montar, comportarse igual que el modal de contraseña:
+// si hay notificación activa (activo=1 y leido=0), abrir el modal.
+onMounted(async () => {
+  await cargarNoti()
+})
+
 
 //import Dropdown from 'primevue/dropdown';
 </script>

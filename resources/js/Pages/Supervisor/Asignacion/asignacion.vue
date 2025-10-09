@@ -81,7 +81,7 @@
         </Column>
 
         <Column field="tipo" header="TIPO" />
-        <Column field="escuela" header="ESCUELA PROFESIONAL" />
+        <!-- <Column field="escuela" header="ESCUELA PROFESIONAL" /> -->
         <Column field="fecha_subida" header="FECHA" />
         <Column field="username" header="USUARIO">
           <template #body="{ data }">
