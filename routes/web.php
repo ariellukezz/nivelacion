@@ -223,6 +223,13 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::get('/evento', fn () => Inertia::render('Estudiante/Evento/index'))->name('estudiante-evento');
     Route::post('/get-evento-induccion', [CursoController::class, 'getEventoInduccionByAlumno']);
 
+    // Ruta para la VISTA del historial
+    Route::get('historial-notas', function () {
+        return Inertia::render('Estudiante/HistorialNotas/index');
+    })->name('estudiante.historial-notas');
+
+    // Ruta para la API del historial
+    Route::post('/get-historial-notas', [CursoController::class, 'getHistorialNotas']);
 
 });
 
@@ -361,7 +368,26 @@ Route::get('lista-ganadores', fn () => Inertia::render('Supervisor/Sorteo/ListaG
     Route::post('subir-imagen-notificacion', [UsuarioController::class, 'subirImagenNotificacion']);
 
 
+    Route::get('/get-programas-filial', [SupervisorController::class, 'getProgramasConFilial']);
 
+
+// Rutas para el módulo de monitoreo de docentes - CORREGIDAS
+Route::get('/dashboard-docentes', [SupervisorController::class, 'getDashboardDocentes']);
+Route::get('/competencias-sin-docente', [SupervisorController::class, 'getCompetenciasSinDocente']);
+Route::get('/docentes-faltan-notas', [SupervisorController::class, 'getDocentesFaltanNotas']);
+
+// Ruta para la vista del dashboard
+Route::get('/monitoreo-docentes', fn () => Inertia::render('Supervisor/monitoreoDocentes/index'))->name('monitoreo-docentes');
+
+// Rutas para las vistas completas
+Route::get('/monitoreo-docentes/competencias-sin-docente', fn () => Inertia::render('Supervisor/monitoreoDocentes/CompetenciasSinDocente'))->name('competencias-sin-docente-vista');
+Route::get('/monitoreo-docentes/docentes-faltan-notas', fn () => Inertia::render('Supervisor/monitoreoDocentes/DocentesFaltanNotas'))->name('docentes-faltan-notas-vista');
+
+
+
+Route::get('/reporte-matriculados-vista', fn () => Inertia::render('Supervisor/reporteMatriculados/index'))->name('reporte-matriculados');
+// RUTA PARA LA API (Obtener datos)
+Route::get('/reporte-matriculados', [SupervisorController::class, 'getReporteMatriculados']);
 
 });
 

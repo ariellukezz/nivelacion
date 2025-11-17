@@ -29,8 +29,13 @@
           </Toolbar>
 
           <DataTable :value="reglas.data" v-model:selection="seleccionados" dataKey="id"
-            :loading="loading" stripedRows responsiveLayout="scroll" paginator :rows="reglas.per_page"
-            :totalRecords="reglas.total" @page="onPage" :rowClass="claseFila">
+            :loading="loading" stripedRows responsiveLayout="scroll"
+            paginator :rows="reglas.per_page"
+            :totalRecords="reglas.total"
+            :first="first"
+            @page="onPage"
+            :lazy="true"
+            :rowClass="claseFila">
 
             <Column selectionMode="multiple" headerStyle="width: 3em"></Column>
             <Column field="modulo" header="Módulo" :sortable="true" style="min-width: 10rem;"></Column>
@@ -39,7 +44,7 @@
                 {{ data.nombre_usuario || 'N/A (Global o Escuela)' }}
               </template>
             </Column>
-            <Column field="id_escuela" header="ID Escuela" :sortable="true" style="width: 8rem;"></Column>
+            <!-- <Column field="id_escuela" header="ID Escuela" :sortable="true" style="width: 8rem;"></Column> -->
             <Column header="Vigencia" style="min-width: 12rem;">
               <template #body="{ data }">
                 <div class="text-xs"><strong>Inicio:</strong> {{ formatearFecha(data.fecha_inicio) }}</div>
@@ -96,8 +101,9 @@
     </Dialog>
   </AuthenticatedLayout>
 </template>
+
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/LayoutSupervisor.vue';
 import { Head } from '@inertiajs/vue3';
@@ -126,9 +132,14 @@ const confirm = useConfirm();
 let debounceTimer = null;
 
 // --- Estado Reactivo del Componente ---
-const reglas = ref({ data: [], total: 0, per_page: 15 });
+const reglas = ref({
+  data: [],
+  total: 0,
+  per_page: 10,
+  current_page: 1,
+  last_page: 1
+});
 const filtros = ref({ q: '', modulo: null, id_escuela: null });
-const paginaActual = ref(1);
 const loading = ref(false);
 const seleccionados = ref([]);
 const dialogoVisible = ref(false);
@@ -139,16 +150,76 @@ const opcionesModulo = ref([
     { label: 'Otros', value: 'Otros' },
 ]);
 
+// Computed para calcular el first value correctamente
+const first = computed(() => {
+  return (reglas.value.current_page - 1) * reglas.value.per_page;
+});
+
 // --- Lógica Principal: Carga de Datos ---
 const cargarReglas = async (page = 1) => {
     loading.value = true;
-    paginaActual.value = page;
     try {
-        const params = { ...filtros.value, page: paginaActual.value };
+        const params = {
+          ...filtros.value,
+          page: page,
+          per_page: reglas.value.per_page
+        };
+
+        console.log('Enviando parámetros:', params);
         const res = await axios.post('get-controles', params);
-        reglas.value = res.data;
+        console.log('Respuesta recibida:', res.data);
+
+        // Procesar la respuesta del backend
+        if (res.data && res.data.datos) {
+          // Si es una respuesta paginada de Laravel
+          if (res.data.datos.data) {
+            reglas.value = {
+              data: res.data.datos.data,
+              total: res.data.datos.total,
+              per_page: res.data.datos.per_page,
+              current_page: res.data.datos.current_page,
+              last_page: res.data.datos.last_page
+            };
+          } else {
+            // Si es un array directo
+            reglas.value = {
+              data: res.data.datos,
+              total: res.data.datos.length,
+              per_page: params.per_page,
+              current_page: page,
+              last_page: Math.ceil(res.data.datos.length / params.per_page)
+            };
+          }
+        } else if (res.data && Array.isArray(res.data.datos)) {
+          // Si viene directamente el array en datos
+          reglas.value = {
+            data: res.data.datos,
+            total: res.data.datos.length,
+            per_page: params.per_page,
+            current_page: page,
+            last_page: Math.ceil(res.data.datos.length / params.per_page)
+          };
+        } else {
+          // Estructura por defecto si no coincide
+          reglas.value = {
+            data: res.data.data || res.data || [],
+            total: res.data.total || (Array.isArray(res.data) ? res.data.length : 0),
+            per_page: res.data.per_page || params.per_page,
+            current_page: res.data.current_page || page,
+            last_page: res.data.last_page || 1
+          };
+        }
+
+        console.log('Reglas procesadas:', reglas.value);
+
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error de Carga', detail: 'No se pudieron cargar las reglas.', life: 3000 });
+        console.error('Error cargando reglas:', error);
+        toast.add({
+          severity: 'error',
+          summary: 'Error de Carga',
+          detail: 'No se pudieron cargar las reglas.',
+          life: 3000
+        });
     } finally {
         loading.value = false;
     }
@@ -172,11 +243,22 @@ const enviarActualizacion = async (payload, successMsg) => {
     loading.value = true;
     try {
         await axios.post('update-controles', payload);
-        toast.add({ severity: 'success', summary: 'Éxito', detail: successMsg, life: 3000 });
-        cargarReglas(paginaActual.value); // Recargar la página actual para ver cambios
+        toast.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: successMsg,
+          life: 3000
+        });
+        cargarReglas(reglas.value.current_page);
         return true;
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'La operación falló.', life: 3000 });
+        console.error('Error en actualización:', error);
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'La operación falló.',
+          life: 3000
+        });
         return false;
     } finally {
         loading.value = false;
@@ -184,9 +266,12 @@ const enviarActualizacion = async (payload, successMsg) => {
 };
 
 const cambiarEstado = async (regla) => {
-    const success = await enviarActualizacion({ ids: [regla.id], estado: regla.estado }, 'Estado actualizado.');
+    const success = await enviarActualizacion(
+      { ids: [regla.id], estado: regla.estado },
+      'Estado actualizado.'
+    );
     if (!success) {
-        regla.estado = !regla.estado; // Revertir el switch si la llamada a la API falla
+        regla.estado = !regla.estado;
     }
 };
 
@@ -195,7 +280,6 @@ const guardarEdicion = async () => {
     const payload = {
         ids: [reglaEditada.value.id],
         estado: reglaEditada.value.estado,
-        // Formatear fechas a un string que Laravel entiende (YYYY-MM-DD HH:MM:SS)
         fecha_inicio: reglaEditada.value.fecha_inicio.toISOString().slice(0, 19).replace('T', ' '),
         fecha_fin: reglaEditada.value.fecha_fin.toISOString().slice(0, 19).replace('T', ' ')
     };
@@ -215,32 +299,42 @@ const actualizarSeleccionados = (nuevoEstado) => {
         acceptLabel: 'Sí, continuar',
         rejectLabel: 'Cancelar',
         accept: async () => {
-            const success = await enviarActualizacion({ ids: idsParaActualizar, estado: nuevoEstado }, 'Las reglas seleccionadas han sido actualizadas.');
+            const success = await enviarActualizacion(
+              { ids: idsParaActualizar, estado: nuevoEstado },
+              'Las reglas seleccionadas han sido actualizadas.'
+            );
             if (success) {
-                seleccionados.value = []; // Limpiar la selección
+                seleccionados.value = [];
             }
         }
     });
 };
 
 // --- Funciones de Ayuda y Utilidad ---
-
 const onPage = (event) => {
-    cargarReglas(event.page + 1);
+    // PrimeVue event.page es el índice de página (base 0)
+    // Convertimos a base 1 para Laravel
+    const nuevaPagina = event.page + 1;
+    console.log('Cambiando a página:', nuevaPagina);
+    cargarReglas(nuevaPagina);
 };
 
 const abrirDialogoEdicion = (regla) => {
-    // Creamos una copia del objeto para no modificar la tabla directamente
     reglaEditada.value = {
         ...regla,
-        // Convertimos los strings de fecha en objetos Date para el componente Calendar
         fecha_inicio: new Date(regla.fecha_inicio),
         fecha_fin: new Date(regla.fecha_fin)
     };
     dialogoVisible.value = true;
 };
 
-const formatearFecha = (fecha) => !fecha ? 'N/A' : new Date(fecha).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+const formatearFecha = (fecha) => {
+    if (!fecha) return 'N/A';
+    return new Date(fecha).toLocaleString('es-PE', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+    });
+};
 
 // --- Funciones para Estilos Dinámicos ---
 const claseFila = (regla) => {
@@ -265,17 +359,34 @@ const tiempoRestanteTexto = (regla) => {
     return 'Menos de un minuto';
 };
 
-// Define la severidad (color) del Tag de tiempo restante
 const claseSeveridadTiempo = (regla) => {
     if (!regla.estado || new Date(regla.fecha_fin) < new Date()) {
-        return 'danger'; // Rojo
+        return 'danger';
     }
-    return 'success'; // Verde
-};
 
+    const ahora = new Date();
+    const fechaFin = new Date(regla.fecha_fin);
+    const diffHoras = (fechaFin - ahora) / (1000 * 60 * 60);
+
+    if (diffHoras < 24) {
+        return 'warn';
+    }
+
+    return 'success';
+};
 
 // --- Carga Inicial de Datos ---
 onMounted(() => {
     cargarReglas();
 });
 </script>
+
+<style scoped>
+.fila-activa {
+    background-color: rgba(0, 255, 0, 0.05);
+}
+
+.fila-inactiva {
+    background-color: rgba(255, 0, 0, 0.05);
+}
+</style>

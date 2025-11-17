@@ -1,4 +1,3 @@
-
 module.exports = {
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
@@ -9,7 +8,9 @@ module.exports = {
 
     theme: {
         extend: {
-
+            fontFamily: {
+                sans: ['Acme', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+            },
         },
     },
 

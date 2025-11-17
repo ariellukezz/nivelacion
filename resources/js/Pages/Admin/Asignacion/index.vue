@@ -80,7 +80,7 @@
       <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
-          <!-- <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button> -->
+          <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button>
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -173,7 +173,7 @@
       <div v-if="escuela !== null && cursoseleccionado !== null">
 
         <div class="flex" style="justify-content: space-between;">
-          <!-- <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button> -->
+          <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button>
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">

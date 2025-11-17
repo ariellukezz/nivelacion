@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use App\Models\Curso;
-use App\Models\CursoDetalle;
-use App\Models\Alumno;
 use Inertia\Inertia;
+use App\Models\Curso;
+use App\Models\Alumno;
+use App\Models\CursoDetalle;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Middleware\Estudiante;
 
 
 class CursoController extends Controller
@@ -205,7 +206,39 @@ public function getEventoInduccionByAlumno(Request $request)
     ], 200);
 }
 
+public function getHistorialNotas(Request $request)
+{
+    $res = Estudiante::select(
+            'estudiante.id',
+            'docente.nombres',
+            'docente.paterno',
+            'docente.materno',
+            'competencia.cod',
+            'competencia.nombre as competencia_nombre',
+            'curso.nombre as curso_nombre',
+            'curso.grupo',
+            'curso.escuela',
+            'curso_detalle.nota',
+            'periodo.id_periodo',
+            'periodo.nombre as periodo_nombre',
+            'periodo.estado as periodo_estado'
+        )
+        ->join('curso_detalle', 'curso_detalle.id_alumno', 'estudiante.id')
+        ->join('curso', 'curso.id', 'curso_detalle.id_curso')
+        ->join('competencia', 'curso.id_competencia', 'competencia.id')
+        ->join('users', 'users.id', 'estudiante.usuario_id')
+        ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
+        ->join('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
+        ->where('curso.estado', 1)
+        ->where('estudiante.usuario_id', auth()->user()->id)
+        ->orderBy('periodo.id_periodo', 'DESC')
+        ->orderBy('competencia.cod', 'ASC')
+        ->get();
 
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+    return response()->json($this->response, 200);
+}
 
 
 

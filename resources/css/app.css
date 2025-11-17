@@ -1,3 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fuente global */
+@layer base {
+    :root {
+        --app-font-family: 'Acme', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    html {
+        font-family: var(--app-font-family);
+    }
+}
+
+/* Para PrimeVue */
+.p-component,
+.p-inputtext,
+.p-button,
+.p-datatable,
+.p-dialog,
+.p-dropdown,
+.p-panel,
+.p-card {
+    font-family: var(--app-font-family);
+}

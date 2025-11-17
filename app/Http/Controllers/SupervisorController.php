@@ -309,64 +309,175 @@ public function eliminarDocumento(Request $request)
 }
 
 
+public function getTestResultsvisor(Request $request)
+{
+    // 1. Periodo (por parámetro o activo)
+    $idPeriodo = $request->input('periodo');
 
+    if (!$idPeriodo) {
+        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
 
-    public function getTestResultsvisor() {
-        $competencias = DB::select("SELECT DISTINCT curso.id_competencia
-        FROM curso
-        ORDER BY curso.id_competencia ASC");
-
-        $alumnos = [];
-
-        foreach ($competencias as $competencia) {
-           //bdhh $res = DB::select("SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
-           //bdhh JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
-            $res = DB::select("SELECT estudiante.id as estudiante, estudiante.codigo_est, estudiante.nombres, curso_detalle.nota,
-            estudiante.paterno, estudiante.materno, programa.programa, datos_ingreso.semestre AS semestre, escuela.filial
-            FROM curso
-            JOIN curso_detalle ON curso.id = curso_detalle.id_curso
-            JOIN estudiante ON estudiante.id = curso_detalle.id_alumno
-            JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
-            JOIN programa ON datos_ingreso.id_programa=programa.id
-            JOIN escuela ON programa.id_escuela = escuela.id
-            JOIN periodo ON curso.id_periodo = periodo.id_periodo
-            WHERE curso.id_competencia = :competencia
-            AND periodo.estado = 'activo'
-            ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
-
-            foreach ($res as $row) {
-                $id = $row->estudiante;
-                $nota = $row->nota;
-
-                if (!isset($alumnos[$id])) {
-                    $alumnos[$id] = [
-                        'id_estudiante' => $row->estudiante,
-                        'nombre' => $row->nombres,
-                        'programa' => $row->programa,
-                        'semestre' => $row->semestre,
-                        'filial' => $row->filial,
-                       //bdhh 'dni' => $row->dni,
-                        'codigo_est' => $row->codigo_est,
-                        'paterno' => $row->paterno,
-                        'materno' => $row->materno,
-                        'notas' => [],
-                    ];
-                }
-                $alumnos[$id]['notas'][] = [
-                    'nota' => $nota,
-                    'competencia' => $competencia->id_competencia,
-                ];
-            }
+        if (!$periodoActivo) {
+            return response()->json([
+                'estado'  => false,
+                'mensaje' => 'No existe un periodo activo',
+            ], 400);
         }
 
-        $alumnos = array_values($alumnos);
-
-        $this->response['estado'] = true;
-        $this->response['datos'] = $alumnos;
-        $this->response['competencias'] = $competencias;
-
-        return response()->json($this->response, 200);
+        $idPeriodo = $periodoActivo->id_periodo;
     }
+
+    // 2. Consulta pivot con AP / S/N / nota
+    $sql = "
+        SELECT
+            t.id_estudiante,
+            t.codigo_est,
+            t.paterno,
+            t.materno,
+            t.nombres AS nombre,
+            t.programa,
+            t.semestre,
+            t.filial,
+
+            CASE
+                WHEN t.C1_has = 1 AND t.C1_nota IS NULL THEN 'S/N'
+                WHEN t.C1_has = 1 AND t.C1_nota IS NOT NULL THEN CAST(t.C1_nota AS CHAR)
+                ELSE 'AP'
+            END AS C1,
+
+            CASE
+                WHEN t.C2_has = 1 AND t.C2_nota IS NULL THEN 'S/N'
+                WHEN t.C2_has = 1 AND t.C2_nota IS NOT NULL THEN CAST(t.C2_nota AS CHAR)
+                ELSE 'AP'
+            END AS C2,
+
+            CASE
+                WHEN t.C3_has = 1 AND t.C3_nota IS NULL THEN 'S/N'
+                WHEN t.C3_has = 1 AND t.C3_nota IS NOT NULL THEN CAST(t.C3_nota AS CHAR)
+                ELSE 'AP'
+            END AS C3,
+
+            CASE
+                WHEN t.C4_has = 1 AND t.C4_nota IS NULL THEN 'S/N'
+                WHEN t.C4_has = 1 AND t.C4_nota IS NOT NULL THEN CAST(t.C4_nota AS CHAR)
+                ELSE 'AP'
+            END AS C4,
+
+            CASE
+                WHEN t.C5_has = 1 AND t.C5_nota IS NULL THEN 'S/N'
+                WHEN t.C5_has = 1 AND t.C5_nota IS NOT NULL THEN CAST(t.C5_nota AS CHAR)
+                ELSE 'AP'
+            END AS C5,
+
+            CASE
+                WHEN t.C6_has = 1 AND t.C6_nota IS NULL THEN 'S/N'
+                WHEN t.C6_has = 1 AND t.C6_nota IS NOT NULL THEN CAST(t.C6_nota AS CHAR)
+                ELSE 'AP'
+            END AS C6,
+
+            CASE
+                WHEN t.C7_has = 1 AND t.C7_nota IS NULL THEN 'S/N'
+                WHEN t.C7_has = 1 AND t.C7_nota IS NOT NULL THEN CAST(t.C7_nota AS CHAR)
+                ELSE 'AP'
+            END AS C7,
+
+            CASE
+                WHEN t.C8_has = 1 AND t.C8_nota IS NULL THEN 'S/N'
+                WHEN t.C8_has = 1 AND t.C8_nota IS NOT NULL THEN CAST(t.C8_nota AS CHAR)
+                ELSE 'AP'
+            END AS C8,
+
+            CASE
+                WHEN t.C9_has = 1 AND t.C9_nota IS NULL THEN 'S/N'
+                WHEN t.C9_has = 1 AND t.C9_nota IS NOT NULL THEN CAST(t.C9_nota AS CHAR)
+                ELSE 'AP'
+            END AS C9,
+
+            CASE
+                WHEN t.C10_has = 1 AND t.C10_nota IS NULL THEN 'S/N'
+                WHEN t.C10_has = 1 AND t.C10_nota IS NOT NULL THEN CAST(t.C10_nota AS CHAR)
+                ELSE 'AP'
+            END AS C10,
+
+            CASE
+                WHEN t.C11_has = 1 AND t.C11_nota IS NULL THEN 'S/N'
+                WHEN t.C11_has = 1 AND t.C11_nota IS NOT NULL THEN CAST(t.C11_nota AS CHAR)
+                ELSE 'AP'
+            END AS C11
+
+        FROM (
+            SELECT
+                est.id AS id_estudiante,
+                est.codigo_est,
+                est.paterno,
+                est.materno,
+                est.nombres,
+                prog.programa,
+                di.semestre,
+                esc.filial,
+
+                MAX(CASE WHEN curso.id_competencia = 1  THEN cd.nota END) AS C1_nota,
+                MAX(CASE WHEN curso.id_competencia = 2  THEN cd.nota END) AS C2_nota,
+                MAX(CASE WHEN curso.id_competencia = 3  THEN cd.nota END) AS C3_nota,
+                MAX(CASE WHEN curso.id_competencia = 4  THEN cd.nota END) AS C4_nota,
+                MAX(CASE WHEN curso.id_competencia = 5  THEN cd.nota END) AS C5_nota,
+                MAX(CASE WHEN curso.id_competencia = 6  THEN cd.nota END) AS C6_nota,
+                MAX(CASE WHEN curso.id_competencia = 7  THEN cd.nota END) AS C7_nota,
+                MAX(CASE WHEN curso.id_competencia = 8  THEN cd.nota END) AS C8_nota,
+                MAX(CASE WHEN curso.id_competencia = 9  THEN cd.nota END) AS C9_nota,
+                MAX(CASE WHEN curso.id_competencia = 10 THEN cd.nota END) AS C10_nota,
+                MAX(CASE WHEN curso.id_competencia = 11 THEN cd.nota END) AS C11_nota,
+
+                MAX(CASE WHEN curso.id_competencia = 1  THEN 1 END) AS C1_has,
+                MAX(CASE WHEN curso.id_competencia = 2  THEN 1 END) AS C2_has,
+                MAX(CASE WHEN curso.id_competencia = 3  THEN 1 END) AS C3_has,
+                MAX(CASE WHEN curso.id_competencia = 4  THEN 1 END) AS C4_has,
+                MAX(CASE WHEN curso.id_competencia = 5  THEN 1 END) AS C5_has,
+                MAX(CASE WHEN curso.id_competencia = 6  THEN 1 END) AS C6_has,
+                MAX(CASE WHEN curso.id_competencia = 7  THEN 1 END) AS C7_has,
+                MAX(CASE WHEN curso.id_competencia = 8  THEN 1 END) AS C8_has,
+                MAX(CASE WHEN curso.id_competencia = 9  THEN 1 END) AS C9_has,
+                MAX(CASE WHEN curso.id_competencia = 10 THEN 1 END) AS C10_has,
+                MAX(CASE WHEN curso.id_competencia = 11 THEN 1 END) AS C11_has
+
+            FROM curso
+            JOIN curso_detalle cd ON curso.id = cd.id_curso
+            JOIN estudiante est ON est.id = cd.id_alumno
+            JOIN datos_ingreso di ON est.codigo_est = di.codigo_est
+            JOIN programa prog ON di.id_programa = prog.id
+            JOIN escuela esc ON prog.id_escuela = esc.id
+            JOIN periodo p ON curso.id_periodo = p.id_periodo
+
+            WHERE p.id_periodo = :periodo
+
+            GROUP BY
+                est.id,
+                est.codigo_est,
+                est.paterno,
+                est.materno,
+                est.nombres,
+                prog.programa,
+                di.semestre,
+                esc.filial
+        ) AS t
+
+        ORDER BY
+            t.programa ASC,
+            t.paterno ASC
+    ";
+
+    $alumnos = DB::select($sql, ['periodo' => $idPeriodo]);
+
+    return response()->json([
+        'estado'           => true,
+        'datos'            => $alumnos,
+        'competencias'     => [],          // ya no las usas en el Vue
+        'periodo_filtrado' => $idPeriodo,
+    ], 200);
+}
+
+
+
 
     public function getDocentesCompetencias()
 {
@@ -602,5 +713,388 @@ public function generateReport(Request $request)
             'data'    => $rows,
         ], 200);
     }
+
+
+
+public function getDashboardDocentes(Request $request)
+{
+    $idPeriodo = $request->input('periodo');
+    $idPrograma = $request->input('programa');
+
+    if (!$idPeriodo) {
+        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
+        if (!$periodoActivo) {
+            return response()->json([
+                'estado' => false,
+                'mensaje' => 'No existe un periodo activo',
+            ], 400);
+        }
+        $idPeriodo = $periodoActivo->id_periodo;
+    }
+
+    // Competencias sin docente - CORREGIDA
+    $sqlCompetenciasSinDocente = "
+        SELECT
+            comp.id as competencia_id,
+            comp.nombre as competencia_nombre,
+            p.programa,
+            esc.filial,
+            COUNT(DISTINCT est.id) as estudiantes_afectados,
+            COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as estudiantes_sin_nota
+        FROM curso c
+        JOIN competencia comp ON c.id_competencia = comp.id
+        JOIN programa p ON c.id_programa = p.id
+        JOIN escuela esc ON p.id_escuela = esc.id
+        JOIN curso_detalle cd ON c.id = cd.id_curso
+        JOIN estudiante est ON cd.id_alumno = est.id
+        JOIN periodo per ON c.id_periodo = per.id_periodo
+        WHERE per.id_periodo = :periodo
+        AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20)  -- Incluir S/N y notas 0-20
+        AND c.id_docente IS NULL
+    ";
+
+    $params = ['periodo' => $idPeriodo];
+
+    if ($idPrograma) {
+        $sqlCompetenciasSinDocente .= " AND p.id = :programa";
+        $params['programa'] = $idPrograma;
+    }
+
+    $sqlCompetenciasSinDocente .= "
+        GROUP BY comp.id, comp.nombre, p.programa, esc.filial
+        ORDER BY estudiantes_afectados DESC
+        LIMIT 10
+    ";
+
+    $competenciasSinDocente = DB::select($sqlCompetenciasSinDocente, $params);
+
+    // Docentes que faltan subir notas - CORREGIDA
+    $sqlDocentesFaltanNotas = "
+        SELECT
+            doc.id as docente_id,
+            CONCAT(doc.paterno, ' ', doc.materno, ', ', doc.nombres) as docente_nombre,
+            comp.nombre as competencia_nombre,
+            p.programa,
+            esc.filial,
+            COUNT(DISTINCT est.id) as total_estudiantes,
+            COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as estudiantes_sin_nota,
+            COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) as estudiantes_con_nota,
+            ROUND((COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) * 100.0 / COUNT(DISTINCT est.id)), 2) as porcentaje_sin_nota
+        FROM curso c
+        JOIN docente doc ON c.id_docente = doc.id
+        JOIN competencia comp ON c.id_competencia = comp.id
+        JOIN programa p ON c.id_programa = p.id
+        JOIN escuela esc ON p.id_escuela = esc.id
+        JOIN curso_detalle cd ON c.id = cd.id_curso
+        JOIN estudiante est ON cd.id_alumno = est.id
+        JOIN periodo per ON c.id_periodo = per.id_periodo
+        WHERE per.id_periodo = :periodo
+        AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20)  -- Incluir S/N y notas 0-20
+        AND c.id_docente IS NOT NULL
+    ";
+
+    if ($idPrograma) {
+        $sqlDocentesFaltanNotas .= " AND p.id = :programa";
+    }
+
+    $sqlDocentesFaltanNotas .= "
+        GROUP BY doc.id, doc.paterno, doc.materno, doc.nombres, comp.nombre, p.programa, esc.filial
+        HAVING estudiantes_sin_nota > 0  -- Solo mostrar docentes que tienen estudiantes sin nota
+        ORDER BY estudiantes_sin_nota DESC
+        LIMIT 10
+    ";
+
+    $docentesFaltanNotas = DB::select($sqlDocentesFaltanNotas, $params);
+
+    // Estadísticas generales - CORREGIDA
+    $sqlEstadisticas = "
+        SELECT
+            COUNT(DISTINCT CASE WHEN c.id_docente IS NULL AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20) THEN c.id_competencia END) as competencias_sin_docente,
+            COUNT(DISTINCT CASE WHEN c.id_docente IS NOT NULL AND cd.nota IS NULL THEN c.id_docente END) as docentes_faltan_notas,
+            COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as total_estudiantes_sin_nota,
+            COUNT(DISTINCT p.id) as programas_afectados
+        FROM curso c
+        JOIN programa p ON c.id_programa = p.id
+        JOIN curso_detalle cd ON c.id = cd.id_curso
+        JOIN estudiante est ON cd.id_alumno = est.id
+        JOIN periodo per ON c.id_periodo = per.id_periodo
+        WHERE per.id_periodo = :periodo
+        AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20)  -- Incluir S/N y notas 0-20
+    ";
+
+    if ($idPrograma) {
+        $sqlEstadisticas .= " AND p.id = :programa";
+    }
+
+    $estadisticas = DB::select($sqlEstadisticas, $params);
+
+    return response()->json([
+        'estado' => true,
+        'estadisticas' => $estadisticas[0] ?? [],
+        'competencias_sin_docente' => $competenciasSinDocente,
+        'docentes_faltan_notas' => $docentesFaltanNotas,
+        'periodo_filtrado' => $idPeriodo,
+    ], 200);
+}
+
+
+public function getCompetenciasSinDocente(Request $request)
+{
+    $idPeriodo = $request->input('periodo');
+    $idPrograma = $request->input('programa');
+
+    if (!$idPeriodo) {
+        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
+        if (!$periodoActivo) {
+            return response()->json([
+                'estado'  => false,
+                'mensaje' => 'No existe un periodo activo',
+            ], 400);
+        }
+        $idPeriodo = $periodoActivo->id_periodo;
+    }
+
+    $sql = "
+        SELECT
+            comp.id as competencia_id,
+            comp.nombre as competencia_nombre,
+            p.programa,
+            esc.filial,
+            COUNT(DISTINCT est.id) as total_estudiantes,
+            COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as estudiantes_sin_nota,
+            COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) as estudiantes_con_nota,
+            ROUND((COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) * 100.0 / COUNT(DISTINCT est.id)), 2) as porcentaje_sin_nota
+        FROM curso c
+        JOIN competencia comp ON c.id_competencia = comp.id
+        JOIN programa p ON c.id_programa = p.id
+        JOIN escuela esc ON p.id_escuela = esc.id
+        JOIN curso_detalle cd ON c.id = cd.id_curso
+        JOIN estudiante est ON cd.id_alumno = est.id
+        JOIN periodo per ON c.id_periodo = per.id_periodo
+        WHERE per.id_periodo = :periodo
+        AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20)  -- Incluir S/N y notas 0-20
+        AND c.id_docente IS NULL
+    ";
+
+    $params = ['periodo' => $idPeriodo];
+
+    if ($idPrograma) {
+        $sql .= " AND p.id = :programa";
+        $params['programa'] = $idPrograma;
+    }
+
+    $sql .= "
+        GROUP BY comp.id, comp.nombre, p.programa, esc.filial
+        ORDER BY estudiantes_sin_nota DESC
+    ";
+
+    $competencias = DB::select($sql, $params);
+
+    return response()->json([
+        'estado' => true,
+        'datos' => $competencias,
+        'periodo_filtrado' => $idPeriodo,
+    ], 200);
+}
+
+// Función para obtener docentes que faltan subir notas - CORREGIDA
+public function getDocentesFaltanNotas(Request $request)
+{
+    $idPeriodo = $request->input('periodo');
+    $idPrograma = $request->input('programa');
+
+    if (!$idPeriodo) {
+        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
+        if (!$periodoActivo) {
+            return response()->json([
+                'estado'  => false,
+                'mensaje' => 'No existe un periodo activo',
+            ], 400);
+        }
+        $idPeriodo = $periodoActivo->id_periodo;
+    }
+
+    $sql = "
+        SELECT
+            doc.id as docente_id,
+            CONCAT(doc.paterno, ' ', doc.materno, ', ', doc.nombres) as docente_nombre,
+            comp.nombre as competencia_nombre,
+            c.id_competencia,
+            p.programa,
+            esc.filial,
+            COUNT(DISTINCT est.id) as total_estudiantes,
+            COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as estudiantes_sin_nota,
+            COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) as estudiantes_con_nota,
+            ROUND((COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) * 100.0 / COUNT(DISTINCT est.id)), 2) as porcentaje_sin_nota,
+            ROUND((COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) * 100.0 / COUNT(DISTINCT est.id)), 2) as porcentaje_con_nota
+        FROM curso c
+        JOIN docente doc ON c.id_docente = doc.id
+        JOIN competencia comp ON c.id_competencia = comp.id
+        JOIN programa p ON c.id_programa = p.id
+        JOIN escuela esc ON p.id_escuela = esc.id
+        JOIN curso_detalle cd ON c.id = cd.id_curso
+        JOIN estudiante est ON cd.id_alumno = est.id
+        JOIN periodo per ON c.id_periodo = per.id_periodo
+        WHERE per.id_periodo = :periodo
+        AND (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20)  -- Incluir S/N y notas 0-20
+        AND c.id_docente IS NOT NULL
+    ";
+
+    $params = ['periodo' => $idPeriodo];
+
+    if ($idPrograma) {
+        $sql .= " AND p.id = :programa";
+        $params['programa'] = $idPrograma;
+    }
+
+    $sql .= "
+        GROUP BY
+            doc.id,
+            doc.paterno,
+            doc.materno,
+            doc.nombres,
+            comp.nombre,
+            c.id_competencia,
+            p.programa,
+            esc.filial
+        HAVING estudiantes_sin_nota > 0  -- Solo mostrar docentes que tienen estudiantes sin nota
+        ORDER BY estudiantes_sin_nota DESC
+    ";
+
+    $docentes = DB::select($sql, $params);
+
+    return response()->json([
+        'estado' => true,
+        'datos' => $docentes,
+        'periodo_filtrado' => $idPeriodo,
+    ], 200);
+}
+    // Nueva función para obtener programas con filial
+    public function getProgramasConFilial()
+    {
+        try {
+            $programas = DB::select("
+                SELECT p.id, p.programa, e.filial
+                FROM programa p
+                INNER JOIN escuela e ON p.id_escuela = e.id
+                ORDER BY p.programa ASC
+            ");
+
+            return response()->json([
+                'estado' => true,
+                'programas' => $programas
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'estado' => false,
+                'mensaje' => 'Error al obtener programas: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+
+public function getReporteMatriculados(Request $request)
+{
+    try {
+        $idPeriodo = $request->input('periodo');
+        $idPrograma = $request->input('programa');
+        $idCompetencia = $request->input('competencia');
+        $filial = $request->input('filial');
+
+        // Si no se envía periodo, usar el activo
+        if (!$idPeriodo) {
+            $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
+            if (!$periodoActivo) {
+                return response()->json([
+                    'estado' => false,
+                    'mensaje' => 'No existe un periodo activo',
+                ], 400);
+            }
+            $idPeriodo = $periodoActivo->id_periodo;
+        }
+
+        $sql = "
+            SELECT
+                p.id as programa_id,
+                p.programa,
+                e.filial,
+                comp.id as competencia_id,
+                comp.cod as competencia_codigo,
+                comp.nombre as competencia_nombre,
+                CASE
+                    WHEN c.id_docente IS NULL THEN 'SIN DOCENTE'
+                    ELSE CONCAT(doc.paterno, ' ', doc.materno, ', ', doc.nombres)
+                END as docente_nombre,
+                COUNT(DISTINCT est.id) as total_matriculados,
+                COUNT(DISTINCT CASE WHEN cd.nota IS NULL THEN est.id END) as estudiantes_sin_nota,
+                COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) as estudiantes_con_nota,
+                CASE
+                    WHEN COUNT(DISTINCT est.id) > 0 THEN
+                        ROUND((COUNT(DISTINCT CASE WHEN cd.nota BETWEEN 0 AND 20 THEN est.id END) * 100.0 / COUNT(DISTINCT est.id)), 2)
+                    ELSE 0
+                END as porcentaje_con_nota
+            FROM programa p
+            CROSS JOIN competencia comp
+            LEFT JOIN curso c ON c.id_programa = p.id
+                AND c.id_competencia = comp.id
+                AND c.id_periodo = :periodo
+            LEFT JOIN escuela e ON p.id_escuela = e.id
+            LEFT JOIN curso_detalle cd ON c.id = cd.id_curso
+            LEFT JOIN estudiante est ON cd.id_alumno = est.id
+            LEFT JOIN docente doc ON c.id_docente = doc.id
+            WHERE (cd.nota IS NULL OR cd.nota BETWEEN 0 AND 20 OR cd.id IS NULL)
+        ";
+
+        $params = ['periodo' => $idPeriodo];
+
+        // Aplicar filtros adicionales
+        if ($idPrograma) {
+            $sql .= " AND p.id = :programa";
+            $params['programa'] = $idPrograma;
+        }
+
+        if ($idCompetencia) {
+            $sql .= " AND comp.id = :competencia";
+            $params['competencia'] = $idCompetencia;
+        }
+
+        if ($filial) {
+            $sql .= " AND e.filial = :filial";
+            $params['filial'] = $filial;
+        }
+
+        $sql .= "
+            GROUP BY
+                p.id, p.programa, e.filial,
+                comp.id, comp.cod, comp.nombre,
+                docente_nombre
+            ORDER BY
+                p.programa ASC,
+                comp.id ASC
+        ";
+
+        $reporte = DB::select($sql, $params);
+
+        return response()->json([
+            'estado' => true,
+            'datos' => $reporte,
+            'periodo_filtrado' => $idPeriodo,
+            'total_registros' => count($reporte)
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'estado' => false,
+            'mensaje' => 'Error al generar el reporte: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
+
 
 }

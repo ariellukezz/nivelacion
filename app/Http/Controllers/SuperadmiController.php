@@ -546,61 +546,173 @@ public function eliminarp($id){
 }
 
 //----------------------- notas perfil
-public function getTestResults() {
-   // $escuela = DB::select("SELECT nombre from escuela where id = '" .auth()->user()->id_escuela ."';" );
 
-    $competencias = DB::select("SELECT DISTINCT curso.id_competencia
-    FROM curso
-    ORDER BY curso.id_competencia ASC");
+public function getTestResults(Request $request)
+{
+    // 1. Periodo (por parámetro o activo)
+    $idPeriodo = $request->input('periodo');
 
-    $alumnos = [];
+    if (!$idPeriodo) {
+        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->first();
 
-    foreach ($competencias as $competencia) {
-       // $res = DB::select("SELECT estudiante.id as estudiante, estudiante.dni, estudiante.nombres, curso_detalle.nota,
-       // bdhh JOIN datos_ingreso ON estudiante.dni = datos_ingreso.dni
-        $res = DB::select("SELECT estudiante.id as estudiante, estudiante.codigo_est, estudiante.nombres, curso_detalle.nota,
-        estudiante.paterno, estudiante.materno, programa.programa, datos_ingreso.semestre AS semestre
-        FROM curso
-        JOIN curso_detalle ON curso.id = curso_detalle.id_curso
-        JOIN estudiante ON estudiante.id = curso_detalle.id_alumno
-        JOIN datos_ingreso ON estudiante.codigo_est = datos_ingreso.codigo_est
-        JOIN programa ON datos_ingreso.id_programa=programa.id
-        WHERE curso.id_competencia = :competencia
-        ORDER BY programa.programa ASC, estudiante.paterno ASC;", ['competencia' => $competencia->id_competencia]);
-
-        foreach ($res as $row) {
-            $id = $row->estudiante;
-            $nota = $row->nota;
-
-            if (!isset($alumnos[$id])) {
-                $alumnos[$id] = [
-                    'id_estudiante' => $row->estudiante,
-                    'nombre' => $row->nombres,
-                    'programa' => $row->programa,
-                    'semestre' => $row->semestre,
-                    'codigo_est' => $row->codigo_est,
-                    //bdhh 'dni' => $row->dni,
-                    'paterno' => $row->paterno,
-                    'materno' => $row->materno,
-                    'notas' => [],
-                ];
-            }
-            $alumnos[$id]['notas'][] = [
-                'nota' => $nota,
-                'competencia' => $competencia->id_competencia,
-            ];
+        if (!$periodoActivo) {
+            return response()->json([
+                'estado'  => false,
+                'mensaje' => 'No existe un periodo activo',
+            ], 400);
         }
+
+        $idPeriodo = $periodoActivo->id_periodo;
     }
 
-    $alumnos = array_values($alumnos);
+    // 2. Consulta pivot con AP / S/N / nota
+    $sql = "
+        SELECT
+            t.id_estudiante,
+            t.codigo_est,
+            t.paterno,
+            t.materno,
+            t.nombres AS nombre,
+            t.programa,
+            t.semestre,
+            t.filial,
 
-    $this->response['estado'] = true;
-    $this->response['datos'] = $alumnos;
-    $this->response['competencias'] = $competencias;
+            CASE
+                WHEN t.C1_has = 1 AND t.C1_nota IS NULL THEN 'S/N'
+                WHEN t.C1_has = 1 AND t.C1_nota IS NOT NULL THEN CAST(t.C1_nota AS CHAR)
+                ELSE 'AP'
+            END AS C1,
 
-    return response()->json($this->response, 200);
+            CASE
+                WHEN t.C2_has = 1 AND t.C2_nota IS NULL THEN 'S/N'
+                WHEN t.C2_has = 1 AND t.C2_nota IS NOT NULL THEN CAST(t.C2_nota AS CHAR)
+                ELSE 'AP'
+            END AS C2,
+
+            CASE
+                WHEN t.C3_has = 1 AND t.C3_nota IS NULL THEN 'S/N'
+                WHEN t.C3_has = 1 AND t.C3_nota IS NOT NULL THEN CAST(t.C3_nota AS CHAR)
+                ELSE 'AP'
+            END AS C3,
+
+            CASE
+                WHEN t.C4_has = 1 AND t.C4_nota IS NULL THEN 'S/N'
+                WHEN t.C4_has = 1 AND t.C4_nota IS NOT NULL THEN CAST(t.C4_nota AS CHAR)
+                ELSE 'AP'
+            END AS C4,
+
+            CASE
+                WHEN t.C5_has = 1 AND t.C5_nota IS NULL THEN 'S/N'
+                WHEN t.C5_has = 1 AND t.C5_nota IS NOT NULL THEN CAST(t.C5_nota AS CHAR)
+                ELSE 'AP'
+            END AS C5,
+
+            CASE
+                WHEN t.C6_has = 1 AND t.C6_nota IS NULL THEN 'S/N'
+                WHEN t.C6_has = 1 AND t.C6_nota IS NOT NULL THEN CAST(t.C6_nota AS CHAR)
+                ELSE 'AP'
+            END AS C6,
+
+            CASE
+                WHEN t.C7_has = 1 AND t.C7_nota IS NULL THEN 'S/N'
+                WHEN t.C7_has = 1 AND t.C7_nota IS NOT NULL THEN CAST(t.C7_nota AS CHAR)
+                ELSE 'AP'
+            END AS C7,
+
+            CASE
+                WHEN t.C8_has = 1 AND t.C8_nota IS NULL THEN 'S/N'
+                WHEN t.C8_has = 1 AND t.C8_nota IS NOT NULL THEN CAST(t.C8_nota AS CHAR)
+                ELSE 'AP'
+            END AS C8,
+
+            CASE
+                WHEN t.C9_has = 1 AND t.C9_nota IS NULL THEN 'S/N'
+                WHEN t.C9_has = 1 AND t.C9_nota IS NOT NULL THEN CAST(t.C9_nota AS CHAR)
+                ELSE 'AP'
+            END AS C9,
+
+            CASE
+                WHEN t.C10_has = 1 AND t.C10_nota IS NULL THEN 'S/N'
+                WHEN t.C10_has = 1 AND t.C10_nota IS NOT NULL THEN CAST(t.C10_nota AS CHAR)
+                ELSE 'AP'
+            END AS C10,
+
+            CASE
+                WHEN t.C11_has = 1 AND t.C11_nota IS NULL THEN 'S/N'
+                WHEN t.C11_has = 1 AND t.C11_nota IS NOT NULL THEN CAST(t.C11_nota AS CHAR)
+                ELSE 'AP'
+            END AS C11
+
+        FROM (
+            SELECT
+                est.id AS id_estudiante,
+                est.codigo_est,
+                est.paterno,
+                est.materno,
+                est.nombres,
+                prog.programa,
+                di.semestre,
+                esc.filial,
+
+                MAX(CASE WHEN curso.id_competencia = 1  THEN cd.nota END) AS C1_nota,
+                MAX(CASE WHEN curso.id_competencia = 2  THEN cd.nota END) AS C2_nota,
+                MAX(CASE WHEN curso.id_competencia = 3  THEN cd.nota END) AS C3_nota,
+                MAX(CASE WHEN curso.id_competencia = 4  THEN cd.nota END) AS C4_nota,
+                MAX(CASE WHEN curso.id_competencia = 5  THEN cd.nota END) AS C5_nota,
+                MAX(CASE WHEN curso.id_competencia = 6  THEN cd.nota END) AS C6_nota,
+                MAX(CASE WHEN curso.id_competencia = 7  THEN cd.nota END) AS C7_nota,
+                MAX(CASE WHEN curso.id_competencia = 8  THEN cd.nota END) AS C8_nota,
+                MAX(CASE WHEN curso.id_competencia = 9  THEN cd.nota END) AS C9_nota,
+                MAX(CASE WHEN curso.id_competencia = 10 THEN cd.nota END) AS C10_nota,
+                MAX(CASE WHEN curso.id_competencia = 11 THEN cd.nota END) AS C11_nota,
+
+                MAX(CASE WHEN curso.id_competencia = 1  THEN 1 END) AS C1_has,
+                MAX(CASE WHEN curso.id_competencia = 2  THEN 1 END) AS C2_has,
+                MAX(CASE WHEN curso.id_competencia = 3  THEN 1 END) AS C3_has,
+                MAX(CASE WHEN curso.id_competencia = 4  THEN 1 END) AS C4_has,
+                MAX(CASE WHEN curso.id_competencia = 5  THEN 1 END) AS C5_has,
+                MAX(CASE WHEN curso.id_competencia = 6  THEN 1 END) AS C6_has,
+                MAX(CASE WHEN curso.id_competencia = 7  THEN 1 END) AS C7_has,
+                MAX(CASE WHEN curso.id_competencia = 8  THEN 1 END) AS C8_has,
+                MAX(CASE WHEN curso.id_competencia = 9  THEN 1 END) AS C9_has,
+                MAX(CASE WHEN curso.id_competencia = 10 THEN 1 END) AS C10_has,
+                MAX(CASE WHEN curso.id_competencia = 11 THEN 1 END) AS C11_has
+
+            FROM curso
+            JOIN curso_detalle cd ON curso.id = cd.id_curso
+            JOIN estudiante est ON est.id = cd.id_alumno
+            JOIN datos_ingreso di ON est.codigo_est = di.codigo_est
+            JOIN programa prog ON di.id_programa = prog.id
+            JOIN escuela esc ON prog.id_escuela = esc.id
+            JOIN periodo p ON curso.id_periodo = p.id_periodo
+
+            WHERE p.id_periodo = :periodo
+
+            GROUP BY
+                est.id,
+                est.codigo_est,
+                est.paterno,
+                est.materno,
+                est.nombres,
+                prog.programa,
+                di.semestre,
+                esc.filial
+        ) AS t
+
+        ORDER BY
+            t.programa ASC,
+            t.paterno ASC
+    ";
+
+    $alumnos = DB::select($sql, ['periodo' => $idPeriodo]);
+
+    return response()->json([
+        'estado'           => true,
+        'datos'            => $alumnos,
+        'competencias'     => [],          // ya no las usas en el Vue
+        'periodo_filtrado' => $idPeriodo,
+    ], 200);
 }
-
 
 
 public function getEstudiantes(Request $request) {
@@ -658,8 +770,20 @@ public function getEstudiantes(Request $request) {
 // En tu SuperadmiController
 public function getPeriodos()
     {
-        $periodos = Periodo::all();
-        return response()->json($periodos);
+        $rows = DB::table('periodo')
+            ->orderByDesc('id_periodo') // ordena 5, 4, 3...
+            ->get(['id_periodo', 'nombre', 'estado']);
+
+        $options = $rows->map(fn($r) => [
+            'value' => $r->nombre,
+            'label' => $r->nombre
+        ]);
+
+        return response()->json([
+            'estado'  => true,
+            'raw'     => $rows,
+            'options' => $options,
+        ], 200);
     }
 
     /**
@@ -871,15 +995,15 @@ public function obtenerListadoEscuelas()
     }
 
     // Obtener listado de periodos académicos
-    public function obtenerListadoPeriodos()
-    {
-        $periodos = DB::table('periodo')
-                    ->select('id_periodo', 'nombre')
-                    ->orderBy('fecha_inicio', 'desc')
-                    ->get();
+public function obtenerListadoPeriodos()
+{
+    $periodos = DB::table('periodo')
+                ->select('id_periodo', 'nombre')
+                ->orderBy('id_periodo', 'desc')
+                ->get();
 
-        return response()->json($periodos);
-    }
+    return response()->json($periodos);
+}
 
 
 
