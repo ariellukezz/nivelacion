@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <GuestLayout>
     <Head title="Nivelacion"/>
 
@@ -37,9 +37,6 @@
             </div>
 
             <div class="flex items-center justify-end mt-4">
-              <!-- <Link v-if="canResetPassword" :href="route('password.request')" class="text-sm text-gray-600 underline  hover:text-gray-900">
-                Olvidaste tu contraseña?
-              </Link> -->
               <Link href="/recover" class="text-sm underline mt-2 block">
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -76,4 +73,180 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+</script> -->
+
+
+
+<template>
+  <GuestLayout>
+    <Head title="Nivelacion" />
+
+    <!-- MODAL BLOQUEANTE -->
+    <Dialog
+      v-model:visible="maintenanceVisible"
+      modal
+      :closable="false"
+      :draggable="false"
+      :dismissableMask="false"
+      :closeOnEscape="false"
+      header="Sistema temporalmente cerrado"
+      style="width: min(520px, 95vw);"
+    >
+      <div class="space-y-3">
+        <p class="text-gray-800">
+          Por finalización del semestre académico <strong>2025-II</strong>, el sistema se encuentra cerrado hasta el inicio del periodo
+          <strong>2026-I</strong>.
+        </p>
+
+        <p class="text-gray-700">
+          Será redirigido automáticamente al portal institucional en
+          <strong>{{ countdown }}</strong> segundos.
+        </p>
+
+        <div class="text-sm text-gray-500">
+          Si no se redirige automáticamente, puede ingresar directamente a:
+          <span class="underline">vra.unap.edu.pe</span>
+        </div>
+      </div>
+    </Dialog>
+
+    <div class="flex flex-col overflow-y-auto md:flex-row">
+      <div class="h-32 md:h-auto md:w-1/2">
+        <img
+          aria-hidden="true"
+          class="object-cover w-full h-full"
+          src="/images/login-office.jpeg"
+          alt="Office"
+        />
+      </div>
+
+      <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
+        <div class="w-full">
+          <h1 class="text-xl text-gray-900" style="text-align: center;">
+            ¡Bienvenidos al Sistema de Nivelación para Ingresantes a la Universidad Nacional del Altiplano - Puno!
+          </h1>
+
+          <h2 class="mb-4 text-xl font-semibold text-gray-700" style="text-align: center;">
+            Iniciar sesión
+          </h2>
+
+          <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
+            {{ status }}
+          </div>
+
+          <!-- FORMULARIO DESHABILITADO -->
+          <form @submit.prevent="submit" :class="{ 'pointer-events-none opacity-50': maintenanceVisible }">
+            <div class="mt-4">
+              <InputLabel for="email" value="Correo / Usuario" />
+              <TextInput
+                id="email"
+                type="text"
+                class="block w-full mt-1"
+                v-model="form.email"
+                required
+                autofocus
+                autocomplete="username"
+                :disabled="maintenanceVisible"
+              />
+              <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+              <InputLabel for="password" value="Contraseña" />
+              <TextInput
+                id="password"
+                type="password"
+                class="block w-full mt-1"
+                v-model="form.password"
+                required
+                autocomplete="current-password"
+                :disabled="maintenanceVisible"
+              />
+              <InputError class="mt-2" :message="form.errors.password" />
+            </div>
+
+            <div class="block mt-4">
+              <label class="flex items-center">
+                <Checkbox name="remember" v-model:checked="form.remember" :disabled="maintenanceVisible" />
+                <span class="ml-2 text-sm text-gray-600">Recuérdame</span>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-end mt-4">
+              <Link href="/recover" class="text-sm underline mt-2 block" :class="{ 'pointer-events-none': maintenanceVisible }">
+                ¿Olvidaste tu contraseña?
+              </Link>
+
+              <PrimaryButton
+                class="ml-4"
+                :class="{ 'opacity-25': form.processing || maintenanceVisible }"
+                :disabled="form.processing || maintenanceVisible"
+              >
+                Iniciar Sesion
+              </PrimaryButton>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </GuestLayout>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import Checkbox from "@/Components/Checkbox.vue";
+import GuestLayout from "@/Layouts/GuestLayout.vue";
+import InputError from "@/Components/InputError.vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import TextInput from "@/Components/TextInput.vue";
+import { Head, Link, useForm } from "@inertiajs/vue3";
+
+// PrimeVue Dialog
+import Dialog from "primevue/dialog";
+
+defineProps({
+  canResetPassword: Boolean,
+  status: String,
+});
+
+// Bloqueo por cierre de semestre
+const maintenanceVisible = ref(true);
+const redirectUrl = "https://vra.unap.edu.pe/";
+const countdown = ref(20);
+
+let intervalId = null;
+let timeoutId = null;
+
+const form = useForm({
+  email: "",
+  password: "",
+  remember: false,
+});
+
+const submit = () => {
+  // NO permitir login si está cerrado
+  if (maintenanceVisible.value) return;
+
+  form.post(route("login"), {
+    onFinish: () => form.reset("password"),
+  });
+};
+
+onMounted(() => {
+  // Cuenta regresiva visible
+  intervalId = setInterval(() => {
+    if (countdown.value > 1) countdown.value -= 1;
+  }, 1000);
+
+  // Redirección a los 10s
+  timeoutId = setTimeout(() => {
+    window.location.replace(redirectUrl);
+  }, 20000);
+});
+
+onBeforeUnmount(() => {
+  if (intervalId) clearInterval(intervalId);
+  if (timeoutId) clearTimeout(timeoutId);
+});
 </script>

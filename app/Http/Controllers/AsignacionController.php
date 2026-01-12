@@ -112,7 +112,7 @@ class AsignacionController extends Controller
                 'estado' => $request->estado,
                 'id_programa' => $request->id_programa,
                 'id_usuario' => auth()->id(),
-                'id_periodo' => Periodo::activoId(), // ✅ AÑADIDO
+                'id_periodo' => Periodo::activoId(), 
             ]);
             $this->response['tipo'] = 'success';
             $this->response['titulo'] = 'REGISTRO NUEVO';
