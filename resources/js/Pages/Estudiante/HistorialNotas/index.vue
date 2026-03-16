@@ -8,6 +8,21 @@
             Registro académico completo por periodo
         </p>
     </div>
+    <!-- Aviso informativo -->
+<div class="aviso-banner px-5 py-3 mb-0">
+    <div class="flex items-start gap-3">
+        <i class="pi pi-info-circle mt-1" style="font-size:1.1rem; color:#1d4ed8; flex-shrink:0;"></i>
+        <div>
+            <p class="aviso-titulo">Información importante sobre tu matrícula</p>
+            <p class="aviso-texto">
+                Los cursos con nota <strong>desaprobatoria (menor a 10.5)</strong> o <strong>sin nota registrada</strong>
+                del periodo anterior <strong>deben ser llevados obligatoriamente</strong> en el presente periodo académico,
+                conforme al cronograma establecido por la institución.
+            </p>
+        </div>
+    </div>
+</div>
+
 
     <div class="px-3 pb-6">
 
