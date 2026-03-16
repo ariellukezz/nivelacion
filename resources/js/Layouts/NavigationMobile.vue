@@ -64,6 +64,19 @@
             </ResponsiveNavLink>
           </li>
 
+        <li class="relative px-6 py-3">
+            <ResponsiveNavLink :href="route('estudiante.historial-notas')" :active="route().current('estudiante.historial-notas')">
+              <template #icon>
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke-linecap="round"
+                     stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                </svg>
+              </template>
+              Historial de Notas
+            </ResponsiveNavLink>
+          </li>
+
 
           <li class="relative px-6 py-3">
             <ResponsiveNavLink :href="route('estudiante-encuestas')" :active="route().current('estudiante-encuestas')">
