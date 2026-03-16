@@ -3,10 +3,16 @@
 
     <Head title="Reprobados Nivelación" />
 
-      <!-- ⬇️ TÍTULO CENTRADO AQUÍ -->
-      <div class="text-center mb-4">
-        <h1 class="text-xl font-bold">REPROBADOS – NIVELACIÓN</h1>
-      </div>
+    <!-- ✅ NUEVO TÍTULO CON PERIODOS -->
+    <div class="text-center mb-4">
+      <h1 class="text-xl font-bold tracking-wide">
+        REPROBADOS {{ periodoAnterior }} – NIVELACIÓN
+      </h1>
+      <p class="text-sm mt-1 text-gray-700">
+        NECESARIO LLEVAR NIVELACIÓN EN EL PRESENTE PERIODO
+        <strong class="text-blue-600">{{ periodoActual }}</strong>
+      </p>
+    </div>
 
   <div class="p-4" style="background: white;">
     <div class="flex justify-end mb-2">
@@ -20,7 +26,6 @@
           <th style="border: 1px solid #d9d9d9;">APELLIDOS Y NOMBRES</th>
           <th style="border: 1px solid #d9d9d9;">EMAIL</th>
           <th style="border: 1px solid #d9d9d9;">CELULAR</th>
-          <!-- <th style="border: 1px solid #d9d9d9;">UBICACION</th> -->
           <th style="border: 1px solid #d9d9d9;">PROGRAMA DE ESTUDIO</th>
           <th style="border: 1px solid #d9d9d9;">INGRESO</th>
           <th style="border: 1px solid #d9d9d9;">C1</th>
@@ -43,7 +48,6 @@
           <td style="border: 1px solid #d9d9d9;"><div class="pl-1 pr-1">{{ item.paterno }} {{ item.materno }},  {{ item.nombre }}</div></td>
           <td style="border: 1px solid #d9d9d9; text-align: center;"><div class="pl-1 pr-1">{{ item.email }}</div></td>
           <td style="border: 1px solid #d9d9d9; text-align: center;"><div class="pl-1 pr-1">{{ item.telefono }}</div></td>
-          <!-- <td style="border: 1px solid #d9d9d9; text-align: center;"><div class="pl-1 pr-1">{{ item.filial }}</div></td> -->
           <td style="border: 1px solid #d9d9d9; text-align: center;"><div class="pl-1 pr-1">{{ item.programa }}</div></td>
           <td style="border: 1px solid #d9d9d9; text-align: center;"><div class="pl-1 pr-1">{{ item.semestre }}</div></td>
 
@@ -71,34 +75,36 @@ import { ref } from 'vue';
 import XLSX from 'xlsx';
 import Button from 'primevue/button';
 
-// Igual que tu ejemplo: busca índice por competencia
 function buscarValor(array, valor) {
   for (var i = 0; i < array.length; i++) {
-    if (array[i].competencia === valor) { // en backend forzamos int para que matchee 1..11
+    if (array[i].competencia === valor) {
       return i;
     }
   }
   return null;
 }
 
-// 0–10 => SI, 11–20 => NO
-// NULL / '' => SI (solo aplica cuando la competencia existe en item.notas)
 function aSiNo(v) {
-  // Si la nota viene nula o vacía, se considera reprobado => "SI"
   if (v === null || v === undefined || String(v).trim() === '') return 'SI'
   const n = Number(String(v).replace(',', '.'))
-  if (Number.isNaN(n)) return 'SI' // valores raros/vacíos => SI por seguridad
+  if (Number.isNaN(n)) return 'SI'
   if (n <= 10) return 'SI'
   if (n >= 11 && n <= 20) return 'NO'
   return 'SI'
 }
 
-const pagina = ref(1);
-const estudiantes = ref([]);
+const pagina             = ref(1);
+const estudiantes        = ref([]);
+// ✅ NUEVO: variables para los periodos
+const periodoAnterior    = ref('');
+const periodoActual      = ref('');
 
-const getEstudiantes =  async () => {
+const getEstudiantes = async () => {
   const res = await axios.get('/reprobados-nivelacion/data?page=' + pagina.value);
-  estudiantes.value = res.data.datos;
+  estudiantes.value     = res.data.datos;
+  // ✅ NUEVO: capturar periodos de la respuesta
+  periodoAnterior.value = res.data.periodo_anterior;
+  periodoActual.value   = res.data.periodo_actual;
   generarObjetosEstudiantes();
 };
 
@@ -133,7 +139,8 @@ const exportarExcel = () => {
   const ws = XLSX.utils.json_to_sheet(objetosEstudiantes.value);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Reprobados');
-  XLSX.writeFile(wb, 'reprobados_nivelacion.xlsx');
+  // ✅ NUEVO: nombre de archivo con periodos
+  XLSX.writeFile(wb, `reprobados_${periodoAnterior.value}_nivelacion_${periodoActual.value}.xlsx`);
 };
 
 getEstudiantes();

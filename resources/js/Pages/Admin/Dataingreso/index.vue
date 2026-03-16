@@ -1,22 +1,24 @@
 <template>
   <AuthenticatedLayout>
-    <!-- (opcional) título de la pestaña del navegador -->
-    <Head title="Reprobados Nivelación" />
+    <Head title="Ingresantes Nuevos" />
 
-      <!-- ⬇️ TÍTULO CENTRADO AQUÍ -->
-      <div class="text-center mb-4">
-        <h1 class="text-xl font-bold">INGRESANTES – NUEVOS</h1>
-      </div>
+    <!-- ✅ TÍTULO CON PERIODO ACTIVO -->
+    <div class="text-center mb-4">
+      <h1 class="text-xl font-bold tracking-wide">
+        INGRESANTES NUEVOS PARA EL PRESENTE PERIODO
+        <span class="text-blue-600">{{ periodoActual }}</span>
+      </h1>
+    </div>
 
     <div class="p-4" style="background: white;">
       <div class="flex justify-end mb-2">
         <Button
-            label="Exportar Excel"
-            icon="pi pi-download"
-            @click="exportarExcel"
-            size="small"
-            style="height:40px;"
-            />
+          label="Exportar Excel"
+          icon="pi pi-download"
+          @click="exportarExcel"
+          size="small"
+          style="height:40px;"
+        />
       </div>
 
       <table style="border-radius: 4px; width: 100%; overflow: hidden;">
@@ -64,6 +66,13 @@
             <td style="border:1px solid #d9d9d9; text-align:center; min-width:40px;"><div class="px-1">{{ aSiNo(item.i_C10_R) }}</div></td>
             <td style="border:1px solid #d9d9d9; text-align:center; min-width:40px;"><div class="px-1">{{ aSiNo(item.i_C11_R) }}</div></td>
           </tr>
+
+          <!-- Mensaje si no hay datos -->
+          <tr v-if="ingresantes.length === 0">
+            <td colspan="18" style="text-align:center; padding: 20px; color: gray;">
+              No hay ingresantes para el periodo activo.
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -77,8 +86,8 @@ import { Head } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import * as XLSX from 'xlsx'
 
-const ingresantes = ref([])
-const pagina = ref(1)
+const ingresantes   = ref([])
+const periodoActual = ref('')  // ✅ periodo activo
 
 const aSiNo = (v) => {
   if (v === null || v === undefined || v === '') return '--'
@@ -90,8 +99,9 @@ const aSiNo = (v) => {
 }
 
 const getIngresantes = async () => {
-  const res = await axios.get('/ingresantes', { params: { page: pagina.value } })
-  ingresantes.value = Array.isArray(res.data?.datos) ? res.data.datos : []
+  const res = await axios.get('/ingresantes')
+  ingresantes.value   = Array.isArray(res.data?.datos) ? res.data.datos : []
+  periodoActual.value = res.data.periodo_actual ?? ''  // ✅ captura "2026-I"
 }
 
 const exportarExcel = () => {
@@ -103,23 +113,17 @@ const exportarExcel = () => {
     Celular: i.celular_ingre,
     Programa: i.programa,
     'Modalidad Ingreso': i.mod_ingr,
-    C1: aSiNo(i.i_C1_R),
-    C2: aSiNo(i.i_C2_R),
-    C3: aSiNo(i.i_C3_R),
-    C4: aSiNo(i.i_C4_R),
-    C5: aSiNo(i.i_C5_R),
-    C6: aSiNo(i.i_C6_R),
-    C7: aSiNo(i.i_C7_R),
-    C8: aSiNo(i.i_C8_R),
-    C9: aSiNo(i.i_C9_R),
-    C10: aSiNo(i.i_C10_R),
-    C11: aSiNo(i.i_C11_R)
+    C1:  aSiNo(i.i_C1_R),  C2:  aSiNo(i.i_C2_R),  C3:  aSiNo(i.i_C3_R),
+    C4:  aSiNo(i.i_C4_R),  C5:  aSiNo(i.i_C5_R),  C6:  aSiNo(i.i_C6_R),
+    C7:  aSiNo(i.i_C7_R),  C8:  aSiNo(i.i_C8_R),  C9:  aSiNo(i.i_C9_R),
+    C10: aSiNo(i.i_C10_R), C11: aSiNo(i.i_C11_R)
   }))
 
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'Ingresantes')
-  XLSX.writeFile(wb, 'ingresantes.xlsx')
+  // ✅ nombre del archivo con el periodo activo
+  XLSX.writeFile(wb, `ingresantes_${periodoActual.value}.xlsx`)
 }
 
 getIngresantes()

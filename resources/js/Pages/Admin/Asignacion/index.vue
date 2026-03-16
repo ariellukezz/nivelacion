@@ -236,7 +236,7 @@
 
 
         <!-- DESDE AQUI EMPIEZA PARA PODER EDITAR -->
-        <!-- <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
+        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label>
             <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>
         </div>
@@ -283,18 +283,16 @@
                 </template>
               </Dropdown>
             </div>
-        </div> -->
+        </div>
         <!-- TERMINA AQUI PARA LA EDICION DEL CAMPO EDITAR -->
 
 
 
         <!-- AQUI EMPIEZA SOLO PARA SOLO VISUALIZACION -->
-
-        <!-- Vista SOLO LECTURA -->
+<!--
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;">
         <label>Estado</label>
         <div class="ml-3">
-            <!-- No usa v-model para evitar emisiones; solo muestra el valor actual -->
             <InputSwitch :modelValue="curso.estado" disabled />
         </div>
         </div>
@@ -302,7 +300,7 @@
         <div class="flex" style="width: 100%; justify-content: space-between;">
         <div class="mb-3" style="width: 68%;">
             <div><label>Nombre del Curso.</label></div>
-            <!-- Solo lectura y deshabilitado -->
+
             <InputText
             style="width: 100%; height: 40px;"
             type="text"
@@ -385,7 +383,7 @@
             </template>
             </Dropdown>
         </div>
-        </div>
+        </div> -->
 
          <!-- AQUI TERMINA SOLO PARA SOLO VISUALIZACION -->
 

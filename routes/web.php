@@ -223,13 +223,16 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
     Route::get('/evento', fn () => Inertia::render('Estudiante/Evento/index'))->name('estudiante-evento');
     Route::post('/get-evento-induccion', [CursoController::class, 'getEventoInduccionByAlumno']);
 
-    // Ruta para la VISTA del historial
+
     Route::get('historial-notas', function () {
         return Inertia::render('Estudiante/HistorialNotas/index');
     })->name('estudiante.historial-notas');
 
-    // Ruta para la API del historial
-    Route::post('/get-historial-notas', [CursoController::class, 'getHistorialNotas']);
+    // ✅ SOLO ESTA LÍNEA CAMBIA
+    Route::get('/get-historial-notas', [CursoController::class, 'getHistorialNotas'])
+         ->withoutMiddleware('estudiante')
+         ->name('estudiante.get-historial-notas');
+
 
 });
 

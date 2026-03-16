@@ -128,7 +128,9 @@ const formatDate = (dateString) => {
 const getPeriodos = async () => {
   try {
     const response = await axios.get('get-periodos');
-    periodos.value = response.data;
+    if (response.data.estado) {
+      periodos.value = response.data.raw; // Asegúrate de que 'raw' contiene los periodos con todos los campos
+    }
   } catch (error) {
     showError('Error al obtener periodos');
   }

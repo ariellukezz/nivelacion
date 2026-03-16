@@ -769,27 +769,27 @@ public function getEstudiantes(Request $request) {
 
 // En tu SuperadmiController
 public function getPeriodos()
-    {
-        $rows = DB::table('periodo')
-            ->orderByDesc('id_periodo') // ordena 5, 4, 3...
-            ->get(['id_periodo', 'nombre', 'estado']);
+{
+    $rows = DB::table('periodo')
+        ->orderByDesc('id_periodo') // ordena 5, 4, 3...
+        ->get(['id_periodo', 'nombre', 'estado', 'fecha_inicio', 'fecha_fin']);  // Asegúrate de incluir 'estado' y otros campos
 
-        $options = $rows->map(fn($r) => [
-            'value' => $r->nombre,
-            'label' => $r->nombre
-        ]);
+    $options = $rows->map(fn($r) => [
+        'value' => $r->nombre,
+        'label' => $r->nombre
+    ]);
 
-        return response()->json([
-            'estado'  => true,
-            'raw'     => $rows,
-            'options' => $options,
-        ], 200);
-    }
+    return response()->json([
+        'estado'  => true,
+        'raw'     => $rows,
+        'options' => $options,
+    ], 200);
+}
 
     /**
      * Guarda o actualiza un periodo
      */
-    public function savePeriodo(Request $request)
+public function savePeriodo(Request $request)
 {
     $data = $request->validate([
         'nombre' => 'required|string|max:255',
@@ -799,11 +799,11 @@ public function getPeriodos()
     ]);
 
     if ($request->id_periodo) {
+        // Si estamos actualizando, encontramos el periodo y lo actualizamos
         $periodo = Periodo::find($request->id_periodo);
         $periodo->update($data);
     } else {
-        // Generar un ID único si no es autoincremental
-        $data['id_periodo'] = Periodo::max('id_periodo') + 1;
+        // Si no existe el id, lo creamos y dejamos que el DB lo maneje
         $periodo = Periodo::create($data);
     }
 
