@@ -14,6 +14,16 @@
       </p>
     </div>
 
+<!-- Leyenda que explica el significado de SI, NO y -- -->
+<div class="mb-4">
+  <p class="text-sm text-gray-700">
+    <strong>SI</strong> significa que el estudiante <strong>requiere nivelación</strong>.<br>
+    <strong>NO</strong> significa que el estudiante <strong>no requiere nivelación</strong>.<br>
+    <strong>--</strong> significa que el estudiante <strong>ya aprobó y no requiere nivelación</strong>.
+  </p>
+</div>
+
+
   <div class="p-4" style="background: white;">
     <div class="flex justify-end mb-2">
       <Button label="Exportar excel" @click="exportarExcel" size="small" style="height: 40px;"/>
