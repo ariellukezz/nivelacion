@@ -129,6 +129,7 @@ Route::middleware('auth','admin')->group(function () {
     Route::post('get-competencias', [DataController::class, 'getCompetencias']);
     Route::post('get-escuelas', [DataController::class, 'getEscuelas']);
     Route::post('get-programas-escuela', [DataController::class, 'getProgramasEscuela']);
+    Route::post('get-mis-programas', [DataController::class, 'getMisProgramas']);
 
     //DOCUMENTOS
     Route::post('documento/resolucion', [DocumentoController::class, 'resolucion']);

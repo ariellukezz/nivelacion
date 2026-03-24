@@ -129,10 +129,26 @@ public function getPeriodos(Request $request)
     return response()->json($this->response, 200);
 }
 
+public function getMisProgramas(Request $request)
+{
+    $idEscuela = auth()->user()->id_escuela;
 
+    $res = Programa::select(
+        'id as value',
+        'programa as label'
+    )
+    ->where('id_escuela', '=', $idEscuela)
+    ->where(function ($query) use ($request) {
+        $term = $request->term ?? '';
+        $query->where('programa', 'LIKE', '%' . $term . '%');
+    })
+    ->orderBy('programa', 'ASC')
+    ->paginate(50);
 
-
-
-
+    return response()->json([
+        'estado' => true,
+        'datos' => $res
+    ], 200);
+}
 
 }

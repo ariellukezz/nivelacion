@@ -80,7 +80,7 @@
       <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
-          <!-- <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button> -->
+          <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button>
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -275,7 +275,8 @@
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
               <div><label>Programa de estudio</label></div>
-              <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
+              <!-- <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem"> -->
+                <Dropdown v-model="prog" :options="programas" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
@@ -527,60 +528,6 @@
 
   const prog = ref(null);
   const progselection = ref(null);
-  const programasselect = ref([
-    {value:1, label:"INGENIERIA AGRONOMICA - PUNO"},
-    {value:2, label:"INGENIERIA AGROINDUSTRIAL - PUNO"},
-    {value:3, label:"INGENIERIA TOPOGRAFICA Y AGRIMENSURA - PUNO"},
-    {value:4, label:"MEDICINA VETERINARIA Y ZOOTECNIA - PUNO"},
-    {value:5, label:"INGENIERIA ECONOMICA - PUNO"},
-    {value:6, label:"CIENCIAS CONTABLES - PUNO"},
-    {value:7, label:"ADMINISTRACION - PUNO"},
-    {value:8, label:"TRABAJO SOCIAL - PUNO"},
-    {value:9, label:"ENFERMERIA - PUNO"},
-    {value:10, label:"INGENIERIA DE MINAS - PUNO"},
-    {value:11, label:"HUMANIDADES - PUNO"},
-    {value:12, label:"SOCIOLOGIA - PUNO"},
-    {value:13, label:"TURISMO - PUNO"},
-    {value:14, label:"ANTROPOLOGIA - PUNO"},
-    {value:15, label:"CIENCIAS DE LA COMUNICACION SOCIAL - PUNO"},
-    {value:16, label:"ARTE: ARTES PLASTICAS - PUNO"},
-    {value:17, label:"ARTE: MUSICA - PUNO"},
-    {value:18, label:"ARTE: DANZA - PUNO"},
-    {value:19, label:"BIOLOGIA: ECOLOGIA - PUNO"},
-    {value:20, label:"BIOLOGIA: MICROBIOLOGIA Y LABORATORIO CLINICO - PUNO"},
-    {value:21, label:"BIOLOGIA: PESQUERIA - PUNO"},
-    {value:22, label:"EDUC. SEC.: CIENCIA, TECNOLOGIA Y AMBIENTE - PUNO"},
-    {value:23, label:"EDUC. SEC.: CIENCIAS SOCIALES - PUNO"},
-    {value:24, label:"EDUC. SEC.: LIT. PSICOLOGIA Y FILOSOFIA - PUNO"},
-    {value:25, label:"EDUC. SEC.: MATEMATICA, FISICA, COMP. E INFORMATICA - PUNO"},
-    {value:26, label:"EDUCACION PRIMARIA - PUNO"},
-    {value:27, label:"EDUCACION INICIAL - PUNO"},
-    {value:28, label:"EDUCACION FISICA - PUNO"},
-    {value:29, label:"INGENIERIA ESTADISTICA E INFORMATICA - PUNO"},
-    {value:30, label:"DERECHO - PUNO"},
-    {value:31, label:"INGENIERIA QUIMICA - PUNO"},
-    {value:32, label:"ODONTOLOGIA - PUNO"},
-    {value:33, label:"NUTRICION HUMANA - PUNO"},
-    {value:34, label:"INGENIERIA GEOLOGICA - PUNO"},
-    {value:35, label:"INGENIERIA METALURGICA - PUNO"},
-    {value:36, label:"INGENIERIA CIVIL - PUNO"},
-    {value:37, label:"ARQUITECTURA Y URBANISMO - PUNO"},
-    {value:38, label:"CIENCIAS FISICO MATEMATICAS: FISICA - PUNO"},
-    {value:39, label:"CIENCIAS FISICO MATEMATICAS: MATEMATICAS - PUNO"},
-    {value:40, label:"INGENIERIA AGRICOLA - PUNO"},
-    {value:41, label:"MEDICINA HUMANA - PUNO"},
-    {value:42, label:"INGENIERIA MECANICA ELECTRICA - PUNO"},
-    {value:43, label:"INGENIERIA ELECTRONICA - PUNO"},
-    {value:44, label:"INGENIERIA DE SISTEMAS - PUNO"},
-    {value:45, label:"PSICOLOGIA - PUNO"},
-    {value:46, label:"INGENIERIA ECONOMICA - AZANGARO"},
-    {value:47, label:"INGENIERIA DE MINAS - AZANGARO"},
-    {value:48, label:"INGENIERIA TELECOMUNICACIONES - AZANGARO"},
-    {value:49, label:"CIENCIAS CONTABLES - JULI"},
-    {value:50, label:"ARQUITECTURA Y URBANISMO - JULI"},
-    {value:51, label:"INGENIERIA AGROINDUSTRIAL - JULI"},
-]);
-
 
   const alumnosregistro = ref([])
   const programasAsignacion = ref([])
@@ -608,6 +555,12 @@
     let res = await axios.post( "/get-programas?page=" + pagina.value, { term: "" } );
     programas.value = res.data.datos.data;
   }
+const getMisProgramas = async () => {
+    const res = await axios.post('/get-mis-programas', {
+        term: ''
+    })
+    programas.value = res.data.datos.data
+}
 
   const getProgramasEscuela =  async () => {
     let res = await axios.post( "/get-programas-escuela?page=" + pagina.value, { term: "", id_escuela: escuela.value.id } );
@@ -778,7 +731,18 @@ watch(() => escuela.escuela, (newValue, oldValue) => {
   watch(buscarescuela, ( newValue, oldValue ) => { getEscuelas() })
   watch(buscarcurso, ( newValue, oldValue ) => { getCursos() })
   watch(buscar, ( newValue, oldValue ) => { getDocentes(); })
-  watch(cursocompetencia, ( newValue, oldValue ) => { getDocenteXcompetencia(); })
+  watch(cursocompetencia, (newValue, oldValue) => {
+  getDocenteXcompetencia();
+  if (!newValue) {
+    curso.value.nombre = ""
+    return
+  }
+  const comp = competencias.value.find(item => item.value === newValue)
+
+  if (comp) {
+    curso.value.nombre = comp.label
+  }
+})
   watch(competencia, ( newValue, oldValue ) => { getCursos(); })
   watch(escuela, ( newValue, oldValue ) => { if (escuela.value != null){ getCursos();} })
   watch(pageSize, (newValue, oldValue) => { getDocumentos(); })
@@ -848,6 +812,7 @@ watch(cursoseleccionado, ( newValue, oldValue ) => { getDocentes() })
   getProgramas()
   getCompetencias()
   getEscuelas()
+  getMisProgramas()
 
   // getAlumnosRegistros()
 
