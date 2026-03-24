@@ -80,7 +80,7 @@
       <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button>
+          <!-- <Button severity="primary" @click="visible = true" style="height:40px"> Nuevo Curso </Button> -->
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -173,7 +173,7 @@
       <div v-if="escuela !== null && cursoseleccionado !== null">
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button>
+          <!-- <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button> -->
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -236,7 +236,7 @@
 
 
         <!-- DESDE AQUI EMPIEZA PARA PODER EDITAR -->
-        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
+        <!-- <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label>
             <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>
         </div>
@@ -275,7 +275,6 @@
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
               <div><label>Programa de estudio</label></div>
-              <!-- <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem"> -->
                 <Dropdown v-model="prog" :options="programas" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 600px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
@@ -284,13 +283,13 @@
                 </template>
               </Dropdown>
             </div>
-        </div>
+        </div> -->
         <!-- TERMINA AQUI PARA LA EDICION DEL CAMPO EDITAR -->
 
 
 
         <!-- AQUI EMPIEZA SOLO PARA SOLO VISUALIZACION -->
-<!--
+
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;">
         <label>Estado</label>
         <div class="ml-3">
@@ -384,7 +383,7 @@
             </template>
             </Dropdown>
         </div>
-        </div> -->
+        </div>
 
          <!-- AQUI TERMINA SOLO PARA SOLO VISUALIZACION -->
 
@@ -424,7 +423,7 @@
         <div class="flex" style="width: 100%; justify-content: space-between;">
             <div class="mb-3" style="width: 100%;">
               <div><label>Programa de estudio</label></div>
-              <Dropdown v-model="progselection" :options="programasAsignacion" filter optionLabel="label" optionValue="value"  placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem">
+              <Dropdown v-model="prog" :options="programasselect" filter optionLabel="label" optionValue="value" placeholder="Seleccione un programa de estudio" style="width:100%;" class="w-full md:w-11rem" disabled>
                 <template #option="slotProps">
                     <div class="flex align-items-center" style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                         <div>{{ slotProps.option.label }}</div>
