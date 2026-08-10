@@ -23,6 +23,8 @@ use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\BotonControlController;
 use App\Http\Controllers\Auth\RecoveryController;
 use App\Http\Controllers\Docente\DashboardController;
+use App\Http\Controllers\FichaRiesgoAcademicoController;
+use App\Http\Controllers\FichaRiesgoController;
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -393,7 +395,40 @@ Route::get('/reporte-matriculados-vista', fn () => Inertia::render('Supervisor/r
 // RUTA PARA LA API (Obtener datos)
 Route::get('/reporte-matriculados', [SupervisorController::class, 'getReporteMatriculados']);
 
-});
+
+
+
+// Vista principal
+Route::get('/fichas-riesgo', fn () => Inertia::render('Supervisor/FichaRiesgo/index'))->name('supervisor.fichas-riesgo');
+
+// Reporte y búsqueda
+Route::get('/fichas-riesgo-data', [FichaRiesgoAcademicoController::class, 'reporteSupervisor']);
+
+// Imprimir
+Route::get('/fichas-riesgo/{id}/imprimir', [FichaRiesgoAcademicoController::class, 'imprimirSupervisor']);
+
+// Descargar PDF
+Route::get('/fichas-riesgo/{id}/pdf', [FichaRiesgoAcademicoController::class, 'pdfSupervisor']);
+
+// Ver ficha
+Route::get('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'verFichaSupervisor']);
+
+// Editar
+Route::put('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'actualizarSupervisor']);
+
+// Eliminar
+Route::delete('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'eliminarSupervisor']);
+
+// Exportar Excel
+Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'exportarDataSupervisor']);
+
+
+
+
+
+
+
+    });
 
    //superadmi
    Route::middleware(['auth', 'superadmi'])->prefix('superadmi')->group(function () {
@@ -578,6 +613,10 @@ Route::get('/reporte-matriculados', [SupervisorController::class, 'getReporteMat
 
 Route::get('/dni/{dni}', [SuperadmiController::class, 'show'])
     ->whereNumber('dni');
+
+Route::get('/fichariesgo', [FichaRiesgoController::class,'index'])->name('fichariesgo');
+Route::post('/fichariesgo/guardar', [FichaRiesgoController::class,'guardar'])->name('fichariesgo.guardar');
+
 
 require __DIR__.'/auth.php';
 
