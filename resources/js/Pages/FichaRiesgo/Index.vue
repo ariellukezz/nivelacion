@@ -486,7 +486,7 @@ const guardar = async () => {
                 <div class="cabecera-texto">
 
                     <div class="etiqueta">
-                        BIENESTAR UNIVERSITARIO
+                        SUBUNIDAD DE TUTORIA Y SERVICIO PSICOPEDAGÓGICO - FRANK ME PROMETIO SU PRIMA BORRARE CUANDO LO CUMPLA
                     </div>
 
                     <h1>
