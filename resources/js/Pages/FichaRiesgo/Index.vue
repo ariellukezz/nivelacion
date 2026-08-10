@@ -486,7 +486,7 @@ const guardar = async () => {
                 <div class="cabecera-texto">
 
                     <div class="etiqueta">
-                        SUBUNIDAD DE TUTORIA Y SERVICIO PSICOPEDAGÓGICO - FRANK ME PROMETIO SU PRIMA BORRARE CUANDO LO CUMPLA
+                        VICERRECTORADO ACADEMICO - SUBUNIDAD DE TUTORIA Y SERVICIO PSICOPEDAGÓGICO
                     </div>
 
                     <h1>
