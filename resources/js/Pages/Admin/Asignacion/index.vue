@@ -236,7 +236,7 @@
 
 
         <!-- DESDE AQUI EMPIEZA PARA PODER EDITAR -->
-        <!-- <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
+        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;" >
             <label>Estado</label>
             <div class="ml-3"> <InputSwitch v-model="curso.estado" /></div>
         </div>
@@ -283,13 +283,13 @@
                 </template>
               </Dropdown>
             </div>
-        </div> -->
+        </div>
         <!-- TERMINA AQUI PARA LA EDICION DEL CAMPO EDITAR -->
 
 
 
         <!-- AQUI EMPIEZA SOLO PARA SOLO VISUALIZACION -->
-
+<!--
         <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;">
         <label>Estado</label>
         <div class="ml-3">
@@ -383,7 +383,7 @@
             </template>
             </Dropdown>
         </div>
-        </div>
+        </div> -->
 
          <!-- AQUI TERMINA SOLO PARA SOLO VISUALIZACION -->
 
