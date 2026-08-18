@@ -60,59 +60,78 @@ class AlumnoController extends Controller
         return response()->json($this->response, 200);
 
     }
-
-
-    public function getAlumnosRegistro(Request $request){
-
-
+    public function getAlumnosRegistro(Request $request)
+    {
         $query_where = [];
 
-        if ($request->programa) array_push($query_where,[DB::raw('programa.id'), '=', $request->programa]);
-        $id_competencia = $request->curso;
+        if ($request->programa) {
+            array_push($query_where, [DB::raw('programa.id'), '=', $request->programa]);
+        }
+
+        $id_competencia = (int) $request->curso;
         $id_escuela = $request->escuela;
-        $competencia = "";
-        if( $id_competencia === 1 ) { $competencia = "C1_R";}
-        if( $id_competencia === 2 ) { $competencia = 'C2_R';}
-        if( $id_competencia === 3 ) { $competencia = 'C3_R';}
-        if( $id_competencia === 4 ) { $competencia = 'C4_R';}
-        if( $id_competencia === 5 ) { $competencia = 'C5_R';}
-        if( $id_competencia === 6 ) { $competencia = 'C6_R';}
-        if( $id_competencia === 7 ) { $competencia = 'C7_R';}
-        if( $id_competencia === 8 ) { $competencia = 'C8_R';}
-        if( $id_competencia === 9 ) { $competencia = 'C9_R';}
-        if( $id_competencia === 10 ) { $competencia = 'C10_R';}
-        if( $id_competencia === 11 ) { $competencia = 'C11_R';}
+
+        // La nota actual del alumno se encuentra en matriz.Cx_R,
+        // donde X corresponde a la competencia seleccionada.
+        $columnasCompetencia = [
+            1 => 'C1_R',
+            2 => 'C2_R',
+            3 => 'C3_R',
+            4 => 'C4_R',
+            5 => 'C5_R',
+            6 => 'C6_R',
+            7 => 'C7_R',
+            8 => 'C8_R',
+            9 => 'C9_R',
+            10 => 'C10_R',
+            11 => 'C11_R',
+        ];
+
+        $competencia = $columnasCompetencia[$id_competencia] ?? null;
+
+        if (!$competencia) {
+            return response()->json([
+                'estado' => false,
+                'datos' => [],
+                'mensaje' => 'La competencia seleccionada no tiene una columna de nota configurada.'
+            ], 422);
+        }
+
         $res = DB::table('matriz')
-        ->join('datos_ingreso', 'matriz.codigo_est', '=', 'datos_ingreso.codigo_est')
-        //bdhh ->join('datos_ingreso', 'matriz.dni', '=', 'datos_ingreso.dni')
-        ->join('competencia_programa', 'datos_ingreso.id_programa', '=', 'competencia_programa.id_programa')
-        ->join('estudiante', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
-        //bdhh ->join('estudiante', 'estudiante.dni', '=', 'datos_ingreso.dni')
-        ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
-        ->where($query_where)
-        ->whereIn('datos_ingreso.codigo_est', function($query) use ($id_escuela) {
-        //bdhh ->whereIn('datos_ingreso.dni', function($query) use ($id_escuela) {
-            $query->select('estudiante.codigo_est')
-           //bdhh $query->select('estudiante.dni')
-                ->from('estudiante')
-                ->join('datos_ingreso', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
-               //bdhh ->join('datos_ingreso', 'estudiante.dni', '=', 'datos_ingreso.dni')
-                ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
-                ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
-                ->where('escuela.id', $id_escuela);
-        })
-        ->where('competencia_programa.id_competencia', $id_competencia)
-        ->where('matriz.' . $competencia, '<=', 10.49)
-        ->select('estudiante.id', 'programa.programa', 'datos_ingreso.semestre', 'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
-       //bdhh ->select('estudiante.id', 'programa.programa', 'datos_ingreso.semestre', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
-        ->distinct() // Se añade distinct para eliminar registros duplicados
-        ->get();
+            ->join('datos_ingreso', 'matriz.codigo_est', '=', 'datos_ingreso.codigo_est')
+            ->join('competencia_programa', 'datos_ingreso.id_programa', '=', 'competencia_programa.id_programa')
+            ->join('estudiante', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
+            ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
+            ->where($query_where)
+            ->whereIn('datos_ingreso.codigo_est', function ($query) use ($id_escuela) {
+                $query->select('estudiante.codigo_est')
+                    ->from('estudiante')
+                    ->join('datos_ingreso', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
+                    ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
+                    ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
+                    ->where('escuela.id', $id_escuela);
+            })
+            ->where('competencia_programa.id_competencia', $id_competencia)
+            ->where('matriz.' . $competencia, '<=', 10.49)
+            ->select(
+                'estudiante.id',
+                'programa.programa',
+                'datos_ingreso.semestre',
+                'estudiante.codigo_est',
+                'estudiante.nombres',
+                'estudiante.paterno',
+                'estudiante.materno',
+                DB::raw('matriz.' . $competencia . ' as nota_actual')
+            )
+            ->distinct()
+            ->get();
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
-        return response()->json($this->response, 200);
 
+        return response()->json($this->response, 200);
     }
+
 
 
     public function getAlumnosRegistroSSSS(Request $request){

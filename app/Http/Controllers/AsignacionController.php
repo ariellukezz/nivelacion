@@ -53,49 +53,98 @@ class AsignacionController extends Controller
 
     }
 
-    public function getDetalleCurso(Request $request){
-
+    public function getDetalleCurso(Request $request)
+    {
         $query_where = [];
-        //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
 
+        $cursoSeleccionado = Curso::find($request->curso);
+
+        if (!$cursoSeleccionado) {
+            return response()->json([
+                'estado' => false,
+                'datos' => [],
+                'registrados' => [],
+                'mensaje' => 'Curso no encontrado.'
+            ], 404);
+        }
+
+        // Nota previa/original del estudiante para la competencia.
+        $columnasCompetencia = [
+            1 => 'C1_R',
+            2 => 'C2_R',
+            3 => 'C3_R',
+            4 => 'C4_R',
+            5 => 'C5_R',
+            6 => 'C6_R',
+            7 => 'C7_R',
+            8 => 'C8_R',
+            9 => 'C9_R',
+            10 => 'C10_R',
+            11 => 'C11_R',
+        ];
+
+        $columnaNotaActual = $columnasCompetencia[(int) $cursoSeleccionado->id_competencia] ?? null;
+
+        if (!$columnaNotaActual) {
+            return response()->json([
+                'estado' => false,
+                'datos' => [],
+                'registrados' => [],
+                'mensaje' => 'La competencia del curso no tiene una columna de nota configurada.'
+            ], 422);
+        }
 
         $res = CursoDetalle::select(
-            'estudiante.codigo_est', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
-           //bdhh 'estudiante.dni', 'datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+            'estudiante.codigo_est',
+            'datos_ingreso.semestre',
+            'programa.programa',
+            'estudiante.nombres',
+            'estudiante.paterno',
+            'estudiante.materno',
             'curso.nombre as curso',
+            DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
             'curso_detalle.nota'
         )
-        ->join('curso','curso_detalle.id_curso','curso.id')
-        ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
-        ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
-        //bdhh ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
-        ->where('curso.id',"=",$request->curso)
-        ->where($query_where)
-        ->where(function ($query) use ($request) {
-            return $query
-                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
-        })->orderBy('curso.id', 'DESC')
-        ->paginate(200);
+            ->join('curso', 'curso_detalle.id_curso', 'curso.id')
+            ->join('estudiante', 'estudiante.id', 'curso_detalle.id_alumno')
+            ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
+            ->join('programa', 'programa.id', 'datos_ingreso.id_programa')
+            ->join('matriz', 'matriz.codigo_est', 'estudiante.codigo_est')
+            ->where('curso.id', '=', $request->curso)
+            ->where($query_where)
+            ->where(function ($query) use ($request) {
+                return $query->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+            })
+            ->orderBy('curso.id', 'DESC')
+            ->paginate(200);
 
         $registrados = CursoDetalle::select(
-            'estudiante.id', 'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
-          //bdhh  'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
-        ->join('curso','curso_detalle.id_curso','curso.id')
-        ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
-        ->where('curso.id',"=",$request->curso)
-        ->where($query_where)
-        ->where(function ($query) use ($request) {
-            return $query
-                ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
-        })->orderBy('curso.id', 'DESC')
-        ->paginate(200);
+            'estudiante.id',
+            'estudiante.codigo_est',
+            'programa.programa',
+            DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
+            'estudiante.nombres',
+            'estudiante.paterno',
+            'estudiante.materno'
+        )
+            ->join('curso', 'curso_detalle.id_curso', 'curso.id')
+            ->join('estudiante', 'estudiante.id', 'curso_detalle.id_alumno')
+            ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
+            ->join('programa', 'programa.id', 'datos_ingreso.id_programa')
+            ->join('matriz', 'matriz.codigo_est', 'estudiante.codigo_est')
+            ->where('curso.id', '=', $request->curso)
+            ->where($query_where)
+            ->where(function ($query) use ($request) {
+                return $query->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+            })
+            ->orderBy('curso.id', 'DESC')
+            ->paginate(200);
 
         $this->response['estado'] = true;
         $this->response['datos'] = $res;
         $this->response['registrados'] = $registrados;
 
         return response()->json($this->response, 200);
-
     }
 
 
@@ -112,7 +161,7 @@ class AsignacionController extends Controller
                 'estado' => $request->estado,
                 'id_programa' => $request->id_programa,
                 'id_usuario' => auth()->id(),
-                'id_periodo' => Periodo::activoId(), 
+                'id_periodo' => Periodo::activoId(),
             ]);
             $this->response['tipo'] = 'success';
             $this->response['titulo'] = 'REGISTRO NUEVO';

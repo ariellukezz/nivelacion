@@ -23,7 +23,7 @@ class DataController extends Controller
         return $query
             ->orWhere('programa.programa', 'LIKE', '%' . $request->term . '%');
     })->orderBy('programa.id', 'ASC')
-    ->paginate(50);
+    ->paginate(150);
 
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
@@ -43,7 +43,7 @@ class DataController extends Controller
         return $query
             ->orWhere('programa.programa', 'LIKE', '%' . $request->term . '%');
     })->orderBy('programa.id', 'ASC')
-    ->paginate(50);
+    ->paginate(150);
 
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
@@ -126,6 +126,7 @@ public function getPeriodos(Request $request)
     $this->response['periodo_activo'] = $periodoActivo;
     $this->response['todos_periodos'] = $todosPeriodos;
 
+    
     return response()->json($this->response, 200);
 }
 

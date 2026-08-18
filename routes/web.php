@@ -462,7 +462,7 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
         //nwegpt
         Route::get('/generar-pdf/{id}', [AsignacionController::class, 'pdf']);
         Route::get('/delete-curso/{id}', [CursoController::class, 'delete']);
-       // Route::post('get-programas-escuela', [DataController::class, 'getProgramasEscuela']);
+        Route::post('get-programas-escuela', [DataController::class, 'getProgramasEscuela']);
         Route::post('get-alumnos-registro', [AlumnoController::class, 'getAlumnosRegistro']);
         // termiagpt
         Route::post('/get-docentes-superadmi', [DocenteController::class, 'getDocentesSuperAdmin']);
@@ -504,7 +504,6 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
     Route::post('/get-docentes', [DocenteController::class, 'getDocentes']);
 
     /// otros sacados de gtp
-    Route::post('get-programas', [SuperadmiController::class, 'getProgramas']);
     Route::post('get-roles', [SuperadmiController::class, 'getRoles']);
     Route::post('get-escuelas', [SuperadmiController::class, 'getEscuelas']);
     Route::post('get-competencias', [SuperadmiController::class, 'getCompetencias']);

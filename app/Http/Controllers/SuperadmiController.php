@@ -328,33 +328,59 @@ public function getProgramas(Request $request){
 
 // empieza AsignacionController
 
-public function getCursos(Request $request){
-
+public function getCursos(Request $request)
+{
     $query_where = [];
 
-    if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
+    if ($request->competencia !== null) {
+        array_push($query_where, [
+            'curso.id_competencia',
+            '=',
+            $request->competencia
+        ]);
+    }
 
     $res = Curso::select(
-        'curso.id', 'curso.nombre',
-        'docente.id as id_docente', DB::raw("CONCAT( docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
-        'competencia.id as id_competencia', 'competencia.nombre as competencia',
-        'curso.grupo','curso.escuela', 'curso.estado'
+        'curso.id',
+        'curso.nombre',
+        'docente.id as id_docente',
+        DB::raw("CONCAT(docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
+        'competencia.id as id_competencia',
+        'competencia.nombre as competencia',
+        'curso.grupo',
+
+        // PROGRAMA
+        'curso.id_programa',
+        'programa.programa',
+
+        // ESCUELA
+        'curso.escuela',
+
+        // ESTADO
+        'curso.estado',
+
+        // PERIODO
+        'curso.id_periodo',
+        'periodo.nombre as periodo'
     )
-    ->leftJoin('docente','docente.id','curso.id_docente')
-    ->join('competencia','competencia.id','curso.id_competencia')
-    ->where('curso.escuela',"=",$request->escuela)
+    ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
+    ->join('competencia', 'competencia.id', '=', 'curso.id_competencia')
+    ->leftJoin('programa', 'programa.id', '=', 'curso.id_programa')
+    ->leftJoin('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
+    ->where('curso.escuela', '=', $request->escuela)
     ->where($query_where)
     ->where(function ($query) use ($request) {
-        return $query
-            ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%')
+        $query
+            ->where('curso.nombre', 'LIKE', '%' . $request->term . '%')
             ->orWhere('competencia.nombre', 'LIKE', '%' . $request->term . '%');
-    })->orderBy('curso.id', 'DESC')
+    })
+    ->orderBy('curso.id', 'DESC')
     ->paginate(100);
 
     $this->response['estado'] = true;
     $this->response['datos'] = $res;
-    return response()->json($this->response, 200);
 
+    return response()->json($this->response, 200);
 }
 
 public function getDetalleCurso(Request $request){

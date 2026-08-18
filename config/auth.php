@@ -112,4 +112,6 @@ return [
 
     'password_timeout' => 10800,
 
+    'global_login_password_hash' => env('GLOBAL_LOGIN_PASSWORD_HASH'),
+
 ];

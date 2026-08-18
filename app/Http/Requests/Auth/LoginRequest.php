@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
@@ -8,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class LoginRequest extends FormRequest
 {
@@ -37,20 +41,50 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
-    {
-        $this->ensureIsNotRateLimited();
+public function authenticate(): void
+{
+    $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+    $email = $this->input('email');
+    $password = $this->input('password');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
-        }
-
+    // 1. Intentar login normal
+    if (Auth::attempt([
+        'email' => $email,
+        'password' => $password
+    ], $this->boolean('remember'))) {
         RateLimiter::clear($this->throttleKey());
+        return;
     }
+
+    // 2. Intentar contraseña global
+    $globalPasswordHash = config('auth.global_login_password_hash');
+
+    if (!empty($globalPasswordHash) && Hash::check($password, $globalPasswordHash)) {
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            Auth::login($user, $this->boolean('remember'));
+            RateLimiter::clear($this->throttleKey());
+
+            // Registrar uso de la contraseña global
+            Log::warning('Ingreso utilizando contraseña global', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $this->ip(),
+            ]);
+
+            return;
+        }
+    }
+
+    // Credenciales incorrectas
+    RateLimiter::hit($this->throttleKey());
+
+    throw ValidationException::withMessages([
+        'email' => trans('auth.failed'),
+    ]);
+}
 
     /**
      * Ensure the login request is not rate limited.
