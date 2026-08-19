@@ -25,6 +25,7 @@ use App\Http\Controllers\Auth\RecoveryController;
 use App\Http\Controllers\Docente\DashboardController;
 use App\Http\Controllers\FichaRiesgoAcademicoController;
 use App\Http\Controllers\FichaRiesgoController;
+use App\Http\Controllers\NotaCoordinadorController;
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -97,6 +98,17 @@ Route::middleware('auth','admin')->group(function () {
 
         //pdf
         Route::get('/generar-pdf/{id}', [AsignacionController::class, 'pdf']);
+
+
+        
+        Route::get('/notas', function () {
+        return Inertia::render('Admin/NotasCoordinador/index');
+        })->name('coordinador.notas');
+        Route::post('/notas/get-competencias', [NotaCoordinadorController::class, 'getCompetencias']);
+        Route::post('/notas/get-cursos', [NotaCoordinadorController::class, 'getCursos']);
+        Route::post('/notas/get-alumnos', [NotaCoordinadorController::class, 'getAlumnos']);
+        Route::post('/notas/update-nota', [NotaCoordinadorController::class, 'updateNota']);
+
 
 
 

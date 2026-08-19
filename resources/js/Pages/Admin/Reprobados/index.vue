@@ -96,11 +96,14 @@ function buscarValor(array, valor) {
 
 function aSiNo(v) {
   if (v === null || v === undefined || String(v).trim() === '') return 'SI'
+
   const n = Number(String(v).replace(',', '.'))
+
   if (Number.isNaN(n)) return 'SI'
-  if (n <= 10) return 'SI'
-  if (n >= 11 && n <= 20) return 'NO'
-  return 'SI'
+
+  // La API ya devuelve la nota más alta entre matriz y curso_detalle.
+  // Aprobado desde 10.50; desaprobado por debajo de 10.50.
+  return n >= 10.50 ? 'NO' : 'SI'
 }
 
 const pagina             = ref(1);
