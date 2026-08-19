@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,16 +6,18 @@
 
 /* Fuente global */
 @layer base {
+
     :root {
-        --app-font-family: 'Acme', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --app-font-family: 'Inter', Arial, Helvetica, sans-serif;
     }
 
-    html {
+    html,
+    body {
         font-family: var(--app-font-family);
     }
 }
 
-/* Para PrimeVue */
+/* Fuente para componentes PrimeVue */
 .p-component,
 .p-inputtext,
 .p-button,
@@ -23,6 +25,12 @@
 .p-dialog,
 .p-dropdown,
 .p-panel,
-.p-card {
+.p-card,
+.p-menu,
+.p-menubar,
+.p-sidebar,
+.p-toast,
+.p-message,
+.p-tag {
     font-family: var(--app-font-family);
 }
