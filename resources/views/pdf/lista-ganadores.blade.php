@@ -37,7 +37,7 @@
     </style>
 </head>
 <body>
-    <h2><strong>LISTA DE SORTEADOS SOUVENIR INDUCCIÓN 2025-II</strong></h2>
+    <h2><strong>LISTA DE SORTEADOS SOUVENIR ________________________</strong></h2>
 
     <table>
         <thead>

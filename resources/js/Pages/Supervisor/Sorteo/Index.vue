@@ -148,7 +148,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import InputNumber from 'primevue/inputnumber';
@@ -176,37 +175,86 @@ const participantes = ref([]);
 const numeroGanadores = ref(1);
 const ganadores = ref([]);
 
-const eventoId = 1; // Puedes hacerlo dinámico si deseas
+const eventoId = ref(null);
+const eventoActivo = ref(null);
 
-// Cargar filtros disponibles
+// Obtener evento activo
+const cargarEventoActivo = async () => {
+  try {
+    const response = await axios.get('get-eventos');
+
+    if (response.data.length > 0) {
+      eventoActivo.value = response.data[0];
+      eventoId.value = response.data[0].id;
+    } else {
+      eventoActivo.value = null;
+      eventoId.value = null;
+      showError("No existe un evento activo.");
+    }
+  } catch (error) {
+    showError(
+      error.response?.data?.message ||
+      "Error al cargar el evento activo."
+    );
+  }
+};
+
+// Cargar filtros
 const cargarFiltros = async () => {
   try {
     const response = await axios.get('filtros');
+
     programas.value = response.data.programas;
     escuelas.value = response.data.escuelas;
     facultades.value = response.data.facultades;
     areas.value = response.data.areas;
   } catch (error) {
-    showError("Error al cargar los filtros");
+    showError("Error al cargar los filtros.");
   }
 };
 
-// Cargar participantes filtrados
+// Cargar participantes
 const cargarParticipantes = async () => {
+  if (!eventoId.value) {
+    showError("No existe un evento activo.");
+    return;
+  }
+
   try {
-    const response = await axios.get(`participantes-evento/${eventoId}`, {
-      params: filters.value,
-    });
+    const response = await axios.get(
+      `participantes-evento/${eventoId.value}`,
+      {
+        params: filters.value,
+      }
+    );
+
     participantes.value = response.data;
-    ganadores.value = []; // Limpiar ganadores al recargar
+    ganadores.value = [];
+
+    if (!participantes.value.length) {
+      showError("No existen participantes con asistencia registrada.");
+    }
   } catch (error) {
-    showError("Error al cargar participantes");
+    participantes.value = [];
+
+    showError(
+      error.response?.data?.message ||
+      "Error al cargar participantes."
+    );
   }
 };
 
-// Ejecutar sorteo (sin guardar aún)
+// Ejecutar sorteo
 const ejecutarSorteo = async () => {
-  if (numeroGanadores.value <= 0 || numeroGanadores.value > participantes.value.length) {
+  if (!eventoId.value) {
+    showError("No existe un evento activo.");
+    return;
+  }
+
+  if (
+    numeroGanadores.value <= 0 ||
+    numeroGanadores.value > participantes.value.length
+  ) {
     showError("Número de ganadores inválido.");
     return;
   }
@@ -214,19 +262,30 @@ const ejecutarSorteo = async () => {
   try {
     const response = await axios.post('ejecutar-sorteo', {
       numero_ganadores: numeroGanadores.value,
-      evento_id: eventoId,
-      ...filters.value, // Enviar filtros al backend
+      evento_id: eventoId.value,
+      ...filters.value,
     });
 
     ganadores.value = response.data;
-    showSuccess("Sorteo ejecutado. ¡Ahora puedes guardar los ganadores!");
+
+    showSuccess(
+      "Sorteo ejecutado. ¡Ahora puedes guardar los ganadores!"
+    );
   } catch (error) {
-    showError("Error al ejecutar el sorteo");
+    showError(
+      error.response?.data?.message ||
+      "Error al ejecutar el sorteo."
+    );
   }
 };
 
 // Guardar ganadores
 const guardarGanadores = async () => {
+  if (!eventoId.value) {
+    showError("No existe un evento activo.");
+    return;
+  }
+
   if (!ganadores.value.length) {
     showError("No hay ganadores para guardar.");
     return;
@@ -234,7 +293,7 @@ const guardarGanadores = async () => {
 
   try {
     await axios.post('guardar-ganadores', {
-      evento_id: eventoId,
+      evento_id: eventoId.value,
       ganadores: ganadores.value.map(g => ({
         codigo_est: g.codigo_est,
         orden_sorteo: g.orden_sorteo,
@@ -243,17 +302,27 @@ const guardarGanadores = async () => {
 
     showSuccess("Ganadores guardados exitosamente.");
   } catch (error) {
-    showError("Error al guardar ganadores.");
+    showError(
+      error.response?.data?.message ||
+      "Error al guardar ganadores."
+    );
   }
 };
 
 // Exportar PDF
 const exportarPDF = () => {
-  const url = `/supervisor/exportar-ganadores-pdf/${eventoId}`;
+  if (!eventoId.value) {
+    showError("No existe un evento activo.");
+    return;
+  }
+
+  const url =
+    `/supervisor/exportar-ganadores-pdf/${eventoId.value}`;
+
   window.open(url, '_blank');
 };
 
-// Limpiar todo
+// Limpiar
 const limpiarTodo = () => {
   filters.value = {
     programa_id: null,
@@ -261,23 +330,36 @@ const limpiarTodo = () => {
     facultad: null,
     area: null,
   };
+
   participantes.value = [];
   numeroGanadores.value = 1;
   ganadores.value = [];
+
   showSuccess("Filtros y datos limpiados.");
 };
 
 // Notificaciones
 const showSuccess = (message) => {
-  toast.add({ severity: 'success', summary: 'Éxito', detail: message, life: 3000 });
+  toast.add({
+    severity: 'success',
+    summary: 'Éxito',
+    detail: message,
+    life: 3000,
+  });
 };
 
 const showError = (message) => {
-  toast.add({ severity: 'error', summary: 'Error', detail: message, life: 5000 });
+  toast.add({
+    severity: 'error',
+    summary: 'Error',
+    detail: message,
+    life: 5000,
+  });
 };
 
 // Inicializar
-onMounted(() => {
-  cargarFiltros();
+onMounted(async () => {
+  await cargarEventoActivo();
+  await cargarFiltros();
 });
 </script>
