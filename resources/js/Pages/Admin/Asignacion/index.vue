@@ -80,7 +80,7 @@
       <div v-if="escuela !== null && cursoseleccionado === null">
 
         <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="abrirNuevoCurso" style="height:40px"> Nuevo Curso </Button>
+          <!-- <Button severity="primary" @click="abrirNuevoCurso" style="height:40px"> Nuevo Curso </Button> -->
           <div>
             <div class="flex mb-3" style="justify-content: flex-end;">
               <span class="p-input-icon-left">
@@ -164,7 +164,7 @@
                         </div>
                     </template>
                 </Column>
-                <Column field="id_programa" header="Acciones" width="90px">
+                <!-- <Column field="id_programa" header="Acciones" width="90px">
                   <template #body="{ data }">
                     <div class="flex">
                       <div class="mr-2">
@@ -173,7 +173,7 @@
                       <Button icon="pi pi-trash" severity="danger" aria-label="Submit" @click.stop="confirm2($event, data)"  size="small"  style="width: 25px; height: 25px;"/>
                     </div>
                   </template>
-                </Column>
+                </Column> -->
           </DataTable>
         </div>
 
