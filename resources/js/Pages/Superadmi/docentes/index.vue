@@ -336,41 +336,49 @@
   }
 
 
-  const guardar =  async () => {
-    // let fec = null;
-    // if(docente.value.fecha != null && docente.value.fecha !== temp.value ){
-    //   fec = docente.value.fecha.toISOString().substring(0, 10);
-    // }
-    // else {
-    //   fec = docente.value.fecha
-    // }
+const guardar = async () => {
+  try {
+    const res = await axios.post("save-docente", {
+      id: docente.value.id,
+      tipo_doc: docente.value.tipo_doc,
+      nro_doc: docente.value.nro_doc,
+      nombres: docente.value.nombres,
+      primer_apellido: docente.value.primer_apellido,
+      segundo_apellido: docente.value.segundo_apellido,
+      celular: docente.value.celular,
+      correo: docente.value.correo,
+      direccion: docente.value.direccion,
+      id_docente: docente.value.id_docente,
+      sexo: docente.value.sexo,
+      estado: docente.value.estado,
+      competencias: selectedCategories.value
+    });
 
-    let res = await axios.post(
-      "save-docente",
-      {
-        id: docente.value.id,
-        tipo_doc: docente.value.tipo_doc,
-        nro_doc: docente.value.nro_doc,
-        nombres: docente.value.nombres,
-        primer_apellido: docente.value.primer_apellido,
-        segundo_apellido: docente.value.segundo_apellido,
-        celular: docente.value.celular,
-        correo: docente.value.correo,
-        direccion: docente.value.direccion,
-        id_docente: docente.value.id_docente,  //id_Programa,
-        //fecha: fec,
-        sexo : docente.value.sexo,
-        estado : docente.value.estado,
-        competencias : selectedCategories.value
-      }
+    showToast(
+      res.data.tipo,
+      res.data.titulo,
+      res.data.mensaje
     );
 
-    showToast(res.data.tipo, res.data.titulo, res.data.mensaje)
-    getDocentes()
-    visible.value = false
-    limpiar()
-    // roles.value = res.data.datos.data;
+    if (!res.data.estado) {
+      return;
+    }
+
+    await getDocentes();
+
+    visible.value = false;
+    limpiar();
+
+  } catch (error) {
+    showToast(
+      'error',
+      'ERROR',
+      error.response?.data?.mensaje ||
+      error.response?.data?.message ||
+      'No se pudo guardar el docente.'
+    );
   }
+};
 
   const eliminar =  async (id) => {
     let res = await axios.get(

@@ -18,6 +18,27 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+<!--
+|--------------------------------------------------------------------------
+| AUTORÍA DEL SISTEMA
+|--------------------------------------------------------------------------
+|
+| Universidad Nacional del Altiplano de Puno
+| Vicerrectorado Académico
+|
+| Sistema desarrollado, diseñado, programado e implementado originalmente por:
+|
+| - Ing. Brayan Darwin Huanca Huayta
+| - Ing. Michael Newton Cutipa Santi
+|
+| Año de creación / implementación: 2026
+|
+| La autoría original corresponde a los desarrolladores antes mencionados.
+| Mantener esta referencia de autoría en futuras modificaciones,
+| actualizaciones o labores de mantenimiento del sistema.
+|
+|--------------------------------------------------------------------------
+-->
         @inertia
     </body>
 </html>

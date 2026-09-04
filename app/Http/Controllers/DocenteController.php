@@ -45,10 +45,48 @@ class DocenteController extends Controller
 
     }
 
-    public function save(Request $request ) {
+    public function save(Request $request)
+{
+    $competencias = $request->competencias ?? [];
 
-        $docente = null;
-        if (!$request->id) {
+    $docenteExistente = Docente::where('tipo_doc', $request->tipo_doc)
+        ->where('nro_doc', $request->nro_doc)
+        ->when($request->id, function ($query) use ($request) {
+            $query->where('id', '<>', $request->id);
+        })
+        ->first();
+
+    if ($docenteExistente) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'DOCENTE YA REGISTRADO',
+            'mensaje' => 'El docente ' .
+                $docenteExistente->nombres . ' ' .
+                $docenteExistente->paterno . ' ' .
+                $docenteExistente->materno .
+                ' ya se encuentra registrado en el sistema. Revise el módulo Asignación Docente para realizar la asignación correspondiente.',
+            'datos' => $docenteExistente
+        ], 200);
+    }
+
+    if (!$request->id) {
+
+        $correoExiste = Usuario::where('email', $request->correo)->exists();
+
+        if ($correoExiste) {
+            return response()->json([
+                'estado' => false,
+                'tipo' => 'warn',
+                'titulo' => 'CORREO YA REGISTRADO',
+                'mensaje' => 'El correo ingresado ya se encuentra registrado en el sistema.',
+                'datos' => null
+            ], 200);
+        }
+
+        DB::beginTransaction();
+
+        try {
             $usuario = Usuario::create([
                 'email' => $request->correo,
                 'password' => Hash::make($request->nro_doc),
@@ -58,6 +96,7 @@ class DocenteController extends Controller
                 'id_escuela' => auth()->user()->id_escuela,
                 'id_usuario' => auth()->id()
             ]);
+
             $docente = Docente::create([
                 'tipo_doc' => $request->tipo_doc,
                 'nro_doc' => $request->nro_doc,
@@ -74,61 +113,101 @@ class DocenteController extends Controller
                 'id_usuario' => auth()->id()
             ]);
 
-            foreach($request->competencias as $item){
+            foreach ($competencias as $item) {
                 $this->saveCompetencias($docente->id, $item);
             }
-            $this->response['tipo'] = 'success';
-            $this->response['titulo'] = 'REGISTRO NUEVO';
-            $this->response['mensaje'] = 'Docente '.$docente->nombres.' registrado con exito';
-            $this->response['estado'] = true;
-            $this->response['datos'] = $docente;
-        } else {
 
-            $docente_competencias = DB::select('SELECT id_competencia as c FROM docente_competencia
-            WHERE id_docente = '. $request->id);
-            // $docente_competencia = $this->convert($docente_competencias);
-            $opciones_eliminadas=array_diff($this->convert($docente_competencias), $request->competencias);
-            $opciones_nuevas=array_diff($request->competencias, $this->convert($docente_competencias));
-            foreach($opciones_nuevas as $item){
-                $this->saveCompetencias($request->id, $item);
-            }
+            DB::commit();
 
-            foreach($opciones_eliminadas as $item){
-                $competencia = DB::select('SELECT id FROM docente_competencia WHERE id_docente = '. $request->id.' AND id_competencia = '.$item );
-                $this->deletedocentecompetencia($competencia[0]->id);
-            }
+            return response()->json([
+                'estado' => true,
+                'tipo' => 'success',
+                'titulo' => 'REGISTRO NUEVO',
+                'mensaje' => 'Docente ' . $docente->nombres . ' registrado con éxito.',
+                'datos' => $docente
+            ], 200);
 
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-            $docente = Docente::find($request->id);
-            $docente->tipo_doc = $request->tipo_doc;
-            $docente->nro_doc= $request->nro_doc;
-            $docente->nombres= $request->nombres;
-            $docente->paterno= $request->primer_apellido;
-            $docente->materno = $request->segundo_apellido;
-            $docente->email = $request->correo;
-            $docente->direccion = $request->direccion;
-            $docente->f_nac = $request->fecha;
-            $docente->sexo = $request->sexo;
-            $docente->estado = $request->estado;
-
-            // foreach($request->competencias as $item){
-            //     if($this->buscarCompetencias($docente_competencias, $item) ){}
-            //     $this->saveEditCompetencias($docente->id, $item);
-            // }
-
-            $docente->save();
-            $usuario = Usuario::find($docente->usuario_id);
-            $usuario->email = $request->correo;
-            $usuario->save();
-            $this->response['tipo'] = 'info';
-            $this->response['titulo'] = '!REGISTRO MODIFICADO!';
-            $this->response['mensaje'] = 'Docente '.$docente->nombres.' acaba de ser modificado.';
-            $this->response['estado'] = true;
-            $this->response['datos'] = $docente;
+            return response()->json([
+                'estado' => false,
+                'tipo' => 'error',
+                'titulo' => 'ERROR DE REGISTRO',
+                'mensaje' => 'No se pudo registrar al docente. Verifique que el correo y celular no se encuentren registrados.',
+                'datos' => null
+            ], 200);
         }
-
-        return response()->json($this->response, 200);
     }
+
+    $docenteCompetencias = DB::select(
+        'SELECT id_competencia as c
+         FROM docente_competencia
+         WHERE id_docente = ' . (int) $request->id
+    );
+
+    $actuales = $this->convert($docenteCompetencias);
+
+    $opcionesEliminadas = array_diff($actuales, $competencias);
+    $opcionesNuevas = array_diff($competencias, $actuales);
+
+    foreach ($opcionesNuevas as $item) {
+        $this->saveCompetencias($request->id, $item);
+    }
+
+    foreach ($opcionesEliminadas as $item) {
+        $competencia = DB::select(
+            'SELECT id
+             FROM docente_competencia
+             WHERE id_docente = ' . (int) $request->id . '
+             AND id_competencia = ' . (int) $item
+        );
+
+        if (!empty($competencia)) {
+            $this->deletedocentecompetencia($competencia[0]->id);
+        }
+    }
+
+    $docente = Docente::find($request->id);
+
+    if (!$docente) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'error',
+            'titulo' => 'DOCENTE NO ENCONTRADO',
+            'mensaje' => 'No se encontró el docente que desea modificar.',
+            'datos' => null
+        ], 200);
+    }
+
+    $docente->tipo_doc = $request->tipo_doc;
+    $docente->nro_doc = $request->nro_doc;
+    $docente->nombres = $request->nombres;
+    $docente->paterno = $request->primer_apellido;
+    $docente->materno = $request->segundo_apellido;
+    $docente->telefono = $request->celular;
+    $docente->email = $request->correo;
+    $docente->direccion = $request->direccion;
+    $docente->f_nac = $request->fecha;
+    $docente->sexo = $request->sexo;
+    $docente->estado = $request->estado;
+    $docente->save();
+
+    $usuario = Usuario::find($docente->usuario_id);
+
+    if ($usuario) {
+        $usuario->email = $request->correo;
+        $usuario->save();
+    }
+
+    return response()->json([
+        'estado' => true,
+        'tipo' => 'info',
+        'titulo' => 'REGISTRO MODIFICADO',
+        'mensaje' => 'Docente ' . $docente->nombres . ' modificado correctamente.',
+        'datos' => $docente
+    ], 200);
+}
 
 
     public function delete($id){
@@ -276,11 +355,104 @@ class DocenteController extends Controller
     }
 
 
-    public function save2(Request $request ) {
+public function save2(Request $request)
+{
+    $competencias = $request->competencias ?? [];
 
-        $esc = Programa::find($request->id_docente);
+    $docenteExistente = Docente::where('tipo_doc', $request->tipo_doc)
+        ->where('nro_doc', $request->nro_doc)
+        ->when($request->id, function ($query) use ($request) {
+            $query->where('id', '<>', $request->id);
+        })
+        ->first();
 
-        $docente = null;
+    if ($docenteExistente) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'DOCENTE YA REGISTRADO',
+            'mensaje' => 'El docente ' .
+                $docenteExistente->nombres . ' ' .
+                $docenteExistente->paterno . ' ' .
+                $docenteExistente->materno .
+                ' ya se encuentra registrado en el sistema. Revise el módulo Asignación Docente para realizar la asignación correspondiente.',
+            'datos' => $docenteExistente
+        ], 200);
+    }
+
+    $esc = Programa::find($request->id_docente);
+
+    if (!$esc) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'PROGRAMA REQUERIDO',
+            'mensaje' => 'Debe seleccionar un programa para registrar al docente.',
+            'datos' => null
+        ], 200);
+    }
+
+    $usuarioActualId = null;
+
+    if ($request->id) {
+        $docenteActual = Docente::find($request->id);
+
+        if (!$docenteActual) {
+            return response()->json([
+                'estado' => false,
+                'tipo' => 'error',
+                'titulo' => 'DOCENTE NO ENCONTRADO',
+                'mensaje' => 'No se encontró el docente que desea modificar.',
+                'datos' => null
+            ], 200);
+        }
+
+        $usuarioActualId = $docenteActual->usuario_id;
+    }
+
+    $correoUsuario = Usuario::where('email', $request->correo)
+        ->when($usuarioActualId, function ($query) use ($usuarioActualId) {
+            $query->where('id', '<>', $usuarioActualId);
+        })
+        ->exists();
+
+    $correoDocente = Docente::where('email', $request->correo)
+        ->when($request->id, function ($query) use ($request) {
+            $query->where('id', '<>', $request->id);
+        })
+        ->exists();
+
+    if ($correoUsuario || $correoDocente) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'CORREO YA REGISTRADO',
+            'mensaje' => 'El correo ingresado ya se encuentra registrado en el sistema.',
+            'datos' => null
+        ], 200);
+    }
+
+    if ($request->celular) {
+        $telefonoExiste = Docente::where('telefono', $request->celular)
+            ->when($request->id, function ($query) use ($request) {
+                $query->where('id', '<>', $request->id);
+            })
+            ->exists();
+
+        if ($telefonoExiste) {
+            return response()->json([
+                'estado' => false,
+                'tipo' => 'warn',
+                'titulo' => 'CELULAR YA REGISTRADO',
+                'mensaje' => 'El número de celular ingresado ya pertenece a otro docente.',
+                'datos' => null
+            ], 200);
+        }
+    }
+
+    DB::beginTransaction();
+
+    try {
         if (!$request->id) {
             $usuario = Usuario::create([
                 'email' => $request->correo,
@@ -292,6 +464,7 @@ class DocenteController extends Controller
                 'id_escuela' => $esc->id_escuela,
                 'id_usuario' => auth()->id()
             ]);
+
             $docente = Docente::create([
                 'tipo_doc' => $request->tipo_doc,
                 'nro_doc' => $request->nro_doc,
@@ -308,65 +481,95 @@ class DocenteController extends Controller
                 'id_usuario' => auth()->id()
             ]);
 
-            foreach($request->competencias as $item){
+            foreach ($competencias as $item) {
                 $this->saveCompetencias($docente->id, $item);
             }
-            $this->response['tipo'] = 'success';
-            $this->response['titulo'] = 'REGISTRO NUEVO';
-            $this->response['mensaje'] = 'Docente '.$docente->nombres.' registrado con exito';
-            $this->response['estado'] = true;
-            $this->response['datos'] = $docente;
-        } else {
 
-            $docente_competencias = DB::select('SELECT id_competencia as c FROM docente_competencia
-            WHERE id_docente = '. $request->id);
-            // $docente_competencia = $this->convert($docente_competencias);
-            $opciones_eliminadas=array_diff($this->convert($docente_competencias), $request->competencias);
-            $opciones_nuevas=array_diff($request->competencias, $this->convert($docente_competencias));
-            foreach($opciones_nuevas as $item){
-                $this->saveCompetencias($request->id, $item);
-            }
+            DB::commit();
 
-            foreach($opciones_eliminadas as $item){
-                $competencia = DB::select('SELECT id FROM docente_competencia WHERE id_docente = '. $request->id.' AND id_competencia = '.$item );
+            return response()->json([
+                'estado' => true,
+                'tipo' => 'success',
+                'titulo' => 'REGISTRO NUEVO',
+                'mensaje' => 'Docente ' . $docente->nombres . ' registrado con éxito.',
+                'datos' => $docente
+            ], 200);
+        }
+
+        $docenteCompetencias = DB::select(
+            'SELECT id_competencia AS c
+             FROM docente_competencia
+             WHERE id_docente = ' . (int) $request->id
+        );
+
+        $actuales = $this->convert($docenteCompetencias);
+
+        $opcionesEliminadas = array_diff($actuales, $competencias);
+        $opcionesNuevas = array_diff($competencias, $actuales);
+
+        foreach ($opcionesNuevas as $item) {
+            $this->saveCompetencias($request->id, $item);
+        }
+
+        foreach ($opcionesEliminadas as $item) {
+            $competencia = DB::select(
+                'SELECT id
+                 FROM docente_competencia
+                 WHERE id_docente = ' . (int) $request->id . '
+                 AND id_competencia = ' . (int) $item
+            );
+
+            if (!empty($competencia)) {
                 $this->deletedocentecompetencia($competencia[0]->id);
             }
+        }
 
+        $docente = Docente::find($request->id);
 
-            $docente = Docente::find($request->id);
-            $docente->tipo_doc = $request->tipo_doc;
-            $docente->nro_doc= $request->nro_doc;
-            $docente->nombres= $request->nombres;
-            $docente->paterno= $request->primer_apellido;
-            $docente->materno = $request->segundo_apellido;
-            $docente->email = $request->correo;
-            $docente->direccion = $request->direccion;
-            $docente->f_nac = $request->fecha;
-            $docente->sexo = $request->sexo;
-            $docente->estado = $request->estado;
+        $docente->tipo_doc = $request->tipo_doc;
+        $docente->nro_doc = $request->nro_doc;
+        $docente->nombres = $request->nombres;
+        $docente->paterno = $request->primer_apellido;
+        $docente->materno = $request->segundo_apellido;
+        $docente->telefono = $request->celular;
+        $docente->email = $request->correo;
+        $docente->direccion = $request->direccion;
+        $docente->f_nac = $request->fecha;
+        $docente->sexo = $request->sexo;
+        $docente->estado = $request->estado;
+        $docente->save();
 
-            // foreach($request->competencias as $item){
-            //     if($this->buscarCompetencias($docente_competencias, $item) ){}
-            //     $this->saveEditCompetencias($docente->id, $item);
-            // }
+        $usuario = Usuario::find($docente->usuario_id);
 
-            $docente->save();
-
-            $usuario = Usuario::find($docente->usuario_id);
+        if ($usuario) {
             $usuario->programa_id = $request->id_docente;
             $usuario->id_escuela = $esc->id_escuela;
             $usuario->email = $request->correo;
-
             $usuario->save();
-            $this->response['tipo'] = 'info';
-            $this->response['titulo'] = '!REGISTRO MODIFICADO!';
-            $this->response['mensaje'] = 'Docente '.$docente->nombres.' acaba de ser modificado.';
-            $this->response['estado'] = true;
-            $this->response['datos'] = $docente;
         }
 
-        return response()->json($this->response, 200);
+        DB::commit();
+
+        return response()->json([
+            'estado' => true,
+            'tipo' => 'info',
+            'titulo' => 'REGISTRO MODIFICADO',
+            'mensaje' => 'Docente ' . $docente->nombres . ' modificado correctamente.',
+            'datos' => $docente
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'error',
+            'titulo' => 'ERROR',
+            'mensaje' => 'No se pudo guardar la información del docente.',
+            'datos' => null
+        ], 500);
     }
+}
 
 
     public function getDocentesSuperAdmin(Request $request){
