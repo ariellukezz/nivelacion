@@ -13,7 +13,8 @@
       <Navigation :style="{ 'width': sidewidth }" style="transition: all 0.3s ease;" />
       <div class="flex flex-col flex-1 w-full">
         <!-- {{ usu }} -->
-        <TopMenu :usuario="usu"/>
+        <!-- <TopMenu :usuario="usu"/> -->
+         <TopMenu />
 
         <main class="h-full overflow-y-auto">
           <div class="container px-4 mx-auto grid">

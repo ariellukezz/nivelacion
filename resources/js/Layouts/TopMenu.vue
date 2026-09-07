@@ -6,7 +6,9 @@
     <div
       class="container flex justify-between items-center px-6 mx-auto h-full text-purple-600 md:justify-end"
     >
-      <!-- Menú móvil -->
+      <!-- =====================================================
+           MENÚ MÓVIL
+      ====================================================== -->
       <button
         type="button"
         @click="$page.props.showingMobileMenu = !$page.props.showingMobileMenu"
@@ -27,15 +29,21 @@
         </svg>
       </button>
 
-      <!-- Usuario -->
+      <!-- =====================================================
+           USUARIO
+      ====================================================== -->
       <Dropdown
-        v-if="usuario.usuario != null"
+        v-if="usuarioActual"
         style="cursor: pointer;"
       >
         <template #trigger>
           <div
             class="flex"
-            style="align-items: center; height: 37px; color: #000000D9;"
+            style="
+              align-items: center;
+              height: 37px;
+              color: #000000D9;
+            "
           >
             <div style="text-align: end; margin-top: 0px;">
               <div
@@ -47,13 +55,27 @@
                 "
               >
                 <span style="font-size: 0.9rem;">
-                  {{ usuario.usuario.escuela }}
+                  {{
+                    usuarioActual.escuela ||
+                    usuarioActual.programa ||
+                    usuarioActual.nombre_rol ||
+                    ''
+                  }}
                 </span>
               </div>
 
               <div style="margin-top: -7px;">
-                <span style="font-size: 0.9rem; font-weight: bold;">
-                  {{ usuario.usuario.nombres }}
+                <span
+                  style="
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                  "
+                >
+                  {{
+                    usuarioActual.nombres ||
+                    usuarioActual.email ||
+                    'Usuario'
+                  }}
                 </span>
               </div>
             </div>
@@ -65,6 +87,7 @@
         </template>
 
         <template #content>
+          <!-- Mi Perfil -->
           <button
             type="button"
             @click="abrirPerfil"
@@ -74,6 +97,7 @@
             Mi perfil
           </button>
 
+          <!-- Cerrar sesión -->
           <DropdownLink
             :href="route('logout')"
             method="post"
@@ -88,7 +112,9 @@
         </template>
       </Dropdown>
 
-      <!-- Modal Mi Perfil -->
+      <!-- =====================================================
+           MODAL MI PERFIL
+      ====================================================== -->
       <Dialog
         v-model:visible="modalPerfil"
         modal
@@ -99,11 +125,14 @@
           v-if="loadingPerfil"
           class="py-5 text-center"
         >
+          <i class="pi pi-spin pi-spinner mr-2"></i>
           Cargando información...
         </div>
 
         <div v-else-if="perfil">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- Nombre -->
             <div>
               <span class="text-sm text-gray-500">
                 Nombres y apellidos
@@ -114,16 +143,18 @@
               </p>
             </div>
 
+            <!-- Correo -->
             <div>
               <span class="text-sm text-gray-500">
                 Correo
               </span>
 
-              <p class="font-semibold text-gray-800">
+              <p class="font-semibold text-gray-800 break-all">
                 {{ perfil.email || '-' }}
               </p>
             </div>
 
+            <!-- Rol -->
             <div>
               <span class="text-sm text-gray-500">
                 Rol
@@ -134,6 +165,7 @@
               </p>
             </div>
 
+            <!-- Documento -->
             <div v-if="perfil.documento">
               <span class="text-sm text-gray-500">
                 Documento
@@ -144,6 +176,18 @@
               </p>
             </div>
 
+            <!-- Código estudiante -->
+            <div v-if="perfil.codigo_est">
+              <span class="text-sm text-gray-500">
+                Código de estudiante
+              </span>
+
+              <p class="font-semibold text-gray-800">
+                {{ perfil.codigo_est }}
+              </p>
+            </div>
+
+            <!-- Escuela -->
             <div v-if="perfil.escuela">
               <span class="text-sm text-gray-500">
                 Escuela Profesional
@@ -154,6 +198,7 @@
               </p>
             </div>
 
+            <!-- Programa -->
             <div v-if="perfil.programa">
               <span class="text-sm text-gray-500">
                 Programa
@@ -164,6 +209,7 @@
               </p>
             </div>
 
+            <!-- Celular -->
             <div v-if="perfil.telefono">
               <span class="text-sm text-gray-500">
                 Celular
@@ -175,12 +221,15 @@
             </div>
           </div>
 
-          <!-- Cambio de contraseña -->
+          <!-- =================================================
+               CAMBIAR CONTRASEÑA
+          ================================================== -->
           <div class="border-t mt-6 pt-5">
             <h3 class="font-bold text-gray-800 mb-4">
               Cambiar contraseña
             </h3>
 
+            <!-- Contraseña actual -->
             <div class="mb-3">
               <label class="block mb-1">
                 Contraseña actual
@@ -193,9 +242,10 @@
                 class="w-full"
                 inputClass="w-full"
                 autocomplete="current-password"
-                />
+              />
             </div>
 
+            <!-- Nueva contraseña -->
             <div class="mb-3">
               <label class="block mb-1">
                 Nueva contraseña
@@ -208,13 +258,14 @@
                 class="w-full"
                 inputClass="w-full"
                 autocomplete="new-password"
-                />
+              />
 
               <small class="text-gray-500">
                 La contraseña debe tener como mínimo 5 caracteres.
               </small>
             </div>
 
+            <!-- Confirmación -->
             <div class="mb-4">
               <label class="block mb-1">
                 Confirmar nueva contraseña
@@ -227,7 +278,7 @@
                 class="w-full"
                 inputClass="w-full"
                 autocomplete="new-password"
-                />
+              />
             </div>
 
             <div class="flex justify-end">
@@ -243,47 +294,49 @@
         </div>
       </Dialog>
 
-      <!-- Cambio obligatorio de contraseña -->
-      <div v-if="usuario.usuario">
-        <div v-if="usuario.usuario.e_contra == 1">
-          <Dialog
-            v-model:visible="modalContra"
-            modal
-            header="Cambiar contraseña"
-            :closable="false"
-            :style="{ width: '360px' }"
-          >
-            <label>Nueva contraseña</label>
+      <!-- =====================================================
+           CAMBIO OBLIGATORIO DE CONTRASEÑA
+      ====================================================== -->
+      <Dialog
+        v-if="usuarioActual && usuarioActual.e_contra == 1"
+        v-model:visible="modalContra"
+        modal
+        header="Cambiar contraseña"
+        :closable="false"
+        :style="{ width: '360px' }"
+      >
+        <label class="block mb-2">
+          Nueva contraseña
+        </label>
 
-            <div style="width: 100%;">
-              <Password
-                v-model="contra"
-                toggleMask
-                :feedback="false"
-                class="w-full"
-                inputClass="w-full"
-                autocomplete="new-password"
-                />
-            </div>
+        <Password
+          v-model="contra"
+          toggleMask
+          :feedback="false"
+          class="w-full"
+          inputClass="w-full"
+          autocomplete="new-password"
+        />
 
-            <small class="text-gray-500">
-              La contraseña debe tener como mínimo 5 caracteres.
-            </small>
+        <small class="text-gray-500">
+          La contraseña debe tener como mínimo 5 caracteres.
+        </small>
 
-            <div class="flex justify-end mt-5">
-              <Button
-                type="button"
-                @click="saveContra"
-                style="width: 100%; justify-content: center;"
-              >
-                Cambiar contraseña
-              </Button>
-            </div>
-          </Dialog>
+        <div class="flex justify-end mt-5">
+          <Button
+            type="button"
+            label="Cambiar contraseña"
+            icon="pi pi-key"
+            :loading="cambiandoContraInicial"
+            @click="saveContra"
+            class="w-full"
+          />
         </div>
-      </div>
+      </Dialog>
 
-      <!-- Notificación inicial -->
+      <!-- =====================================================
+           NOTIFICACIONES
+      ====================================================== -->
       <Dialog
         v-model:visible="modalNoti"
         modal
@@ -294,6 +347,7 @@
           v-if="loadingNoti"
           class="py-4 text-center"
         >
+          <i class="pi pi-spin pi-spinner mr-2"></i>
           Cargando...
         </div>
 
@@ -328,10 +382,12 @@
                 ].includes(noti.tipo)
             }"
           >
+            <!-- Título -->
             <div class="font-semibold text-base">
               {{ noti.titulo || 'Aviso' }}
             </div>
 
+            <!-- Imagen -->
             <div
               v-if="noti.imagen_url"
               class="mt-1"
@@ -343,10 +399,12 @@
               />
             </div>
 
+            <!-- Mensaje -->
             <div class="font-bold text-sm whitespace-pre-line">
               {{ noti.mensaje }}
             </div>
 
+            <!-- Acciones -->
             <div class="flex justify-end gap-2 mt-4">
               <a
                 v-if="noti.url"
@@ -375,7 +433,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
 import Dropdown from '@/Components/Dropdown.vue';
@@ -383,15 +442,28 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Toast from 'primevue/toast';
-import { useToast } from 'primevue/usetoast';
 
+import { useToast } from 'primevue/usetoast';
 
 import 'primeicons/primeicons.css';
 
-const usuario = defineProps(['usuario']);
+
+/* ==========================================================
+   USUARIO GLOBAL DE INERTIA
+========================================================== */
+
+const page = usePage();
+
+const usuarioActual = computed(() => {
+  return page.props.auth_user ?? null;
+});
+
+
+/* ==========================================================
+   TOAST
+========================================================== */
 
 const toast = useToast();
 
@@ -406,76 +478,13 @@ const showToast = (tipo, titulo, detalle) => {
 
 
 /* ==========================================================
-   CAMBIO OBLIGATORIO DE CONTRASEÑA
-========================================================== */
-
-const modalContra = ref(true);
-const contra = ref('');
-
-const saveContra = async () => {
-  if (!contra.value) {
-    showToast(
-      'warn',
-      'CONTRASEÑA',
-      'Ingrese una nueva contraseña.'
-    );
-
-    return;
-  }
-
-  if (contra.value.length <= 4) {
-    showToast(
-      'warn',
-      'CONTRASEÑA',
-      'La contraseña debe tener como mínimo 5 caracteres.'
-    );
-
-    return;
-  }
-
-  try {
-    const res = await axios.post('/save-contrasenia', {
-      contra: contra.value
-    });
-
-    showToast(
-      res.data.tipo,
-      res.data.titulo,
-      res.data.mensaje
-    );
-
-    if (!res.data.estado) {
-      return;
-    }
-
-    contra.value = '';
-    modalContra.value = false;
-
-  } catch (error) {
-    const errores = error.response?.data?.errors;
-
-    const mensaje =
-      errores?.contra?.[0] ||
-      error.response?.data?.mensaje ||
-      error.response?.data?.message ||
-      'No se pudo modificar la contraseña.';
-
-    showToast(
-      'error',
-      'ERROR',
-      mensaje
-    );
-  }
-};
-
-
-/* ==========================================================
    PERFIL
 ========================================================== */
 
 const modalPerfil = ref(false);
 const loadingPerfil = ref(false);
 const cambiandoPassword = ref(false);
+
 const perfil = ref(null);
 
 const passwordForm = ref({
@@ -484,8 +493,18 @@ const passwordForm = ref({
   confirmacion: ''
 });
 
+
 const abrirPerfil = async () => {
   modalPerfil.value = true;
+
+  /*
+   * Si ya cargamos el perfil anteriormente,
+   * no volvemos a consultarlo.
+   */
+  if (perfil.value) {
+    return;
+  }
+
   loadingPerfil.value = true;
 
   try {
@@ -507,7 +526,13 @@ const abrirPerfil = async () => {
   }
 };
 
+
+/* ==========================================================
+   CAMBIAR CONTRASEÑA DESDE PERFIL
+========================================================== */
+
 const cambiarPassword = async () => {
+
   if (
     !passwordForm.value.actual ||
     !passwordForm.value.nueva ||
@@ -522,7 +547,10 @@ const cambiarPassword = async () => {
     return;
   }
 
-  // No se permite 4 caracteres o menos
+  /*
+   * 4 caracteres o menos NO está permitido.
+   * Mínimo permitido: 5.
+   */
   if (passwordForm.value.nueva.length <= 4) {
     showToast(
       'warn',
@@ -572,6 +600,7 @@ const cambiarPassword = async () => {
     };
 
   } catch (error) {
+
     const errores = error.response?.data?.errors;
 
     const mensaje =
@@ -594,6 +623,88 @@ const cambiarPassword = async () => {
 
 
 /* ==========================================================
+   CAMBIO OBLIGATORIO DE CONTRASEÑA
+========================================================== */
+
+const modalContra = ref(true);
+const contra = ref('');
+const cambiandoContraInicial = ref(false);
+
+
+const saveContra = async () => {
+
+  if (!contra.value) {
+    showToast(
+      'warn',
+      'CONTRASEÑA',
+      'Ingrese una nueva contraseña.'
+    );
+
+    return;
+  }
+
+  if (contra.value.length <= 4) {
+    showToast(
+      'warn',
+      'CONTRASEÑA',
+      'La contraseña debe tener como mínimo 5 caracteres.'
+    );
+
+    return;
+  }
+
+  cambiandoContraInicial.value = true;
+
+  try {
+    const res = await axios.post('/save-contrasenia', {
+      contra: contra.value
+    });
+
+    showToast(
+      res.data.tipo,
+      res.data.titulo,
+      res.data.mensaje
+    );
+
+    if (!res.data.estado) {
+      return;
+    }
+
+    contra.value = '';
+
+    modalContra.value = false;
+
+    /*
+     * Actualizamos localmente para que
+     * el modal no vuelva a mostrarse.
+     */
+    if (usuarioActual.value) {
+      usuarioActual.value.e_contra = 0;
+    }
+
+  } catch (error) {
+
+    const errores = error.response?.data?.errors;
+
+    const mensaje =
+      errores?.contra?.[0] ||
+      error.response?.data?.mensaje ||
+      error.response?.data?.message ||
+      'No se pudo modificar la contraseña.';
+
+    showToast(
+      'error',
+      'ERROR',
+      mensaje
+    );
+
+  } finally {
+    cambiandoContraInicial.value = false;
+  }
+};
+
+
+/* ==========================================================
    NOTIFICACIONES
 ========================================================== */
 
@@ -601,7 +712,9 @@ const modalNoti = ref(false);
 const noti = ref(null);
 const loadingNoti = ref(false);
 
+
 const cargarNoti = async () => {
+
   loadingNoti.value = true;
 
   try {
@@ -614,21 +727,29 @@ const cargarNoti = async () => {
     }
 
   } catch (error) {
-    console.error(error);
+    console.error('Error al cargar notificación:', error);
 
   } finally {
     loadingNoti.value = false;
   }
 };
 
+
 const leerNoti = async () => {
+
   try {
+
     if (noti.value?.id) {
-      await axios.post(`/read-noti/${noti.value.id}`);
+      await axios.post(
+        `/read-noti/${noti.value.id}`
+      );
     }
 
   } catch (error) {
-    console.error(error);
+    console.error(
+      'Error al marcar notificación:',
+      error
+    );
 
   } finally {
     modalNoti.value = false;
