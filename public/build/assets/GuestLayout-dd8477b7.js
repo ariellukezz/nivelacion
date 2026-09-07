@@ -1,0 +1,1 @@
+import{_ as o}from"./_plugin-vue_export-helper-c27b6911.js";import{e as s,c as t,E as r}from"./app-e101615c.js";const c={},n={class:"min-h-screen w-full overflow-x-hidden bg-white"};function a(e,l){return s(),t("div",n,[r(e.$slots,"default")])}const i=o(c,[["render",a]]);export{i as G};
