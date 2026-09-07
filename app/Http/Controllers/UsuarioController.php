@@ -21,6 +21,117 @@ class UsuarioController extends Controller
         return Inertia::render('Usuarios/index');
     }
 
+    public function miPerfil()
+{
+    $user = auth()->user();
+
+    $perfil = DB::table('users AS u')
+        ->leftJoin('rol AS r', 'r.id', '=', 'u.rol')
+        ->leftJoin('programa AS p', 'p.id', '=', 'u.programa_id')
+        ->leftJoin('escuela AS es', 'es.id', '=', 'u.id_escuela')
+        ->where('u.id', $user->id)
+        ->select(
+            'u.id',
+            'u.nombres',
+            'u.apellidos',
+            'u.email',
+            'u.rol AS rol_id',
+            'r.nombre AS rol',
+            'p.programa',
+            DB::raw('COALESCE(p.escuela, es.nombre) AS escuela')
+        )
+        ->first();
+
+    $perfil->documento = null;
+    $perfil->telefono = null;
+    $perfil->nombre_completo = trim(
+        ($perfil->nombres ?? '') . ' ' . ($perfil->apellidos ?? '')
+    );
+
+    if ($user->rol == 4) {
+        $docente = DB::table('docente')
+            ->where('usuario_id', $user->id)
+            ->select(
+                'nro_doc',
+                'nombres',
+                'paterno',
+                'materno',
+                'telefono'
+            )
+            ->first();
+
+        if ($docente) {
+            $perfil->documento = $docente->nro_doc;
+            $perfil->telefono = $docente->telefono;
+            $perfil->nombre_completo = trim(
+                $docente->nombres . ' ' .
+                $docente->paterno . ' ' .
+                $docente->materno
+            );
+        }
+    }
+
+    if ($user->rol == 5) {
+        $estudiante = DB::table('estudiante AS e')
+            ->leftJoin('datos_ingreso AS di', 'di.codigo_est', '=', 'e.codigo_est')
+            ->leftJoin('programa AS p', 'p.id', '=', 'di.id_programa')
+            ->where('e.usuario_id', $user->id)
+            ->select(
+                'e.dni',
+                'e.codigo_est',
+                'e.nombres',
+                'e.paterno',
+                'e.materno',
+                'e.telefono',
+                'p.programa',
+                'p.escuela'
+            )
+            ->first();
+
+        if ($estudiante) {
+            $perfil->documento = $estudiante->dni;
+            $perfil->codigo_est = $estudiante->codigo_est;
+            $perfil->telefono = $estudiante->telefono;
+            $perfil->programa = $estudiante->programa;
+            $perfil->escuela = $estudiante->escuela;
+            $perfil->nombre_completo = trim(
+                $estudiante->nombres . ' ' .
+                $estudiante->paterno . ' ' .
+                $estudiante->materno
+            );
+        }
+    }
+
+    if ($user->rol == 2) {
+        $coordinador = DB::table('coordinador AS c')
+            ->leftJoin('escuela AS e', 'e.id', '=', 'c.id_escuela')
+            ->where('c.usuario_id', $user->id)
+            ->select(
+                'c.dni',
+                'c.nombres',
+                'c.apellidos',
+                'c.celular',
+                'e.nombre AS escuela'
+            )
+            ->first();
+
+        if ($coordinador) {
+            $perfil->documento = $coordinador->dni;
+            $perfil->telefono = $coordinador->celular;
+            $perfil->escuela = $coordinador->escuela;
+            $perfil->nombre_completo = trim(
+                $coordinador->nombres . ' ' .
+                $coordinador->apellidos
+            );
+        }
+    }
+
+    return response()->json([
+        'estado' => true,
+        'datos' => $perfil
+    ]);
+}
+
 
     public function getUsuarios(Request $request){
 
@@ -192,19 +303,73 @@ class UsuarioController extends Controller
 
     }
 
-    public function saveNewContra(Request $request){
-        $usuario = Usuario::find(auth()->user()->id);
+public function saveNewContra(Request $request)
+{
+    $usuario = Usuario::find(auth()->id());
+
+    if (!$usuario) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'error',
+            'titulo' => 'ERROR',
+            'mensaje' => 'Usuario no encontrado.'
+        ], 404);
+    }
+
+    // Cambio obligatorio antiguo del sistema
+    if ($request->filled('contra')) {
+
+        $request->validate([
+            'contra' => 'required|string|min:4',
+        ]);
+
         $usuario->password = Hash::make($request->contra);
         $usuario->estado_contraseña = 0;
         $usuario->save();
 
-        $this->response['tipo'] = 'success';
-        $this->response['titulo'] = '!CONTRASEÑA ACTUALIZADA!';
-        $this->response['mensaje'] = '';
-        $this->response['estado'] = true;
-        return response()->json($this->response, 200);
-
+        return response()->json([
+            'estado' => true,
+            'tipo' => 'success',
+            'titulo' => 'CONTRASEÑA ACTUALIZADA',
+            'mensaje' => 'La contraseña fue actualizada correctamente.'
+        ]);
     }
+
+    // Cambio desde Mi Perfil
+    $request->validate([
+        'current_password' => 'required|string',
+        'password' => 'required|string|min:4|confirmed',
+    ]);
+
+    if (!Hash::check($request->current_password, $usuario->password)) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'CONTRASEÑA INCORRECTA',
+            'mensaje' => 'La contraseña actual ingresada no es correcta.'
+        ], 200);
+    }
+
+    if (Hash::check($request->password, $usuario->password)) {
+        return response()->json([
+            'estado' => false,
+            'tipo' => 'warn',
+            'titulo' => 'CONTRASEÑA SIN CAMBIOS',
+            'mensaje' => 'La nueva contraseña debe ser diferente a la contraseña actual.'
+        ], 200);
+    }
+
+    $usuario->password = Hash::make($request->password);
+    $usuario->estado_contraseña = 0;
+    $usuario->save();
+
+    return response()->json([
+        'estado' => true,
+        'tipo' => 'success',
+        'titulo' => 'CONTRASEÑA ACTUALIZADA',
+        'mensaje' => 'Su contraseña fue modificada correctamente.'
+    ], 200);
+}
 
 
 

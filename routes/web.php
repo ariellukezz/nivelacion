@@ -100,7 +100,7 @@ Route::middleware('auth','admin')->group(function () {
         Route::get('/generar-pdf/{id}', [AsignacionController::class, 'pdf']);
 
 
-        
+
         Route::get('/notas', function () {
         return Inertia::render('Admin/NotasCoordinador/index');
         })->name('coordinador.notas');
@@ -252,7 +252,9 @@ Route::middleware('auth','estudiante')->prefix('estudiante')->group(function () 
 });
 
 Route::post('/save-contrasenia', [UsuarioController::class, 'saveNewContra'])->middleware('auth');
-
+Route::get('/mi-perfil', [UsuarioController::class, 'miPerfil'])
+    ->middleware('auth');
+    
 
 Route::post('/get-noti', [UsuarioController::class, 'getNoti'])->middleware('auth');
 Route::post('/read-noti/{id}', [UsuarioController::class, 'readNoti'])->middleware('auth');
