@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'admision' => [
+    'url' => env('ADMISION_API_URL'),
+    'token' => env('ADMISION_API_TOKEN'),
+    ],
+
 ];
