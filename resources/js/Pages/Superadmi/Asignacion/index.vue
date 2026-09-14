@@ -38,8 +38,35 @@
         </div>
       </div>
 
-      <!-- Filtro de competencia (cuando ya hay escuela y aún no se eligió un curso) -->
-      <div v-if="escuela !== null && cursoseleccionado === null">
+      <!-- Filtros de periodo y competencia (cuando ya hay escuela y aún no se eligió un curso) -->
+      <div
+        v-if="escuela !== null && cursoseleccionado === null"
+        class="flex align-items-center mr-4"
+        style="gap: 10px;"
+      >
+        <Dropdown
+          v-model="periodoSeleccionado"
+          :options="periodos"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Periodo"
+          style="width:190px; height:38px"
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="flex align-items-center" style="gap:6px; font-size:.88rem;">
+              <span>{{ nombrePeriodoSeleccionado }}</span>
+              <Tag v-if="esPeriodoActivo" severity="success" value="Activo" style="font-size:.68rem;" />
+            </div>
+            <span v-else>{{ slotProps.placeholder }}</span>
+          </template>
+          <template #option="slotProps">
+            <div class="flex align-items-center justify-content-between" style="width:150px; gap:8px; font-size:.88rem;">
+              <span>{{ slotProps.option.label }}</span>
+              <Tag v-if="slotProps.option.estado === 'activo'" severity="success" value="Activo" style="font-size:.66rem;" />
+            </div>
+          </template>
+        </Dropdown>
+
         <Dropdown
           v-model="competencia"
           :options="competencias"
@@ -47,13 +74,12 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Selecciona una competencia"
-          style="width:325px; height:38px"
-          class="w-full md:w-11rem mr-4"
+          style="width:285px; height:38px"
         >
           <template #option="slotProps">
             <div
               class="flex align-items-center"
-              style="width: 280px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
+              style="width: 245px; font-size:0.88rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
             >
               <div>{{ slotProps.option.label }}</div>
             </div>
@@ -392,7 +418,7 @@
 /* ===== Imports ===== */
 import AuthenticatedLayout from '@/Layouts/LayoutSuperadmi.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
@@ -422,6 +448,21 @@ const filters = ref({});
 
 const competencias = ref([]);
 const competencia = ref(null);
+
+/* ===== Periodos ===== */
+const periodos = ref([]);
+const periodoSeleccionado = ref(null);
+const periodoActivoId = ref(null);
+
+const nombrePeriodoSeleccionado = computed(() => {
+  return periodos.value.find(
+    (item) => Number(item.value) === Number(periodoSeleccionado.value)
+  )?.label ?? 'Periodo';
+});
+
+const esPeriodoActivo = computed(() =>
+  Number(periodoSeleccionado.value) === Number(periodoActivoId.value)
+);
 
 const cursos = ref([]);
 const cursoseleccionado = ref(null);
@@ -524,6 +565,32 @@ const getCompetencias = async () => {
   }
 };
 
+const getPeriodosAsignacion = async () => {
+  try {
+    const res = await axios.get(`${base}/get-periodos`);
+    const rows = Array.isArray(res.data?.raw) ? res.data.raw : [];
+
+    periodos.value = rows.map((item) => ({
+      value: item.id_periodo,
+      label: item.nombre,
+      estado: item.estado,
+    }));
+
+    const activo = rows.find((item) => item.estado === 'activo');
+    periodoActivoId.value = activo?.id_periodo ?? null;
+
+    // Al ingresar, siempre mostrar el periodo activo.
+    if (periodoSeleccionado.value === null) {
+      periodoSeleccionado.value = activo?.id_periodo ?? rows[0]?.id_periodo ?? null;
+    }
+  } catch (error) {
+    periodos.value = [];
+    periodoSeleccionado.value = null;
+    periodoActivoId.value = null;
+    mostrarError(error, 'No se pudieron cargar los periodos');
+  }
+};
+
 const getProgramas = async () => {
   try {
     const res = await axios.post(`${base}/get-programas?page=${pagina.value}`, {
@@ -581,6 +648,7 @@ const getCursos = async () => {
       term: buscarcurso.value,
       competencia: competencia.value,
       escuela: escuela.value?.escuela ?? '',
+      id_periodo: periodoSeleccionado.value,
     });
 
     cursos.value = obtenerLista(res.data);
@@ -656,10 +724,10 @@ const saveCurso = async () => {
     return;
   }
 
-  if (!curso.value.id_docente) {
-    showToast('warn', 'Falta información', 'Seleccione un docente.');
-    return;
-  }
+//   if (!curso.value.id_docente) {
+//     showToast('warn', 'Falta información', 'Seleccione un docente.');
+//     return;
+//   }
 
   try {
     const res = await axios.post(`${base}/save-curso`, {
@@ -894,6 +962,19 @@ watch(competencia, () => {
   getCursos();
 });
 
+watch(periodoSeleccionado, async () => {
+  // Si cambia de periodo, salimos del detalle y recargamos la lista de cursos.
+  cursoseleccionado.value = null;
+  detalle_curso.value = [];
+  alumnosregistro.value = [];
+  alumnos_seleccionados_registro.value = [];
+  seleccionadosTemp.value = [];
+
+  if (escuela.value) {
+    await getCursos();
+  }
+});
+
 watch(cursocompetencia, async (newValue) => {
   // En Editar cargamos manualmente y evitamos duplicar la petición.
   if (cargandoEdicion.value) return;
@@ -938,6 +1019,7 @@ const iniciar = async () => {
     getEscuelas(),
     getCompetencias(),
     getProgramas(),
+    getPeriodosAsignacion(),
   ]);
 };
 

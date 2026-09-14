@@ -29,6 +29,7 @@ use App\Http\Controllers\FichaRiesgoAcademicoController;
 use App\Http\Controllers\FichaRiesgoController;
 use App\Http\Controllers\NotaCoordinadorController;
 use App\Http\Controllers\AdmisionIntegracionController;
+use App\Http\Controllers\DataIngresoIntegracionController;
 
 // Acceso general y dashboard.
 Route::get('/dashboard', function () {
@@ -59,7 +60,8 @@ Route::middleware('auth','admin')->group(function () {
     // Datos de nivelación y perfiles de ingreso.
     Route::get('/prueba2', [TeController::class, 'getTest']);
     Route::get('/notas-perfiles', fn () => Inertia::render('Admin/Matriz/index'))->name('notas-perfiles');
-    Route::get('/ingresantes', [TeController::class, 'getIngresantes']);
+    // Route::get('/ingresantes', [TeController::class, 'getIngresantes']);
+    Route::get('/ingresantes', [DataIngresoIntegracionController::class, 'getIngresantes']);
     Route::get('/data-ingreso', fn () => Inertia::render('Admin/Dataingreso/index'))->name('data-ingreso');
     Route::get('/reprobados-nivelacion/data', [TeController::class, 'getReprobadosNivelacion'])->name('reprobados-nivelacion.data');
     Route::get('/reprobados-nivelacion', fn () =>Inertia::render('Admin/Reprobados/index'))->name('reprobados-nivelacion');

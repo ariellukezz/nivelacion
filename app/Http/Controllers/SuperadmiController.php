@@ -340,6 +340,13 @@ public function getCursos(Request $request)
         ]);
     }
 
+    // Por seguridad, si el frontend no envía un periodo usamos siempre el activo.
+    // El selector de la vista puede enviar otro id_periodo para consultar históricos.
+    $idPeriodo = (int) $request->input('id_periodo', 0);
+    if ($idPeriodo <= 0) {
+        $idPeriodo = Periodo::activoId();
+    }
+
     $res = Curso::select(
         'curso.id',
         'curso.nombre',
@@ -368,6 +375,7 @@ public function getCursos(Request $request)
     ->leftJoin('programa', 'programa.id', '=', 'curso.id_programa')
     ->leftJoin('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
     ->where('curso.escuela', '=', $request->escuela)
+    ->where('curso.id_periodo', '=', $idPeriodo)
     ->where($query_where)
     ->where(function ($query) use ($request) {
         $query
