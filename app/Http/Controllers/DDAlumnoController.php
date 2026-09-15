@@ -64,7 +64,6 @@ class AlumnoController extends Controller
     {
         $idPrograma = (int) $request->input('programa');
         $idCompetencia = (int) $request->input('curso');
-        $idCursoActual = (int) $request->input('id_curso', 0);
 
         if (!$idPrograma || !$idCompetencia) {
             return response()->json([
@@ -94,23 +93,6 @@ class AlumnoController extends Controller
                 'datos' => [],
                 'mensaje' => 'El programa seleccionado no pertenece a su escuela profesional.',
             ], 403);
-        }
-
-        $cursoActual = null;
-        if ($idCursoActual > 0) {
-            $cursoActual = DB::table('curso')
-                ->where('id', $idCursoActual)
-                ->where('id_programa', $idPrograma)
-                ->where('id_competencia', $idCompetencia)
-                ->first();
-
-            if (!$cursoActual) {
-                return response()->json([
-                    'estado' => false,
-                    'datos' => [],
-                    'mensaje' => 'El curso no coincide con el programa o la competencia seleccionados.',
-                ], 422);
-            }
         }
 
         $columnasCompetencia = [
@@ -149,20 +131,6 @@ class AlumnoController extends Controller
             ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
             ->where('datos_ingreso.id_programa', $idPrograma)
             ->where('matriz.' . $columnaNota, '<=', 10.49)
-            ->when($cursoActual, function ($query) use ($cursoActual, $idPrograma, $idCompetencia) {
-                // Si existen varios grupos para la misma competencia, un alumno
-                // no debe aparecer disponible si ya está matriculado en otro grupo.
-                $query->whereNotExists(function ($sub) use ($cursoActual, $idPrograma, $idCompetencia) {
-                    $sub->select(DB::raw(1))
-                        ->from('curso_detalle as cd_otro')
-                        ->join('curso as c_otro', 'c_otro.id', '=', 'cd_otro.id_curso')
-                        ->whereColumn('cd_otro.id_alumno', 'estudiante.id')
-                        ->where('c_otro.id_programa', $idPrograma)
-                        ->where('c_otro.id_periodo', $cursoActual->id_periodo)
-                        ->where('c_otro.id_competencia', $idCompetencia)
-                        ->where('c_otro.id', '<>', $cursoActual->id);
-                });
-            })
             ->select(
                 'estudiante.id',
                 'programa.programa',

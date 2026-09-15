@@ -168,14 +168,6 @@ class CursoController extends Controller
             ], 404);
         }
 
-        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->value('id_periodo');
-        if ($periodoActivo && (int) $curso->id_periodo !== (int) $periodoActivo) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'Los cursos de períodos anteriores son solo de consulta.'
-            ], 422);
-        }
-
         $esSuperadmin = (int) (auth()->user()->rol ?? -1) === 0;
 
         if (!$esSuperadmin) {
@@ -193,25 +185,6 @@ class CursoController extends Controller
             }
         }
 
-        $cantidadAlumnos = CursoDetalle::where('id_curso', $curso->id)->count();
-        if ($cantidadAlumnos > 0) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede eliminar el curso porque tiene ' . $cantidadAlumnos . ' alumno(s) matriculado(s). Retire primero las matrículas o deje el curso inactivo.'
-            ], 409);
-        }
-
-        $tieneDocumentos = DB::table('documentocurso')
-            ->where('id_curso', $curso->id)
-            ->exists();
-
-        if ($tieneDocumentos) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede eliminar el curso porque tiene documentos relacionados.'
-            ], 409);
-        }
-
         $p = clone $curso;
         $curso->delete();
 
@@ -222,6 +195,8 @@ class CursoController extends Controller
         $this->response['datos'] = $p;
         return response()->json($this->response, 200);
     }
+    //
+
 
 public function getEventoInduccionByAlumno(Request $request)
 {

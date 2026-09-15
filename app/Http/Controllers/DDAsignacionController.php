@@ -106,7 +106,6 @@ class AsignacionController extends Controller
             'programa.programa',
             'escuela.nombre as escuela',
             'curso.estado',
-            DB::raw('(SELECT COUNT(*) FROM curso_detalle cd_count WHERE cd_count.id_curso = curso.id) as alumnos_count'),
             'periodo.id_periodo',
             'periodo.nombre as periodo'
         )
@@ -191,8 +190,6 @@ class AsignacionController extends Controller
                 });
             });
 
-        // No paginamos en servidor: hay cursos con más de 200 alumnos y el
-        // frontend ya pagina la colección localmente.
         $res = (clone $base)
             ->select(
                 'estudiante.codigo_est',
@@ -206,7 +203,7 @@ class AsignacionController extends Controller
                 'curso_detalle.nota'
             )
             ->orderBy('estudiante.paterno')
-            ->get();
+            ->paginate(200);
 
         $registrados = (clone $base)
             ->select(
@@ -219,7 +216,7 @@ class AsignacionController extends Controller
                 'estudiante.materno'
             )
             ->orderBy('estudiante.paterno')
-            ->get();
+            ->paginate(200);
 
         return response()->json([
             'estado' => true,
@@ -231,13 +228,11 @@ class AsignacionController extends Controller
     public function save(Request $request)
     {
         $request->validate([
-            'id' => ['nullable', 'integer'],
             'nombre' => ['required', 'string', 'max:150'],
             'id_competencia' => ['required', 'integer'],
             'id_docente' => ['nullable', 'integer'],
-            'grupo' => ['required', 'in:A,B,C,D,E'],
+            'grupo' => ['required', 'string', 'max:1'],
             'id_programa' => ['required', 'integer'],
-            'estado' => ['required', 'boolean'],
         ]);
 
         $programa = $this->programaPermitido((int) $request->id_programa);
@@ -261,22 +256,6 @@ class AsignacionController extends Controller
             ], 422);
         }
 
-        if ($request->filled('id_docente')) {
-            $docenteValido = DB::table('docente')
-                ->join('docente_competencia', 'docente_competencia.id_docente', '=', 'docente.id')
-                ->where('docente.id', (int) $request->id_docente)
-                ->where('docente.estado', 1)
-                ->where('docente_competencia.id_competencia', (int) $request->id_competencia)
-                ->exists();
-
-            if (!$docenteValido) {
-                return response()->json([
-                    'estado' => false,
-                    'mensaje' => 'El docente seleccionado no está activo o no tiene asignada esta competencia.'
-                ], 422);
-            }
-        }
-
         if (!$request->id) {
             $idPeriodo = Periodo::activoId();
             if (!$idPeriodo) {
@@ -286,28 +265,16 @@ class AsignacionController extends Controller
                 ], 422);
             }
 
-            $duplicado = Curso::where('id_programa', $programa->id)
-                ->where('id_periodo', $idPeriodo)
-                ->where('id_competencia', (int) $request->id_competencia)
-                ->where('grupo', $request->grupo)
-                ->exists();
-
-            if ($duplicado) {
-                return response()->json([
-                    'estado' => false,
-                    'mensaje' => 'Ya existe un curso para este programa, período, competencia y grupo.'
-                ], 422);
-            }
-
             $curso = Curso::create([
-                'nombre' => trim($request->nombre),
+                'nombre' => $request->nombre,
                 'id_competencia' => $request->id_competencia,
                 'id_docente' => $request->id_docente ?: null,
                 'grupo' => $request->grupo,
+                // Campo heredado: se mantiene sincronizado, pero ya no controla el acceso.
                 'escuela' => $programa->escuela,
                 'estado' => $request->boolean('estado'),
                 'id_programa' => $programa->id,
-                'id_usuario' => auth()->id(),
+                'id_usuario' => auth()->id(), // auditoría: quién lo creó
                 'id_periodo' => $idPeriodo,
             ]);
 
@@ -330,50 +297,20 @@ class AsignacionController extends Controller
 
         $curso = Curso::findOrFail((int) $request->id);
 
-        if ((int) $curso->id_periodo !== (int) Periodo::activoId()) {
+        if (!$this->esSuperadmin() && (int) $curso->id_periodo !== (int) Periodo::activoId()) {
             return response()->json([
                 'estado' => false,
                 'mensaje' => 'Los cursos de períodos anteriores son solo de consulta.',
             ], 422);
         }
 
-        // Un curso no se mueve de programa desde edición. Si se requiere otro
-        // programa, se crea un curso nuevo para evitar dejar matrículas cruzadas.
-        if ((int) $curso->id_programa !== (int) $programa->id) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede cambiar el programa de un curso existente.'
-            ], 422);
-        }
-
-        $tieneAlumnos = CursoDetalle::where('id_curso', $curso->id)->exists();
-        if ($tieneAlumnos && (int) $curso->id_competencia !== (int) $request->id_competencia) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede cambiar la competencia porque el curso ya tiene alumnos matriculados.'
-            ], 422);
-        }
-
-        $duplicado = Curso::where('id_programa', $curso->id_programa)
-            ->where('id_periodo', $curso->id_periodo)
-            ->where('id_competencia', (int) $request->id_competencia)
-            ->where('grupo', $request->grupo)
-            ->where('id', '<>', $curso->id)
-            ->exists();
-
-        if ($duplicado) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'Ya existe otro curso para este programa, período, competencia y grupo.'
-            ], 422);
-        }
-
-        $curso->nombre = trim($request->nombre);
+        $curso->nombre = $request->nombre;
         $curso->id_competencia = $request->id_competencia;
         $curso->id_docente = $request->id_docente ?: null;
         $curso->grupo = $request->grupo;
         $curso->escuela = $programa->escuela;
         $curso->estado = $request->boolean('estado');
+        $curso->id_programa = $programa->id;
         $curso->save();
 
         return response()->json([
@@ -416,12 +353,6 @@ class AsignacionController extends Controller
 
     public function asignarCursoNivelacion(Request $request)
     {
-        $request->validate([
-            'curso' => ['required', 'integer'],
-            'diferencia' => ['nullable', 'array'],
-            'diferencia2' => ['nullable', 'array'],
-        ]);
-
         $curso = $this->cursoPermitido((int) $request->curso);
         if (!$curso) {
             return response()->json([
@@ -437,61 +368,22 @@ class AsignacionController extends Controller
             ], 422);
         }
 
-        if ((int) $curso->estado !== 1) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede modificar la matrícula de un curso inactivo.'
-            ], 422);
-        }
-
-        $columnasCompetencia = [
-            1 => 'C1_R', 2 => 'C2_R', 3 => 'C3_R', 4 => 'C4_R',
-            5 => 'C5_R', 6 => 'C6_R', 7 => 'C7_R', 8 => 'C8_R',
-            9 => 'C9_R', 10 => 'C10_R', 11 => 'C11_R',
-        ];
-        $columnaNota = $columnasCompetencia[(int) $curso->id_competencia] ?? null;
-
-        if (!$columnaNota) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'La competencia del curso no tiene una columna de nota configurada.'
-            ], 422);
-        }
-
         try {
-            DB::transaction(function () use ($request, $curso, $columnaNota) {
+            DB::transaction(function () use ($request, $curso) {
                 foreach ((array) $request->diferencia as $alumno) {
                     $idAlumno = (int) ($alumno['id'] ?? 0);
                     if (!$idAlumno) {
                         continue;
                     }
 
-                    $alumnoElegible = DB::table('estudiante')
+                    $pertenece = DB::table('estudiante')
                         ->join('datos_ingreso', 'datos_ingreso.codigo_est', '=', 'estudiante.codigo_est')
-                        ->join('matriz', 'matriz.codigo_est', '=', 'estudiante.codigo_est')
                         ->where('estudiante.id', $idAlumno)
                         ->where('datos_ingreso.id_programa', $curso->id_programa)
-                        ->where('matriz.' . $columnaNota, '<=', 10.49)
-                        ->select('estudiante.codigo_est')
-                        ->first();
-
-                    if (!$alumnoElegible) {
-                        throw new \RuntimeException('El alumno seleccionado no pertenece al programa o no requiere nivelación en esta competencia.');
-                    }
-
-                    $yaEnOtroGrupo = DB::table('curso_detalle as cd')
-                        ->join('curso as c', 'c.id', '=', 'cd.id_curso')
-                        ->where('cd.id_alumno', $idAlumno)
-                        ->where('c.id_programa', $curso->id_programa)
-                        ->where('c.id_periodo', $curso->id_periodo)
-                        ->where('c.id_competencia', $curso->id_competencia)
-                        ->where('c.id', '<>', $curso->id)
                         ->exists();
 
-                    if ($yaEnOtroGrupo) {
-                        throw new \RuntimeException(
-                            'El alumno ' . $alumnoElegible->codigo_est . ' ya está matriculado en otro grupo de la misma competencia.'
-                        );
+                    if (!$pertenece) {
+                        throw new \RuntimeException('Se intentó asignar un alumno que no pertenece al programa del curso.');
                     }
 
                     CursoDetalle::firstOrCreate([

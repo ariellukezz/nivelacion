@@ -305,220 +305,135 @@ public function getProgramas(Request $request){
     return response()->json($this->response, 200);
 
   }
-public function getCompetencias(Request $request)
-{
-    $idPrograma = (int) $request->input('programa', 0);
 
-    if ($idPrograma > 0) {
-        $res = DB::table('competencia_programa as cp')
-            ->join('competencia as c', 'c.id', '=', 'cp.id_competencia')
-            ->where('cp.id_programa', $idPrograma)
-            ->where('cp.estado', 1)
-            ->when($request->filled('term'), function ($query) use ($request) {
-                $query->where('c.nombre', 'LIKE', '%' . trim((string) $request->term) . '%');
-            })
-            ->select('c.id as value', 'c.nombre as label')
-            ->distinct()
-            ->orderBy('c.id')
-            ->get();
+  public function getCompetencias(Request $request){
 
-        return response()->json([
-            'estado' => true,
-            'datos' => $res,
-        ], 200);
-    }
+    $query_where = [];
+    $res = Competencia::select(
+        'id as value', 'nombre as label'
+    )
+    ->where($query_where)
+    ->where(function ($query) use ($request) {
+        return $query
+            ->orWhere('nombre', 'LIKE', '%' . $request->term . '%');
+    })->orderBy('id', 'ASC')
+    ->paginate(20);
 
-    $res = Competencia::select('id as value', 'nombre as label')
-        ->when($request->filled('term'), function ($query) use ($request) {
-            $query->where('nombre', 'LIKE', '%' . trim((string) $request->term) . '%');
-        })
-        ->orderBy('id', 'ASC')
-        ->paginate(20);
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+    return response()->json($this->response, 200);
 
-    return response()->json([
-        'estado' => true,
-        'datos' => $res,
-    ], 200);
-}
+  }
 //termina aqui
 
 // empieza AsignacionController
+
 public function getCursos(Request $request)
 {
-    $idPrograma = (int) $request->input('programa', 0);
+    $query_where = [];
 
-    if ($idPrograma <= 0) {
-        return response()->json([
-            'estado' => true,
-            'datos' => ['data' => []],
-            'periodo_activo' => Periodo::activoId(),
-            'periodos' => Periodo::select('id_periodo as value', 'nombre as label', 'estado')
-                ->orderByDesc('id_periodo')
-                ->get(),
-        ], 200);
+    if ($request->competencia !== null) {
+        array_push($query_where, [
+            'curso.id_competencia',
+            '=',
+            $request->competencia
+        ]);
     }
 
-    $programa = DB::table('programa')
-        ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
-        ->where('programa.id', $idPrograma)
-        ->select(
-            'programa.id',
-            'programa.programa',
-            'programa.id_escuela',
-            'escuela.nombre as escuela'
-        )
-        ->first();
-
-    if (!$programa) {
-        return response()->json([
-            'estado' => false,
-            'mensaje' => 'Programa de estudio no encontrado.',
-        ], 404);
-    }
-
-    $idPeriodo = (int) ($request->input('periodo') ?: Periodo::activoId());
-
+    // Por seguridad, si el frontend no envía un periodo usamos siempre el activo.
+    // El selector de la vista puede enviar otro id_periodo para consultar históricos.
+    $idPeriodo = (int) $request->input('id_periodo', 0);
     if ($idPeriodo <= 0) {
-        return response()->json([
-            'estado' => false,
-            'mensaje' => 'No existe un período activo configurado.',
-        ], 422);
+        $idPeriodo = Periodo::activoId();
     }
 
     $res = Curso::select(
         'curso.id',
         'curso.nombre',
         'docente.id as id_docente',
-        DB::raw("TRIM(CONCAT(COALESCE(docente.nombres,''),' ',COALESCE(docente.paterno,''),' ',COALESCE(docente.materno,''))) as docente"),
+        DB::raw("CONCAT(docente.nombres,' ',docente.paterno,' ',docente.materno) as docente"),
         'competencia.id as id_competencia',
         'competencia.nombre as competencia',
         'curso.grupo',
+
+        // PROGRAMA
         'curso.id_programa',
         'programa.programa',
-        'escuela.id as id_escuela',
-        'escuela.nombre as escuela',
+
+        // ESCUELA
+        'curso.escuela',
+
+        // ESTADO
         'curso.estado',
-        DB::raw('(SELECT COUNT(*) FROM curso_detalle cd_count WHERE cd_count.id_curso = curso.id) as alumnos_count'),
+
+        // PERIODO
         'curso.id_periodo',
         'periodo.nombre as periodo'
     )
-        ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
-        ->join('competencia', 'competencia.id', '=', 'curso.id_competencia')
-        ->join('programa', 'programa.id', '=', 'curso.id_programa')
-        ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
-        ->join('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
-        ->where('curso.id_programa', $idPrograma)
-        ->where('programa.id_escuela', $programa->id_escuela)
-        ->where('curso.id_periodo', $idPeriodo)
-        ->when($request->filled('competencia'), function ($query) use ($request) {
-            $query->where('curso.id_competencia', (int) $request->competencia);
-        })
-        ->when($request->filled('term'), function ($query) use ($request) {
-            $term = trim((string) $request->term);
-            $query->where(function ($q) use ($term) {
-                $q->where('curso.nombre', 'LIKE', '%' . $term . '%')
-                    ->orWhere('competencia.nombre', 'LIKE', '%' . $term . '%')
-                    ->orWhere('docente.nombres', 'LIKE', '%' . $term . '%')
-                    ->orWhere('docente.paterno', 'LIKE', '%' . $term . '%');
-            });
-        })
-        ->orderByDesc('curso.id')
-        ->paginate(100);
+    ->leftJoin('docente', 'docente.id', '=', 'curso.id_docente')
+    ->join('competencia', 'competencia.id', '=', 'curso.id_competencia')
+    ->leftJoin('programa', 'programa.id', '=', 'curso.id_programa')
+    ->leftJoin('periodo', 'periodo.id_periodo', '=', 'curso.id_periodo')
+    ->where('curso.escuela', '=', $request->escuela)
+    ->where('curso.id_periodo', '=', $idPeriodo)
+    ->where($query_where)
+    ->where(function ($query) use ($request) {
+        $query
+            ->where('curso.nombre', 'LIKE', '%' . $request->term . '%')
+            ->orWhere('competencia.nombre', 'LIKE', '%' . $request->term . '%');
+    })
+    ->orderBy('curso.id', 'DESC')
+    ->paginate(100);
 
-    return response()->json([
-        'estado' => true,
-        'datos' => $res,
-        'periodo_activo' => Periodo::activoId(),
-        'periodos' => Periodo::select('id_periodo as value', 'nombre as label', 'estado')
-            ->orderByDesc('id_periodo')
-            ->get(),
-    ], 200);
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+
+    return response()->json($this->response, 200);
 }
-public function getDetalleCurso(Request $request)
-{
-    $cursoSeleccionado = DB::table('curso')
-        ->where('id', (int) $request->curso)
-        ->first();
 
-    if (!$cursoSeleccionado) {
-        return response()->json([
-            'estado' => false,
-            'datos' => [],
-            'registrados' => [],
-            'mensaje' => 'Curso no encontrado.',
-        ], 404);
-    }
+public function getDetalleCurso(Request $request){
 
-    $columnasCompetencia = [
-        1 => 'C1_R', 2 => 'C2_R', 3 => 'C3_R', 4 => 'C4_R',
-        5 => 'C5_R', 6 => 'C6_R', 7 => 'C7_R', 8 => 'C8_R',
-        9 => 'C9_R', 10 => 'C10_R', 11 => 'C11_R',
-    ];
+    $query_where = [];
+    //if ($request->competencia !== null) array_push($query_where, ['curso.id_competencia', '=', $request->competencia]);
 
-    $columnaNotaActual = $columnasCompetencia[(int) $cursoSeleccionado->id_competencia] ?? null;
 
-    if (!$columnaNotaActual) {
-        return response()->json([
-            'estado' => false,
-            'datos' => [],
-            'registrados' => [],
-            'mensaje' => 'La competencia del curso no tiene una columna de nota configurada.',
-        ], 422);
-    }
+    $res = CursoDetalle::select(
+        'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+       //bdhh 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno',
+        'curso.nombre as curso',
+        'curso_detalle.nota'
+    )
+    ->join('curso','curso_detalle.id_curso','curso.id')
+    ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+    ->where('curso.id',"=",$request->curso)
+    ->where($query_where)
+    ->where(function ($query) use ($request) {
+        return $query
+            ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+    })->orderBy('curso.id', 'DESC')
+    ->paginate(200);
 
-    $base = CursoDetalle::query()
-        ->join('curso', 'curso.id', '=', 'curso_detalle.id_curso')
-        ->join('estudiante', 'estudiante.id', '=', 'curso_detalle.id_alumno')
-        ->join('datos_ingreso', 'datos_ingreso.codigo_est', '=', 'estudiante.codigo_est')
-        ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
-        ->join('matriz', 'matriz.codigo_est', '=', 'estudiante.codigo_est')
-        ->where('curso.id', (int) $request->curso)
-        ->when($request->filled('term'), function ($query) use ($request) {
-            $term = trim((string) $request->term);
-            $query->where(function ($q) use ($term) {
-                $q->where('estudiante.codigo_est', 'LIKE', '%' . $term . '%')
-                    ->orWhere('estudiante.nombres', 'LIKE', '%' . $term . '%')
-                    ->orWhere('estudiante.paterno', 'LIKE', '%' . $term . '%')
-                    ->orWhere('estudiante.materno', 'LIKE', '%' . $term . '%');
-            });
-        });
+    $registrados = CursoDetalle::select(
+        'estudiante.id', 'estudiante.codigo_est', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+       //bdhh 'estudiante.id', 'estudiante.dni', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno')
+    ->join('curso','curso_detalle.id_curso','curso.id')
+    ->join('estudiante','estudiante.id','curso_detalle.id_alumno')
+    ->where('curso.id',"=",$request->curso)
+    ->where($query_where)
+    ->where(function ($query) use ($request) {
+        return $query
+            ->orWhere('curso.nombre', 'LIKE', '%' . $request->term . '%');
+    })->orderBy('curso.id', 'DESC')
+    ->paginate(200);
 
-    // El frontend ya pagina localmente. Devolver todos evita que cursos con
-    // más de 200 estudiantes queden parcialmente visibles.
-    $res = (clone $base)
-        ->select(
-            'estudiante.codigo_est',
-            'datos_ingreso.semestre',
-            'programa.programa',
-            'estudiante.nombres',
-            'estudiante.paterno',
-            'estudiante.materno',
-            'curso.nombre as curso',
-            DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
-            'curso_detalle.nota'
-        )
-        ->orderBy('estudiante.paterno')
-        ->get();
+    $this->response['estado'] = true;
+    $this->response['datos'] = $res;
+    $this->response['registrados'] = $registrados;
 
-    $registrados = (clone $base)
-        ->select(
-            'estudiante.id',
-            'estudiante.codigo_est',
-            'programa.programa',
-            DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
-            'estudiante.nombres',
-            'estudiante.paterno',
-            'estudiante.materno'
-        )
-        ->orderBy('estudiante.paterno')
-        ->get();
+    return response()->json($this->response, 200);
 
-    return response()->json([
-        'estado' => true,
-        'datos' => $res,
-        'registrados' => $registrados,
-    ], 200);
 }
+
 
 public function save(Request $request ) {
 
@@ -917,42 +832,16 @@ public function savePeriodo(Request $request)
         'estado' => 'required|in:activo,inactivo'
     ]);
 
-    $periodo = DB::transaction(function () use ($request, $data) {
-        // Solo debe existir un período activo. Si este registro se activa,
-        // desactivamos los demás dentro de la misma transacción.
-        if ($data['estado'] === Periodo::ACTIVO) {
-            Periodo::where('estado', Periodo::ACTIVO)
-                ->when($request->id_periodo, function ($query) use ($request) {
-                    $query->where('id_periodo', '<>', (int) $request->id_periodo);
-                })
-                ->update(['estado' => 'inactivo']);
-        }
+    if ($request->id_periodo) {
+        // Si estamos actualizando, encontramos el periodo y lo actualizamos
+        $periodo = Periodo::find($request->id_periodo);
+        $periodo->update($data);
+    } else {
+        // Si no existe el id, lo creamos y dejamos que el DB lo maneje
+        $periodo = Periodo::create($data);
+    }
 
-        if ($request->id_periodo) {
-            $periodo = Periodo::find((int) $request->id_periodo);
-
-            if (!$periodo) {
-                throw ValidationException::withMessages([
-                    'id_periodo' => 'El período que intenta modificar no existe.'
-                ]);
-            }
-
-            $periodo->update($data);
-            return $periodo;
-        }
-
-        return Periodo::create($data);
-    });
-
-    // Periodo::activoId() se almacena 10 minutos en caché.
-    // Limpiarlo evita que Asignación siga usando el período anterior.
-    Cache::forget('periodo_activo_id');
-
-    return response()->json([
-        'estado' => true,
-        'datos' => $periodo,
-        'mensaje' => 'Período guardado correctamente.'
-    ], 200);
+    return $periodo;
 }
 
     /**

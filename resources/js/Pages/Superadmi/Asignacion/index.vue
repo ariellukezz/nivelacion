@@ -1,68 +1,63 @@
 <template>
   <Head title="Asignación" />
   <AuthenticatedLayout>
-    <!-- Barra superior -->
     <div
       class="flex mb-0"
-      style="justify-content: space-between; align-items:center; margin-top:0px; border-bottom:solid 1px #cdcdcd9D; height:50px; background:white;"
+      style="justify-content: space-between; align-items:center; margin-top:0; border-bottom:solid 1px #cdcdcd9D; min-height:50px; background:white; padding: 4px 8px; gap: 10px;"
     >
-      <div class="flex">
-        <Button severity="secondary" style="font-size: 0.9rem" text @click="Inicio">Inicio</Button>
+      <div class="flex align-items-center" style="min-width: 0; flex-wrap: wrap;">
+        <Button severity="secondary" style="font-size: 0.85rem" text @click="Inicio">Inicio</Button>
 
-        <div v-if="escuela !== null" class="flex justify-content-center" style="align-items:center;">
+        <div v-if="escuela" class="flex align-items-center">
           <i class="pi pi-angle-right" />
-          <Button severity="secondary" @click="resEsuela" style="font-size: 0.9rem" text>
-            <div style="max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-              <span>{{ escuela.escuela }}</span>
-            </div>
+          <Button severity="secondary" @click="volverEscuela" style="font-size: 0.85rem" text>
+            <span class="breadcrumb-text">{{ escuela.escuela }}</span>
           </Button>
         </div>
 
-        <div v-if="cursoseleccionado !== null" class="flex justify-content-center" style="align-items:center;">
+        <div v-if="programaSeleccionado" class="flex align-items-center">
           <i class="pi pi-angle-right" />
-          <Button severity="secondary" style="font-size: 0.9rem" text>
-            <div style="max-width: 180px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-              <span>{{ cursoseleccionado.nombre }}</span>
-            </div>
+          <Button severity="secondary" @click="volverPrograma" style="font-size: 0.85rem" text>
+            <span class="breadcrumb-text">{{ programaSeleccionado.label }}</span>
+          </Button>
+        </div>
+
+        <div v-if="cursoseleccionado" class="flex align-items-center">
+          <i class="pi pi-angle-right" />
+          <Button severity="secondary" style="font-size: 0.85rem" text>
+            <span class="breadcrumb-text">{{ cursoseleccionado.nombre }}</span>
           </Button>
         </div>
       </div>
 
-      <!-- Buscador de escuela (cuando aún no se selecciona) -->
-      <div v-if="escuela === null">
-        <div class="flex mr-4" style="justify-content: flex-end;">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search" />
-            <InputText v-model="buscarescuela" style="padding-left: 40px; height: 40px;" placeholder="Buscar escuela" />
-          </span>
-        </div>
+      <div v-if="!escuela" class="flex mr-2">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search" />
+          <InputText v-model="buscarescuela" class="compact-input" placeholder="Buscar escuela" />
+        </span>
       </div>
 
-      <!-- Filtros de periodo y competencia (cuando ya hay escuela y aún no se eligió un curso) -->
-      <div
-        v-if="escuela !== null && cursoseleccionado === null"
-        class="flex align-items-center mr-4"
-        style="gap: 10px;"
-      >
+      <div v-else-if="!programaSeleccionado" class="flex mr-2">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search" />
+          <InputText v-model="buscarprograma" class="compact-input" placeholder="Buscar programa" />
+        </span>
+      </div>
+
+      <div v-else-if="!cursoseleccionado" class="flex align-items-center gap-2 mr-2" style="flex-wrap: wrap; justify-content: flex-end;">
         <Dropdown
           v-model="periodoSeleccionado"
           :options="periodos"
           optionLabel="label"
           optionValue="value"
-          placeholder="Periodo"
-          style="width:190px; height:38px"
+          placeholder="Período"
+          class="compact-dropdown"
+          style="min-width: 180px"
         >
-          <template #value="slotProps">
-            <div v-if="slotProps.value" class="flex align-items-center" style="gap:6px; font-size:.88rem;">
-              <span>{{ nombrePeriodoSeleccionado }}</span>
-              <Tag v-if="esPeriodoActivo" severity="success" value="Activo" style="font-size:.68rem;" />
-            </div>
-            <span v-else>{{ slotProps.placeholder }}</span>
-          </template>
           <template #option="slotProps">
-            <div class="flex align-items-center justify-content-between" style="width:150px; gap:8px; font-size:.88rem;">
+            <div class="flex align-items-center gap-2">
               <span>{{ slotProps.option.label }}</span>
-              <Tag v-if="slotProps.option.estado === 'activo'" severity="success" value="Activo" style="font-size:.66rem;" />
+              <Tag v-if="slotProps.option.estado === 'activo'" severity="success" value="Activo" />
             </div>
           </template>
         </Dropdown>
@@ -70,352 +65,313 @@
         <Dropdown
           v-model="competencia"
           :options="competencias"
-          severity="primary"
           optionLabel="label"
           optionValue="value"
-          placeholder="Selecciona una competencia"
-          style="width:285px; height:38px"
-        >
-          <template #option="slotProps">
-            <div
-              class="flex align-items-center"
-              style="width: 245px; font-size:0.88rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
-            >
-              <div>{{ slotProps.option.label }}</div>
-            </div>
-          </template>
-        </Dropdown>
+          showClear
+          placeholder="Todas las competencias"
+          class="compact-dropdown"
+          style="min-width: 260px"
+        />
+      </div>
+
+      <div v-else class="flex mr-2">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search" />
+          <InputText v-model="buscarDetalle" class="compact-input" placeholder="Buscar alumno" />
+        </span>
       </div>
     </div>
 
-    <!-- Contenido -->
-    <div class="bg-white shadow-xs p-4" style="height: calc(100vh - 140px); font-family: Arial, Helvetica, sans-serif;">
-      <!-- PASO 1: Seleccionar Escuela -->
-      <div v-if="escuela === null" class="card">
+    <div class="bg-white shadow-xs p-4 asignacion-container">
+      <!-- PASO 1: ESCUELA -->
+      <div v-if="!escuela" class="card">
+        <div class="section-title">Seleccione una Escuela Profesional</div>
         <DataTable
           v-model:selection="escuela"
           selectionMode="single"
+          dataKey="id"
           :value="escuelas"
-          :class="'p-datatable-sm'"
-          tableStyle="min-width: 50rem"
-          style="font-size: .9rem;"
+          class="p-datatable-sm compact-table"
           :paginator="true"
           :rows="10"
-          :filters="filters"
+          responsiveLayout="scroll"
         >
-          <!-- ✅ CAMBIO: agregamos Ubicación (campo 'filial') igual que en Coordinador -->
-          <Column field="filial" header="Ubicación"></Column>
-          <Column field="escuela" header="Escuela"></Column>
-          <Column field="facultad" header="Facultad"></Column>
-          <Column field="area" header="Área"></Column>
+          <Column field="filial" header="Ubicación" />
+          <Column field="escuela" header="Escuela Profesional" />
+          <Column field="facultad" header="Facultad" />
+          <Column field="area" header="Área" />
         </DataTable>
       </div>
 
-      <!-- PASO 2: Cursos de la Escuela -->
-      <div v-if="escuela !== null && cursoseleccionado === null">
-        <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="nuevoCurso" style="height:40px">Nuevo Curso</Button>
-          <div>
-            <div class="flex mb-3" style="justify-content: flex-end;">
-              <span class="p-input-icon-left">
-                <i class="pi pi-search" />
-                <InputText v-model="buscarcurso" style="padding-left: 40px; height: 40px;" placeholder="Buscar curso" />
-              </span>
-            </div>
+      <!-- PASO 2: PROGRAMA -->
+      <div v-else-if="!programaSeleccionado">
+        <div class="section-title">Programas de estudio de {{ escuela.escuela }}</div>
+        <DataTable
+          v-model:selection="programaSeleccionado"
+          selectionMode="single"
+          dataKey="value"
+          :value="programas"
+          class="p-datatable-sm compact-table"
+          :paginator="true"
+          :rows="12"
+          responsiveLayout="scroll"
+        >
+          <Column field="label" header="Programa de estudio" />
+          <Column header="Acción" style="width: 110px">
+            <template #body="{ data }">
+              <Button label="Ingresar" size="small" outlined @click.stop="programaSeleccionado = data" />
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <!-- PASO 3: CURSOS -->
+      <div v-else-if="!cursoseleccionado">
+        <div class="flex align-items-center mb-3" style="justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+          <div class="flex align-items-center gap-2">
+            <Button
+              severity="primary"
+              label="Nuevo Curso"
+              icon="pi pi-plus"
+              size="small"
+              :disabled="!esPeriodoActivo"
+              @click="nuevoCurso"
+            />
+            <Tag v-if="esPeriodoActivo" severity="success" value="Período activo" />
+            <Tag v-else severity="secondary" value="Período histórico: solo consulta" />
+          </div>
+
+          <span class="p-input-icon-left">
+            <i class="pi pi-search" />
+            <InputText v-model="buscarcurso" class="compact-input" placeholder="Buscar curso" />
+          </span>
+        </div>
+
+        <DataTable
+          v-model:selection="cursoseleccionado"
+          selectionMode="single"
+          dataKey="id"
+          :value="cursos"
+          class="p-datatable-sm compact-table"
+          :paginator="true"
+          :rows="10"
+          responsiveLayout="scroll"
+        >
+          <Column field="nombre" header="Curso" />
+          <Column field="competencia" header="Competencia" />
+          <Column field="docente" header="Docente">
+            <template #body="{ data }">
+              <span>{{ data.docente || 'Sin docente' }}</span>
+            </template>
+          </Column>
+          <Column field="grupo" header="Grupo" style="width: 75px" />
+          <Column field="periodo" header="Período" />
+          <Column field="programa" header="Programa" />
+          <Column field="estado" header="Estado" style="width: 90px">
+            <template #body="{ data }">
+              <Tag v-if="Number(data.estado) === 1" severity="info" value="Activo" />
+              <Tag v-else severity="secondary" value="Inactivo" />
+            </template>
+          </Column>
+          <Column header="Lista" style="width: 70px">
+            <template #body="{ data }">
+              <Button
+                :disabled="Number(data.estado) !== 1"
+                icon="pi pi-print"
+                severity="success"
+                size="small"
+                text
+                @click.stop="descargarPDF(data.id)"
+              />
+            </template>
+          </Column>
+          <Column header="Acciones" style="width: 115px">
+            <template #body="{ data }">
+              <div class="flex gap-1">
+                <Button
+                  icon="pi pi-pencil"
+                  size="small"
+                  text
+                  :disabled="!esPeriodoActivo"
+                  @click.stop="editar(data)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  size="small"
+                  text
+                  :disabled="!esPeriodoActivo"
+                  @click.stop="confirmarEliminar($event, data)"
+                />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <!-- PASO 4: ALUMNOS DEL CURSO -->
+      <div v-else>
+        <div class="flex align-items-center mb-3" style="justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+          <div class="flex align-items-center gap-2">
+            <Button
+              severity="primary"
+              label="Seleccionar Alumnos"
+              icon="pi pi-users"
+              size="small"
+              :disabled="!esPeriodoActivo || Number(cursoseleccionado?.estado) !== 1"
+              @click="abrirSeleccionar"
+            />
+            <Tag v-if="!esPeriodoActivo" severity="secondary" value="Período histórico: solo consulta" />
           </div>
         </div>
 
-        <div class="mt-3">
-          <DataTable
-            v-model:selection="cursoseleccionado"
-            selectionMode="single"
-            :value="cursos"
-            :class="'p-datatable-sm'"
-            tableStyle="min-width: 50rem"
-            style="font-size: .9rem;"
-            :paginator="true"
-            :rows="9"
-          >
-            <Column field="nombre" header="Nombre del Curso"></Column>
-            <Column field="competencia" header="(Competencia) Curso"></Column>
-            <Column field="docente" header="Docente">
-              <template #body="{ data }">
-                <div class="flex" style="justify-content: flex-start;">
-                  <div>{{ data.docente }}</div>
-                </div>
-              </template>
-            </Column>
-            <Column field="grupo" header="Grupo"></Column>
-            <Column field="periodo" header="Periodo"></Column>
-
-            <!-- Programa y Escuela Profesional -->
-            <Column field="programa" header="Programa"></Column>
-            <Column field="escuela" header="Escuela Prof."></Column>
-
-            <!-- ✅ CAMBIO: columna 'Lista' con botón de PDF igual que Coordinador
-                 🔸 Requiere que en el <script> exista el método:  const descargarPDF = id => window.open(`${base}/generar-pdf/`+id,'_self')
-                 Si aún no lo agregaste en tu script, añade esa función para que este botón funcione. -->
-            <Column field="estado" header="Lista" style="text-align: center;" width="80px">
-              <template #body="{ data }">
-                <div class="flex" style="justify-content: center;">
-                  <Button
-                    :disabled="data.estado !== 1"
-                    class="secondary"
-                    severity="success"
-                    icon="pi pi-print"
-                    aria-label="Imprimir"
-                    @click.stop="descargarPDF && data.estado === 1 ? descargarPDF(data.id) : null"
-                    size="small"
-                    style="width: 25px; height: 25px;"
-                  />
-                </div>
-              </template>
-            </Column>
-
-            <Column field="estado" header="Estado" width="90px">
-              <template #body="{ data }">
-                <div class="flex" style="justify-content: center;">
-                  <Tag v-if="data.estado === 1" severity="info" value="Activo"></Tag>
-                  <Tag v-else :style="{ background: '#CDCDCD' }" value="Inactivo"></Tag>
-                </div>
-              </template>
-            </Column>
-
-            <Column field="id_programa" header="Acciones" width="100px">
-              <template #body="{ data }">
-                <div class="flex">
-                  <div class="mr-2">
-                    <Button
-                      class="secondary"
-                      icon="pi pi-pencil"
-                      aria-label="Editar"
-                      @click.stop="editar(data)"
-                      size="small"
-                      style="width: 25px; height: 25px;"
-                    />
-                  </div>
-                  <Button
-                    icon="pi pi-trash"
-                    severity="danger"
-                    aria-label="Eliminar"
-                    @click.stop="confirm2($event, data)"
-                    size="small"
-                    style="width: 25px; height: 25px;"
-                  />
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
+        <DataTable
+          :value="detalle_curso"
+          class="p-datatable-sm compact-table"
+          :paginator="true"
+          :rows="10"
+          responsiveLayout="scroll"
+        >
+          <Column field="codigo_est" header="Código" />
+          <Column field="semestre" header="Ingreso" />
+          <Column field="programa" header="Programa" />
+          <Column field="nombres" header="Nombres" />
+          <Column field="paterno" header="Paterno" />
+          <Column field="materno" header="Materno" />
+          <Column field="nota_actual" header="Nota inicial" style="width: 95px" />
+          <Column field="nota" header="Nota curso" style="width: 95px" />
+          <Column header="Condición" style="width: 110px">
+            <template #body="{ data }">
+              <Tag v-if="data.nota !== null && Number(data.nota) >= 10.5" severity="success" value="Aprobado" />
+              <Tag v-else-if="data.nota !== null" severity="danger" value="Desaprobado" />
+              <Tag v-else severity="secondary" value="Sin nota" />
+            </template>
+          </Column>
+        </DataTable>
       </div>
 
-      <!-- PASO 3: Detalle del Curso y Asignaciones -->
-      <div v-if="escuela !== null && cursoseleccionado !== null">
-        <div class="flex" style="justify-content: space-between;">
-          <Button severity="primary" @click="abrirseleccionar()" style="height:40px">Seleccionar Alumnos</Button>
-          <div>
-            <div class="flex mb-3" style="justify-content: flex-end;">
-              <span class="p-input-icon-left">
-                <i class="pi pi-search" />
-                <InputText v-model="buscar" style="padding-left: 40px; height: 40px;" placeholder="Buscar" />
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-3">
-          <DataTable
-            selectionMode="single"
-            :value="detalle_curso"
-            :class="'p-datatable-sm'"
-            tableStyle="min-width: 50rem"
-            style="font-size: .9rem;"
-            :paginator="true"
-            :rows="9"
-          >
-            <Column field="codigo_est" header="Código"></Column>
-
-            <!-- ✅ CAMBIO: igual que Coordinador, mostramos 'Ingreso' si tu backend envía 'semestre' -->
-            <Column field="semestre" header="Ingreso"></Column>
-
-            <Column field="nombres" header="Nombres"></Column>
-            <Column field="paterno" header="Paterno"></Column>
-            <Column field="materno" header="Materno"></Column>
-            <Column field="curso" header="Curso"></Column>
-            <Column field="nota" header="Nota"></Column>
-
-            <Column field="estado" header="Condición" width="100px">
-              <template #body="{ data }">
-                <div class="flex" style="justify-content: center;">
-                  <Tag v-if="data.nota >= 10.5" severity="info" value="Aprobado"></Tag>
-                  <Tag v-else severity="danger" value="Desaprobado"></Tag>
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
-      </div>
-
-      <!-- Toasts y Confirm -->
       <Toast />
       <ConfirmPopup />
 
-      <!-- MODAL: Crear/Editar Curso -->
-      <Dialog v-model:visible="visible" modal :header="!curso.id ? 'Curso nuevo' : 'Editar Curso'" :style="{ width: '500px' }">
-        <div class="flex mt-0 mb-3 align-items-center" style="justify-content: flex-end;">
-          <label>Estado</label>
-          <div class="ml-3"><InputSwitch v-model="curso.estado" /></div>
+      <!-- CURSO -->
+      <Dialog
+        v-model:visible="visible"
+        modal
+        :header="curso.id ? 'Editar Curso' : 'Curso nuevo'"
+        :style="{ width: '520px', maxWidth: '95vw' }"
+      >
+        <div class="mb-3">
+          <label class="field-label">Escuela Profesional</label>
+          <InputText :modelValue="escuela?.escuela || ''" disabled class="w-full compact-input-field" />
         </div>
 
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-          <div class="mb-3" style="width: 68%;">
-            <div><label>Nombre del Curso</label></div>
-            <InputText style="width: 100%; height: 40px;" type="text" v-model="curso.nombre" />
-          </div>
-
-          <div class="mb-3" style="width: 28%;">
-            <div><label>Grupo</label></div>
-            <Dropdown
-              v-model="curso.grupo"
-              :options="grupos"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecciona un grupo"
-              style="width:100%;"
-              class="w-full md:w-11rem"
-            >
-              <template #option="slotProps">
-                <div
-                  class="flex align-items-center"
-                  style="font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
-                >
-                  <div>{{ slotProps.option.label }}</div>
-                </div>
-              </template>
-            </Dropdown>
-          </div>
+        <div class="mb-3">
+          <label class="field-label">Programa de estudio</label>
+          <InputText :modelValue="programaSeleccionado?.label || ''" disabled class="w-full compact-input-field" />
         </div>
 
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-          <div class="mb-3" style="width: 100%;">
-            <div><label>Competencia</label></div>
+        <div class="flex gap-3">
+          <div class="mb-3" style="flex: 1">
+            <label class="field-label">Competencia</label>
             <Dropdown
               v-model="cursocompetencia"
               :options="competencias"
               optionLabel="label"
               optionValue="value"
               placeholder="Seleccione una competencia"
-              style="width:100%;"
-              class="w-full md:w-11rem"
-            >
-              <template #option="slotProps">
-                <div
-                  class="flex align-items-center"
-                  style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
-                >
-                  <div>{{ slotProps.option.label }}</div>
-                </div>
-              </template>
-            </Dropdown>
+              class="w-full"
+              :disabled="Boolean(curso.id) && Number(curso.alumnos_count) > 0"
+            />
+            <small v-if="curso.id && Number(curso.alumnos_count) > 0" style="color:#666">
+              La competencia no puede cambiarse porque el curso ya tiene alumnos matriculados.
+            </small>
           </div>
-        </div>
-
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-          <div class="mb-3" style="width: 100%;">
-            <div><label>Programa de estudio</label></div>
+          <div class="mb-3" style="width: 120px">
+            <label class="field-label">Grupo</label>
             <Dropdown
-              v-model="prog"
-              :options="programas"
-              filter
+              v-model="curso.grupo"
+              :options="grupos"
               optionLabel="label"
               optionValue="value"
-              placeholder="Seleccione un programa de estudio"
-              style="width:100%;"
-              class="w-full md:w-11rem"
-            >
-              <template #option="slotProps">
-                <div
-                  class="flex align-items-center"
-                  style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
-                >
-                  <div>{{ slotProps.option.label }}</div>
-                </div>
-              </template>
-            </Dropdown>
+              class="w-full"
+            />
           </div>
         </div>
 
-        <div class="flex" style="width: 100%; justify-content: space-between;">
-          <div class="mb-3" style="width: 100%;">
-            <div><label>Docente</label></div>
-            <Dropdown
-              v-model="curso.id_docente"
-              :options="docentes2"
-              filter
-              optionLabel="nombres"
-              optionValue="id"
-              placeholder="Selecciona un docente"
-              style="width:100%;"
-              class="w-full md:w-11rem"
-            >
-              <template #option="slotProps">
-                <div
-                  class="flex align-items-center"
-                  style="width: 400px; font-size:0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"
-                >
-                  <div>{{ slotProps.option.nombres }}</div>
-                </div>
-              </template>
-            </Dropdown>
-          </div>
+        <div class="mb-3">
+          <label class="field-label">Nombre del Curso</label>
+          <InputText v-model="curso.nombre" class="w-full compact-input-field" />
+        </div>
+
+        <div class="mb-3">
+          <label class="field-label">Docente <small>(opcional)</small></label>
+          <Dropdown
+            v-model="curso.id_docente"
+            :options="docentes2"
+            filter
+            showClear
+            optionLabel="nombres"
+            optionValue="id"
+            placeholder="Sin docente / seleccione un docente"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex align-items-center gap-2 mb-2">
+          <InputSwitch v-model="curso.estado" />
+          <label>Curso activo</label>
         </div>
 
         <template #footer>
-          <div class="flex" style="justify-content: flex-end;">
-            <div>
-              <Button label="Cancelar" outlined @click="visible = false" size="small" />
-            </div>
-            <Button label="Guardar" @click="guardar" size="small" />
-          </div>
+          <Button label="Cancelar" outlined size="small" @click="visible = false" />
+          <Button label="Guardar" size="small" @click="guardar" />
         </template>
       </Dialog>
 
-      <!-- MODAL: Asignar Alumnos -->
-      <Dialog v-model:visible="modal_registro" modal header="Asignar Alumnos" :style="{ width: '900px' }">
-        <div v-if="alumnosregistro">
-          <DataTable
-            v-model:selection="alumnos_seleccionados_registro"
-            selectionMode="multiple"
-            dataKey="id"
-            :metaKeySelection="false"
-            :row-selection="false"
-            :value="alumnosregistro"
-            :class="'p-datatable-sm'"
-            tableStyle="min-width: 50rem"
-            style="font-size: .9rem;"
-            :paginator="true"
-            :rows="9"
-          >
-            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-            <Column field="programa" header="Programa"></Column>
-            <Column field="codigo_est" header="Código"></Column>
-            <!-- <Column field="dni" header="DNI"></Column> -->
-            <Column field="nombres" header="Nombres"></Column>
-            <Column field="paterno" header="Paterno"></Column>
-            <Column field="materno" header="Materno"></Column>
-          </DataTable>
+      <!-- ALUMNOS -->
+      <Dialog
+        v-model:visible="modal_registro"
+        modal
+        header="Seleccionar alumnos para matricular"
+        :style="{ width: '950px', maxWidth: '96vw' }"
+      >
+        <div class="mb-3">
+          <div class="text-sm"><strong>Programa:</strong> {{ programaSeleccionado?.label }}</div>
+          <div class="text-sm"><strong>Curso:</strong> {{ cursoseleccionado?.nombre }}</div>
+          <div class="text-sm"><strong>Competencia:</strong> {{ cursoseleccionado?.competencia }}</div>
         </div>
 
-        <div class="flex" style="width: 100%; justify-content: flex-end;">
-          <Button severity="primary" style="font-size: 0.9rem" text @click="asignar">Asignar</Button>
-        </div>
+        <DataTable
+          v-model:selection="alumnos_seleccionados_registro"
+          selectionMode="multiple"
+          dataKey="id"
+          :metaKeySelection="false"
+          :value="alumnosregistro"
+          class="p-datatable-sm compact-table"
+          :paginator="true"
+          :rows="10"
+          responsiveLayout="scroll"
+        >
+          <Column selectionMode="multiple" headerStyle="width: 3rem" />
+          <Column field="codigo_est" header="Código" />
+          <Column field="semestre" header="Ingreso" />
+          <Column field="programa" header="Programa" />
+          <Column field="nombres" header="Nombres" />
+          <Column field="paterno" header="Paterno" />
+          <Column field="materno" header="Materno" />
+          <Column field="nota_actual" header="Nota inicial" />
+        </DataTable>
+
+        <template #footer>
+          <Button label="Cancelar" outlined size="small" @click="modal_registro = false" />
+          <Button label="Guardar matrícula" size="small" @click="asignar" />
+        </template>
       </Dialog>
     </div>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-/* ===== Imports ===== */
 import AuthenticatedLayout from '@/Layouts/LayoutSuperadmi.vue';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
@@ -428,91 +384,69 @@ import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputSwitch from 'primevue/inputswitch';
 import Toast from 'primevue/toast';
+import Tag from 'primevue/tag';
+import ConfirmPopup from 'primevue/confirmpopup';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
-import ConfirmPopup from 'primevue/confirmpopup';
-import Tag from 'primevue/tag';
 
-/* ===== Configuración ===== */
 const base = '/superadmi';
-
-/* ===== Helpers PrimeVue ===== */
 const toast = useToast();
 const confirm = useConfirm();
 
-/* ===== Estado general ===== */
 const escuela = ref(null);
 const escuelas = ref([]);
 const buscarescuela = ref('');
-const filters = ref({});
+
+const programas = ref([]);
+const programaSeleccionado = ref(null);
+const buscarprograma = ref('');
 
 const competencias = ref([]);
 const competencia = ref(null);
 
-/* ===== Periodos ===== */
 const periodos = ref([]);
+const periodoActivo = ref(null);
 const periodoSeleccionado = ref(null);
-const periodoActivoId = ref(null);
-
-const nombrePeriodoSeleccionado = computed(() => {
-  return periodos.value.find(
-    (item) => Number(item.value) === Number(periodoSeleccionado.value)
-  )?.label ?? 'Periodo';
-});
-
-const esPeriodoActivo = computed(() =>
-  Number(periodoSeleccionado.value) === Number(periodoActivoId.value)
-);
+const inicializandoPeriodo = ref(false);
 
 const cursos = ref([]);
 const cursoseleccionado = ref(null);
 const buscarcurso = ref('');
 
-const docentes = ref([]);
-const docentes2 = ref([]);
-const programas = ref([]);
-const totalpaginas = ref(0);
-const pagina = ref(1);
-const buscar = ref('');
+const detalle_curso = ref([]);
+const buscarDetalle = ref('');
 
-/* ===== Modal Curso ===== */
 const visible = ref(false);
+const cursocompetencia = ref(null);
+const docentes2 = ref([]);
 const cargandoEdicion = ref(false);
 
-const grupos = ref([
+const curso = ref({
+  id: null,
+  nombre: '',
+  id_docente: null,
+  grupo: 'A',
+  estado: true,
+  alumnos_count: 0,
+});
+
+const grupos = [
   { value: 'A', label: 'Grupo A' },
   { value: 'B', label: 'Grupo B' },
   { value: 'C', label: 'Grupo C' },
   { value: 'D', label: 'Grupo D' },
   { value: 'E', label: 'Grupo E' },
-]);
+];
 
-const prog = ref(null);
-const cursocompetencia = ref(null);
-
-const curso = ref({
-  id: null,
-  nombre: '',
-  id_docente: '',
-  grupo: 'A',
-  estado: true,
-});
-
-/* ===== Detalle / asignación ===== */
-const detalle_curso = ref([]);
+const modal_registro = ref(false);
 const alumnosregistro = ref([]);
 const alumnos_seleccionados_registro = ref([]);
 const seleccionadosTemp = ref([]);
-const diferenciaAB = ref([]);
-const diferenciaBA = ref([]);
-const modal_registro = ref(false);
 
-/*
- * Normaliza respuestas Laravel que pueden venir como:
- * { datos: [...] }
- * { datos: { data: [...] } }
- * { data: [...] }
- */
+const esPeriodoActivo = computed(() =>
+  periodoActivo.value !== null && Number(periodoSeleccionado.value) === Number(periodoActivo.value)
+);
+
 const obtenerLista = (payload) => {
   if (Array.isArray(payload?.datos)) return payload.datos;
   if (Array.isArray(payload?.datos?.data)) return payload.datos.data;
@@ -522,27 +456,17 @@ const obtenerLista = (payload) => {
 };
 
 const mostrarError = (error, titulo = 'Error') => {
-  const mensaje =
-    error?.response?.data?.mensaje ||
-    error?.response?.data?.message ||
-    error?.message ||
-    'No se pudo completar la operación.';
-
-  toast.add({
-    severity: 'error',
-    summary: titulo,
-    detail: mensaje,
-    life: 4000,
-  });
+  const mensaje = error?.response?.data?.mensaje || error?.response?.data?.message || error?.message || 'No se pudo completar la operación.';
+  toast.add({ severity: 'error', summary: titulo, detail: mensaje, life: 4000 });
 };
 
-/* ===== Catálogos ===== */
+const showToast = (severity, summary, detail) => {
+  toast.add({ severity: severity || 'info', summary: summary || '', detail: detail || '', life: 3000 });
+};
+
 const getEscuelas = async () => {
   try {
-    const res = await axios.post(`${base}/get-escuelas`, {
-      term: buscarescuela.value,
-    });
-
+    const res = await axios.post(`${base}/get-escuelas`, { term: buscarescuela.value });
     escuelas.value = obtenerLista(res.data);
   } catch (error) {
     escuelas.value = [];
@@ -550,53 +474,17 @@ const getEscuelas = async () => {
   }
 };
 
-const getCompetencias = async () => {
-  try {
-    const res = await axios.post(`${base}/get-competencias`, {
-      term: '',
-    });
-
-    // IMPORTANTE: SuperadmiController devuelve un paginate(), por eso
-    // debemos tomar datos.data y no el objeto paginator completo.
-    competencias.value = obtenerLista(res.data);
-  } catch (error) {
-    competencias.value = [];
-    mostrarError(error, 'No se pudieron cargar las competencias');
+const getProgramasEscuela = async () => {
+  if (!escuela.value?.id) {
+    programas.value = [];
+    return;
   }
-};
 
-const getPeriodosAsignacion = async () => {
   try {
-    const res = await axios.get(`${base}/get-periodos`);
-    const rows = Array.isArray(res.data?.raw) ? res.data.raw : [];
-
-    periodos.value = rows.map((item) => ({
-      value: item.id_periodo,
-      label: item.nombre,
-      estado: item.estado,
-    }));
-
-    const activo = rows.find((item) => item.estado === 'activo');
-    periodoActivoId.value = activo?.id_periodo ?? null;
-
-    // Al ingresar, siempre mostrar el periodo activo.
-    if (periodoSeleccionado.value === null) {
-      periodoSeleccionado.value = activo?.id_periodo ?? rows[0]?.id_periodo ?? null;
-    }
-  } catch (error) {
-    periodos.value = [];
-    periodoSeleccionado.value = null;
-    periodoActivoId.value = null;
-    mostrarError(error, 'No se pudieron cargar los periodos');
-  }
-};
-
-const getProgramas = async () => {
-  try {
-    const res = await axios.post(`${base}/get-programas?page=${pagina.value}`, {
-      term: '',
+    const res = await axios.post(`${base}/get-programas-escuela`, {
+      id_escuela: escuela.value.id,
+      term: buscarprograma.value,
     });
-
     programas.value = obtenerLista(res.data);
   } catch (error) {
     programas.value = [];
@@ -604,16 +492,21 @@ const getProgramas = async () => {
   }
 };
 
-const getDocentes = async () => {
-  try {
-    const res = await axios.post(`${base}/get-docentes?page=${pagina.value}`, {
-      term: buscar.value,
-    });
+const getCompetenciasPrograma = async () => {
+  if (!programaSeleccionado.value?.value) {
+    competencias.value = [];
+    return;
+  }
 
-    docentes.value = obtenerLista(res.data);
-    totalpaginas.value = res.data?.datos?.total ?? res.data?.total ?? 0;
+  try {
+    const res = await axios.post(`${base}/get-competencias`, {
+      term: '',
+      programa: programaSeleccionado.value.value,
+    });
+    competencias.value = obtenerLista(res.data);
   } catch (error) {
-    docentes.value = [];
+    competencias.value = [];
+    mostrarError(error, 'No se pudieron cargar las competencias');
   }
 };
 
@@ -628,7 +521,6 @@ const getDocenteXcompetencia = async () => {
       term: '',
       competencia: cursocompetencia.value,
     });
-
     docentes2.value = obtenerLista(res.data);
   } catch (error) {
     docentes2.value = [];
@@ -636,9 +528,8 @@ const getDocenteXcompetencia = async () => {
   }
 };
 
-/* ===== Cursos ===== */
 const getCursos = async () => {
-  if (!escuela.value) {
+  if (!programaSeleccionado.value?.value) {
     cursos.value = [];
     return;
   }
@@ -647,115 +538,101 @@ const getCursos = async () => {
     const res = await axios.post(`${base}/get-cursos`, {
       term: buscarcurso.value,
       competencia: competencia.value,
-      escuela: escuela.value?.escuela ?? '',
-      id_periodo: periodoSeleccionado.value,
+      programa: programaSeleccionado.value.value,
+      periodo: periodoSeleccionado.value,
     });
 
     cursos.value = obtenerLista(res.data);
+    periodos.value = Array.isArray(res.data?.periodos) ? res.data.periodos : periodos.value;
+    periodoActivo.value = res.data?.periodo_activo ?? periodoActivo.value;
+
+    if (!periodoSeleccionado.value && periodoActivo.value) {
+      inicializandoPeriodo.value = true;
+      periodoSeleccionado.value = periodoActivo.value;
+      inicializandoPeriodo.value = false;
+    }
   } catch (error) {
     cursos.value = [];
     mostrarError(error, 'No se pudieron cargar los cursos');
   }
 };
 
-/* ===== Nuevo Curso ===== */
+const limpiarCurso = () => {
+  cursocompetencia.value = null;
+  docentes2.value = [];
+  curso.value = { id: null, nombre: '', id_docente: null, grupo: 'A', estado: true, alumnos_count: 0 };
+};
+
 const nuevoCurso = async () => {
-  limpiar();
+  if (!esPeriodoActivo.value) {
+    showToast('warn', 'Período histórico', 'Los cursos nuevos se registran únicamente en el período activo.');
+    return;
+  }
 
-  // Garantiza que la modal abra con Competencia y Programa cargados.
-  await Promise.all([
-    getCompetencias(),
-    getProgramas(),
-  ]);
-
+  limpiarCurso();
+  await getCompetenciasPrograma();
   visible.value = true;
 };
 
-/* ===== Editar Curso ===== */
 const editar = async (item) => {
-  limpiar();
+  if (!esPeriodoActivo.value) {
+    showToast('warn', 'Solo consulta', 'Los períodos anteriores no se pueden modificar.');
+    return;
+  }
+
+  limpiarCurso();
   cargandoEdicion.value = true;
 
   try {
-    // Primero cargamos los catálogos para que los Dropdown tengan opciones.
-    await Promise.all([
-      getCompetencias(),
-      getProgramas(),
-    ]);
-
-    curso.value.id = item.id;
-    curso.value.nombre = item.nombre ?? '';
-    curso.value.grupo = item.grupo ?? 'A';
-    curso.value.estado = Number(item.estado) === 1;
-
-    // Programa guardado en el curso.
-    prog.value = item.id_programa ?? null;
-
-    // Competencia guardada en el curso.
-    cursocompetencia.value = item.id_competencia ?? null;
-
-    // Luego cargamos los docentes de ESA competencia.
+    await getCompetenciasPrograma();
+    curso.value = {
+      id: item.id,
+      nombre: item.nombre || '',
+      id_docente: item.id_docente || null,
+      grupo: item.grupo || 'A',
+      estado: Number(item.estado) === 1,
+      alumnos_count: Number(item.alumnos_count || 0),
+    };
+    cursocompetencia.value = item.id_competencia || null;
     await getDocenteXcompetencia();
-
-    // Finalmente seleccionamos el docente guardado.
-    curso.value.id_docente = item.id_docente ?? '';
-
+    curso.value.id_docente = item.id_docente || null;
     visible.value = true;
-  } catch (error) {
-    mostrarError(error, 'No se pudo cargar el curso para editar');
   } finally {
     cargandoEdicion.value = false;
   }
 };
 
-const saveCurso = async () => {
-  if (!curso.value.nombre) {
+const guardar = async () => {
+  if (!programaSeleccionado.value?.value) return;
+  if (!curso.value.nombre?.trim()) {
     showToast('warn', 'Falta información', 'Ingrese el nombre del curso.');
     return;
   }
-
   if (!cursocompetencia.value) {
     showToast('warn', 'Falta información', 'Seleccione una competencia.');
     return;
   }
-
-  if (!prog.value) {
-    showToast('warn', 'Falta información', 'Seleccione un programa de estudio.');
-    return;
-  }
-
-//   if (!curso.value.id_docente) {
-//     showToast('warn', 'Falta información', 'Seleccione un docente.');
-//     return;
-//   }
 
   try {
     const res = await axios.post(`${base}/save-curso`, {
       id: curso.value.id,
       nombre: curso.value.nombre,
       id_competencia: cursocompetencia.value,
-      id_docente: curso.value.id_docente,
-      escuela: escuela.value?.escuela ?? '',
+      id_docente: curso.value.id_docente || null,
       grupo: curso.value.grupo,
       estado: curso.value.estado,
-      id_programa: prog.value,
+      id_programa: programaSeleccionado.value.value,
     });
 
-    showToast(
-      res.data?.tipo,
-      res.data?.titulo,
-      res.data?.mensaje
-    );
-
-    await getCursos();
+    showToast(res.data?.tipo, res.data?.titulo, res.data?.mensaje);
     visible.value = false;
-    limpiar();
+    limpiarCurso();
+    await getCursos();
   } catch (error) {
     mostrarError(error, 'No se pudo guardar el curso');
   }
 };
 
-/* ===== Detalle del Curso ===== */
 const getDetalleCurso = async () => {
   if (!cursoseleccionado.value?.id) {
     detalle_curso.value = [];
@@ -764,26 +641,20 @@ const getDetalleCurso = async () => {
 
   try {
     const res = await axios.post(`${base}/get-detalle-curso`, {
-      term: '',
+      term: buscarDetalle.value,
       curso: cursoseleccionado.value.id,
     });
-
     detalle_curso.value = obtenerLista(res.data);
-    alumnos_seleccionados_registro.value = obtenerLista({
-      datos: res.data?.registrados,
-    });
+    alumnos_seleccionados_registro.value = obtenerLista({ datos: res.data?.registrados });
     seleccionadosTemp.value = [...alumnos_seleccionados_registro.value];
   } catch (error) {
     detalle_curso.value = [];
-    alumnos_seleccionados_registro.value = [];
-    seleccionadosTemp.value = [];
     mostrarError(error, 'No se pudo cargar el detalle del curso');
   }
 };
 
-/* ===== Alumnos ===== */
 const getAlumnosRegistros = async () => {
-  if (!escuela.value?.id || !cursoseleccionado.value?.id_competencia) {
+  if (!cursoseleccionado.value?.id_competencia || !programaSeleccionado.value?.value) {
     alumnosregistro.value = [];
     return;
   }
@@ -791,10 +662,10 @@ const getAlumnosRegistros = async () => {
   try {
     const res = await axios.post(`${base}/get-alumnos-registro`, {
       term: '',
-      escuela: escuela.value.id,
+      programa: programaSeleccionado.value.value,
       curso: cursoseleccionado.value.id_competencia,
+      id_curso: cursoseleccionado.value.id,
     });
-
     alumnosregistro.value = obtenerLista(res.data);
   } catch (error) {
     alumnosregistro.value = [];
@@ -802,230 +673,220 @@ const getAlumnosRegistros = async () => {
   }
 };
 
-const abrirseleccionar = async () => {
+const abrirSeleccionar = async () => {
+  if (!esPeriodoActivo.value) {
+    showToast('warn', 'Solo consulta', 'Los alumnos de períodos anteriores no se pueden modificar.');
+    return;
+  }
+
+  if (Number(cursoseleccionado.value?.estado) !== 1) {
+    showToast('warn', 'Curso inactivo', 'No se puede modificar la matrícula de un curso inactivo.');
+    return;
+  }
+
+  // Refrescamos la matrícula antes de abrir el modal para evitar trabajar
+  // con una selección antigua si otro usuario hizo cambios.
+  await getDetalleCurso();
   await getAlumnosRegistros();
   modal_registro.value = true;
 };
 
-const compararArrays = () => {
-  diferenciaAB.value = alumnos_seleccionados_registro.value.filter((a) =>
-    !seleccionadosTemp.value.some((b) => b.id === a.id)
+const asignar = async () => {
+  const nuevos = alumnos_seleccionados_registro.value.filter(
+    (a) => !seleccionadosTemp.value.some((b) => b.id === a.id)
   );
-};
-
-const compararArrays2 = () => {
-  diferenciaBA.value = seleccionadosTemp.value.filter((a) =>
-    !alumnos_seleccionados_registro.value.some((b) => b.id === a.id)
+  const retirados = seleccionadosTemp.value.filter(
+    (a) => !alumnos_seleccionados_registro.value.some((b) => b.id === a.id)
   );
-};
-
-const asignarCursoNivelacion = async () => {
-  compararArrays();
-  compararArrays2();
 
   try {
     const res = await axios.post(`${base}/asignar-curso-nivelacion`, {
-      curso: cursoseleccionado.value?.id,
+      curso: cursoseleccionado.value.id,
       alumnos: alumnos_seleccionados_registro.value,
       anteriores: seleccionadosTemp.value,
-      diferencia: diferenciaAB.value,
-      diferencia2: diferenciaBA.value,
+      diferencia: nuevos,
+      diferencia2: retirados,
     });
-
-    showToast(
-      res.data?.tipo,
-      res.data?.titulo,
-      res.data?.mensaje
-    );
-
-    await getDetalleCurso();
+    showToast(res.data?.tipo, res.data?.titulo, res.data?.mensaje);
     modal_registro.value = false;
+    await getDetalleCurso();
   } catch (error) {
-    mostrarError(error, 'No se pudo realizar la asignación');
+    mostrarError(error, 'No se pudo realizar la matrícula');
   }
 };
 
-/* ===== Eliminar ===== */
 const deleteCurso = async (id) => {
   try {
     const res = await axios.get(`${base}/delete-curso/${id}`);
-
-    showToast(
-      res.data?.tipo,
-      res.data?.titulo,
-      res.data?.mensaje
-    );
-
+    showToast(res.data?.tipo, res.data?.titulo, res.data?.mensaje);
     await getCursos();
   } catch (error) {
     mostrarError(error, 'No se pudo eliminar el curso');
   }
 };
 
-const confirm2 = (event, item) => {
+const confirmarEliminar = (event, item) => {
   confirm.require({
     target: event.currentTarget,
-    message: `¿Está seguro de eliminar el curso ${item?.nombre ?? ''}?`,
+    message: `¿Está seguro de eliminar el curso ${item?.nombre || ''}?`,
     icon: 'pi pi-info-circle',
     acceptClass: 'p-button-danger',
     accept: () => deleteCurso(item.id),
-    reject: () => {
-      toast.add({
-        severity: 'info',
-        summary: 'Eliminación cancelada',
-        detail: 'No se eliminó el curso.',
-        life: 3000,
-      });
-    },
   });
 };
 
-/* ===== PDF ===== */
 const descargarPDF = (id) => {
   window.open(`${base}/generar-pdf/${id}`, '_self');
 };
 
-/* ===== Utilidades ===== */
-const limpiar = () => {
-  cursocompetencia.value = null;
-  docentes2.value = [];
-  prog.value = null;
-
-  curso.value = {
-    id: null,
-    nombre: '',
-    id_docente: '',
-    grupo: 'A',
-    estado: true,
-  };
-};
-
-const showToast = (tipo, titulo, detalle) => {
-  toast.add({
-    severity: tipo || 'info',
-    summary: titulo || '',
-    detail: detalle || '',
-    life: 3000,
-  });
-};
-
 const Inicio = () => {
   escuela.value = null;
+  programaSeleccionado.value = null;
   cursoseleccionado.value = null;
-  competencia.value = null;
+  programas.value = [];
   cursos.value = [];
   detalle_curso.value = [];
-};
-
-const resEsuela = () => {
-  cursoseleccionado.value = null;
-  detalle_curso.value = [];
-  alumnosregistro.value = [];
-};
-
-/* ===== Watchers ===== */
-watch(visible, (newValue) => {
-  if (newValue === false) {
-    limpiar();
-  }
-});
-
-watch(escuela, async (newValue) => {
-  cursoseleccionado.value = null;
-  detalle_curso.value = [];
-  alumnosregistro.value = [];
-  alumnos_seleccionados_registro.value = [];
-  seleccionadosTemp.value = [];
+  competencias.value = [];
   competencia.value = null;
+  periodoSeleccionado.value = null;
+};
 
-  if (newValue) {
-    await Promise.all([
-      getCursos(),
-      getProgramas(),
-    ]);
-  }
-});
+const volverEscuela = () => {
+  programaSeleccionado.value = null;
+  cursoseleccionado.value = null;
+  cursos.value = [];
+  detalle_curso.value = [];
+  competencias.value = [];
+  competencia.value = null;
+  periodoSeleccionado.value = null;
+};
 
-watch(buscarescuela, () => {
-  getEscuelas();
-});
-
-watch(buscarcurso, () => {
-  getCursos();
-});
-
-watch(buscar, () => {
-  getDocentes();
-});
-
-watch(competencia, () => {
-  getCursos();
-});
-
-watch(periodoSeleccionado, async () => {
-  // Si cambia de periodo, salimos del detalle y recargamos la lista de cursos.
+const volverPrograma = () => {
   cursoseleccionado.value = null;
   detalle_curso.value = [];
-  alumnosregistro.value = [];
-  alumnos_seleccionados_registro.value = [];
-  seleccionadosTemp.value = [];
+};
 
-  if (escuela.value) {
+watch(escuela, async (value) => {
+  programaSeleccionado.value = null;
+  cursoseleccionado.value = null;
+  cursos.value = [];
+  detalle_curso.value = [];
+  periodoSeleccionado.value = null;
+  if (value) await getProgramasEscuela();
+});
+
+watch(programaSeleccionado, async (value) => {
+  cursoseleccionado.value = null;
+  cursos.value = [];
+  detalle_curso.value = [];
+  competencia.value = null;
+  periodoSeleccionado.value = null;
+  periodoActivo.value = null;
+  if (value) {
+    await getCompetenciasPrograma();
     await getCursos();
   }
 });
 
-watch(cursocompetencia, async (newValue) => {
-  // En Editar cargamos manualmente y evitamos duplicar la petición.
-  if (cargandoEdicion.value) return;
+watch(cursoseleccionado, async (value) => {
+  if (value) await getDetalleCurso();
+});
 
-  curso.value.id_docente = '';
+watch(buscarescuela, getEscuelas);
+watch(buscarprograma, getProgramasEscuela);
+watch(buscarcurso, getCursos);
+watch(buscarDetalle, getDetalleCurso);
+watch(competencia, getCursos);
+watch(periodoSeleccionado, async () => {
+  if (!inicializandoPeriodo.value && programaSeleccionado.value) await getCursos();
+});
+
+watch(cursocompetencia, async (value) => {
+  if (cargandoEdicion.value) return;
+  curso.value.id_docente = null;
   docentes2.value = [];
 
-  if (!newValue) {
-    if (!curso.value.id) {
-      curso.value.nombre = '';
-    }
+  if (!value) {
+    if (!curso.value.id) curso.value.nombre = '';
     return;
   }
 
   await getDocenteXcompetencia();
 
-  // Igual que el módulo Coordinador: al crear, el nombre del curso
-  // se completa con el nombre de la competencia seleccionada.
   if (!curso.value.id) {
-    const comp = competencias.value.find(
-      (item) => item.value === newValue
-    );
-
-    if (comp) {
-      curso.value.nombre = comp.label;
-    }
+    const comp = competencias.value.find((item) => Number(item.value) === Number(value));
+    if (comp) curso.value.nombre = comp.label;
   }
 });
 
-watch(cursoseleccionado, async (newValue) => {
-  if (!newValue) return;
-
-  await Promise.all([
-    getDetalleCurso(),
-    getAlumnosRegistros(),
-  ]);
+watch(visible, (value) => {
+  if (!value) limpiarCurso();
 });
 
-/* ===== Inicio ===== */
-const iniciar = async () => {
-  await Promise.all([
-    getEscuelas(),
-    getCompetencias(),
-    getProgramas(),
-    getPeriodosAsignacion(),
-  ]);
-};
-
-iniciar();
-
-/* ===== Alias usados por el template ===== */
-const guardar = saveCurso;
-const asignar = asignarCursoNivelacion;
+getEscuelas();
 </script>
+
+<style scoped>
+.asignacion-container {
+  min-height: calc(100vh - 140px);
+  overflow-x: auto;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.88rem;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.breadcrumb-text {
+  max-width: 190px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-input {
+  height: 36px;
+  padding-left: 38px;
+  font-size: 0.85rem;
+}
+
+.compact-input-field {
+  height: 38px;
+  font-size: 0.88rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.compact-table {
+  font-size: 0.84rem;
+}
+
+:deep(.compact-table .p-datatable-thead > tr > th),
+:deep(.compact-table .p-datatable-tbody > tr > td) {
+  padding: 0.48rem 0.6rem;
+}
+
+:deep(.compact-dropdown .p-dropdown-label) {
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .breadcrumb-text {
+    max-width: 120px;
+  }
+
+  .asignacion-container {
+    padding: 0.75rem !important;
+  }
+}
+</style>

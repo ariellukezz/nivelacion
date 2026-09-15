@@ -106,24 +106,14 @@
             </div>
           </div>
 
-          <div class="flex flex-wrap gap-2 align-items-center">
-            <Button
-              label="Nuevo curso"
-              icon="pi pi-plus"
-              severity="primary"
-              :disabled="Number(periodoSeleccionado) !== Number(periodoActivoId)"
-              @click="abrirNuevoCurso"
+          <span class="p-input-icon-left">
+            <i class="pi pi-search" />
+            <InputText
+              v-model="buscarcurso"
+              style="padding-left:40px; height:38px; width:260px"
+              placeholder="Buscar curso"
             />
-
-            <span class="p-input-icon-left">
-              <i class="pi pi-search" />
-              <InputText
-                v-model="buscarcurso"
-                style="padding-left:40px; height:38px; width:260px"
-                placeholder="Buscar curso"
-              />
-            </span>
-          </div>
+          </span>
         </div>
 
         <div class="tabla-scroll">
@@ -180,28 +170,6 @@
                 />
               </template>
             </Column>
-            <Column header="Acciones" style="text-align:center; width:105px">
-              <template #body="{ data }">
-                <div class="flex gap-2 justify-content-center">
-                  <Button
-                    icon="pi pi-pencil"
-                    size="small"
-                    severity="secondary"
-                    style="width:28px; height:28px"
-                    :disabled="Number(data.id_periodo) !== Number(periodoActivoId)"
-                    @click.stop="editarCurso(data)"
-                  />
-                  <Button
-                    icon="pi pi-trash"
-                    size="small"
-                    severity="danger"
-                    style="width:28px; height:28px"
-                    :disabled="Number(data.id_periodo) !== Number(periodoActivoId)"
-                    @click.stop="confirmarEliminarCurso($event, data)"
-                  />
-                </div>
-              </template>
-            </Column>
           </DataTable>
         </div>
       </div>
@@ -213,7 +181,7 @@
             severity="primary"
             label="Seleccionar alumnos"
             icon="pi pi-users"
-            :disabled="Number(cursoseleccionado.id_periodo) !== Number(periodoActivoId) || Number(cursoseleccionado.estado) !== 1"
+            :disabled="Number(cursoseleccionado.id_periodo) !== Number(periodoActivoId)"
             @click="abrirseleccionar"
           />
 
@@ -260,92 +228,6 @@
       </div>
 
       <Toast />
-      <ConfirmPopup />
-
-      <!-- NUEVO / EDITAR CURSO -->
-      <Dialog
-        v-model:visible="modal_curso"
-        modal
-        :header="cursoForm.id ? 'Editar curso' : 'Nuevo curso'"
-        :style="{ width: '720px', maxWidth: '96vw' }"
-      >
-        <div class="mb-3 p-3" style="background:#f6f7f9; border-radius:6px">
-          <div style="font-size:.82rem; color:#666">Programa de estudio</div>
-          <strong>{{ programaSeleccionado?.label }}</strong>
-          <div style="font-size:.82rem; color:#666; margin-top:4px">
-            El curso quedará asociado automáticamente a este programa y al período activo.
-          </div>
-        </div>
-
-        <div class="flex justify-content-end align-items-center gap-2 mb-3">
-          <label>Estado</label>
-          <InputSwitch v-model="cursoForm.estado" />
-        </div>
-
-        <div class="grid">
-          <div class="col-12 md:col-8">
-            <label>Nombre del curso</label>
-            <InputText
-              v-model="cursoForm.nombre"
-              style="width:100%; height:40px; margin-top:6px"
-              placeholder="Nombre del curso"
-            />
-          </div>
-          <div class="col-12 md:col-4">
-            <label>Grupo</label>
-            <Dropdown
-              v-model="cursoForm.grupo"
-              :options="grupos"
-              optionLabel="label"
-              optionValue="value"
-              style="width:100%; margin-top:6px"
-            />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label>Competencia</label>
-          <Dropdown
-            v-model="cursocompetencia"
-            :options="competencias"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccione una competencia"
-            style="width:100%; margin-top:6px"
-            :disabled="Boolean(cursoForm.id) && Number(cursoForm.alumnos_count) > 0"
-          />
-          <small v-if="cursoForm.id && Number(cursoForm.alumnos_count) > 0" style="color:#666">
-            La competencia no puede cambiarse porque el curso ya tiene alumnos matriculados.
-          </small>
-        </div>
-
-        <div class="mb-3">
-          <label>Docente</label>
-          <Dropdown
-            v-model="cursoForm.id_docente"
-            :options="docentes2"
-            filter
-            showClear
-            optionLabel="nombres"
-            optionValue="id"
-            placeholder="Sin docente / seleccione un docente"
-            style="width:100%; margin-top:6px"
-          />
-          <small style="color:#666">El curso puede guardarse sin docente y asignarlo posteriormente.</small>
-        </div>
-
-        <template #footer>
-          <div class="flex justify-content-end gap-2">
-            <Button label="Cancelar" outlined @click="modal_curso = false" />
-            <Button
-              label="Guardar"
-              icon="pi pi-check"
-              :loading="guardandoCurso"
-              @click="guardarCurso"
-            />
-          </div>
-        </template>
-      </Dialog>
 
       <!-- ASIGNAR / CAMBIAR DOCENTE -->
       <Dialog v-model:visible="modal_docente" modal header="Asignar docente" :style="{ width: '650px', maxWidth: '95vw' }">
@@ -436,15 +318,11 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
-import InputSwitch from 'primevue/inputswitch';
-import ConfirmPopup from 'primevue/confirmpopup';
 import Toast from 'primevue/toast';
 import Tag from 'primevue/tag';
 import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
 
 const toast = useToast();
-const confirm = useConfirm();
 
 const programas = ref([]);
 const programaSeleccionado = ref(null);
@@ -457,25 +335,6 @@ const buscarcurso = ref('');
 
 const competencias = ref([]);
 const competencia = ref(null);
-const cursocompetencia = ref(null);
-
-const modal_curso = ref(false);
-const guardandoCurso = ref(false);
-const grupos = ref([
-  { value: 'A', label: 'Grupo A' },
-  { value: 'B', label: 'Grupo B' },
-  { value: 'C', label: 'Grupo C' },
-  { value: 'D', label: 'Grupo D' },
-  { value: 'E', label: 'Grupo E' },
-]);
-const cursoForm = ref({
-  id: null,
-  nombre: '',
-  id_docente: null,
-  grupo: 'A',
-  estado: true,
-  alumnos_count: 0,
-});
 
 const periodos = ref([]);
 const periodoSeleccionado = ref(null);
@@ -612,9 +471,9 @@ const getDetalleCurso = async () => {
     });
 
     detalle_curso.value = obtenerLista(res.data);
-    alumnos_seleccionados_registro.value = Array.isArray(res.data?.registrados)
-      ? res.data.registrados
-      : (Array.isArray(res.data?.registrados?.data) ? res.data.registrados.data : []);
+    alumnos_seleccionados_registro.value = Array.isArray(res.data?.registrados?.data)
+      ? res.data.registrados.data
+      : [];
     seleccionadosTemp.value = [...alumnos_seleccionados_registro.value];
   } catch (error) {
     detalle_curso.value = [];
@@ -635,7 +494,6 @@ const getAlumnosRegistros = async () => {
       term: '',
       curso: cursoseleccionado.value.id_competencia,
       programa: cursoseleccionado.value.id_programa,
-      id_curso: cursoseleccionado.value.id,
     });
 
     alumnosregistro.value = Array.isArray(res.data?.datos) ? res.data.datos : obtenerLista(res.data);
@@ -643,122 +501,6 @@ const getAlumnosRegistros = async () => {
     alumnosregistro.value = [];
     mostrarError(error, 'No se pudieron cargar los alumnos del programa');
   }
-};
-
-const limpiarCursoForm = () => {
-  cursocompetencia.value = null;
-  docentes2.value = [];
-  cursoForm.value = {
-    id: null,
-    nombre: '',
-    id_docente: null,
-    grupo: 'A',
-    estado: true,
-    alumnos_count: 0,
-  };
-};
-
-const abrirNuevoCurso = async () => {
-  if (!programaSeleccionado.value?.value) {
-    showToast('warn', 'Falta programa', 'Seleccione un programa de estudio.');
-    return;
-  }
-
-  if (Number(periodoSeleccionado.value) !== Number(periodoActivoId.value)) {
-    showToast('warn', 'Período de consulta', 'Solo puede crear cursos en el período activo.');
-    return;
-  }
-
-  limpiarCursoForm();
-  await getCompetencias();
-  modal_curso.value = true;
-};
-
-const editarCurso = async (item) => {
-  if (Number(item.id_periodo) !== Number(periodoActivoId.value)) {
-    showToast('warn', 'Período de consulta', 'Los cursos de períodos anteriores son solo de consulta.');
-    return;
-  }
-
-  limpiarCursoForm();
-  await getCompetencias();
-
-  cursoForm.value = {
-    id: item.id,
-    nombre: item.nombre ?? '',
-    id_docente: item.id_docente ?? null,
-    grupo: item.grupo ?? 'A',
-    estado: Number(item.estado) === 1,
-    alumnos_count: Number(item.alumnos_count || 0),
-  };
-  cursocompetencia.value = item.id_competencia ?? null;
-  await getDocenteXcompetencia(item.id_competencia);
-  cursoForm.value.id_docente = item.id_docente ?? null;
-  modal_curso.value = true;
-};
-
-const guardarCurso = async () => {
-  if (!programaSeleccionado.value?.value) {
-    showToast('warn', 'Falta programa', 'Seleccione un programa de estudio.');
-    return;
-  }
-  if (!cursoForm.value.nombre?.trim()) {
-    showToast('warn', 'Falta información', 'Ingrese el nombre del curso.');
-    return;
-  }
-  if (!cursocompetencia.value) {
-    showToast('warn', 'Falta información', 'Seleccione una competencia.');
-    return;
-  }
-
-  guardandoCurso.value = true;
-  try {
-    const res = await axios.post('/coordinador/save-curso', {
-      id: cursoForm.value.id,
-      nombre: cursoForm.value.nombre.trim(),
-      id_competencia: cursocompetencia.value,
-      id_docente: cursoForm.value.id_docente || null,
-      grupo: cursoForm.value.grupo,
-      estado: cursoForm.value.estado,
-      id_programa: programaSeleccionado.value.value,
-    });
-
-    showToast(res.data.tipo, res.data.titulo, res.data.mensaje);
-    modal_curso.value = false;
-    limpiarCursoForm();
-    await getCursos();
-  } catch (error) {
-    mostrarError(error, 'No se pudo guardar el curso');
-  } finally {
-    guardandoCurso.value = false;
-  }
-};
-
-const eliminarCurso = async (id) => {
-  try {
-    const res = await axios.get('/coordinador/delete-curso/' + id);
-    showToast(res.data.tipo, res.data.titulo, res.data.mensaje);
-    await getCursos();
-  } catch (error) {
-    mostrarError(error, 'No se pudo eliminar el curso');
-  }
-};
-
-const confirmarEliminarCurso = (event, item) => {
-  if (Number(item.id_periodo) !== Number(periodoActivoId.value)) {
-    showToast('warn', 'Período de consulta', 'Los cursos de períodos anteriores son solo de consulta.');
-    return;
-  }
-
-  confirm.require({
-    target: event.currentTarget,
-    message: `¿Está seguro de eliminar el curso ${item.nombre}?`,
-    icon: 'pi pi-info-circle',
-    acceptClass: 'p-button-danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: () => eliminarCurso(item.id),
-  });
 };
 
 const abrirAsignarDocente = async (item) => {
@@ -797,18 +539,7 @@ const guardarDocenteAsignado = async () => {
 };
 
 const abrirseleccionar = async () => {
-  if (Number(cursoseleccionado.value?.id_periodo) !== Number(periodoActivoId.value)) {
-    showToast('warn', 'Período de consulta', 'Los alumnos de períodos anteriores no se pueden modificar.');
-    return;
-  }
-
-  if (Number(cursoseleccionado.value?.estado) !== 1) {
-    showToast('warn', 'Curso inactivo', 'No se puede modificar la matrícula de un curso inactivo.');
-    return;
-  }
-
   alumnosregistro.value = [];
-  await getDetalleCurso();
   await getAlumnosRegistros();
   modal_registro.value = true;
 };
@@ -845,8 +576,6 @@ const Inicio = () => {
   competencias.value = [];
   competencia.value = null;
   periodoSeleccionado.value = null;
-  modal_curso.value = false;
-  limpiarCursoForm();
 };
 
 const volverPrograma = async () => {
@@ -861,25 +590,6 @@ const descargarPDF = (id) => {
   window.open('/coordinador/generar-pdf/' + id, '_self');
 };
 
-watch(cursocompetencia, async (nuevo) => {
-  if (nuevo) {
-    const docenteActual = cursoForm.value.id_docente;
-    await getDocenteXcompetencia(nuevo);
-    if (docenteActual && docentes2.value.some((d) => Number(d.id) === Number(docenteActual))) {
-      cursoForm.value.id_docente = docenteActual;
-    } else if (!cursoForm.value.id) {
-      cursoForm.value.id_docente = null;
-    }
-  } else {
-    docentes2.value = [];
-    cursoForm.value.id_docente = null;
-  }
-});
-
-watch(modal_curso, (abierto) => {
-  if (!abierto) limpiarCursoForm();
-});
-
 watch(buscarprograma, () => getMisProgramas());
 
 watch(programaSeleccionado, async (nuevo) => {
@@ -889,8 +599,6 @@ watch(programaSeleccionado, async (nuevo) => {
   periodoSeleccionado.value = null;
   periodoActivoId.value = null;
   cursoFirst.value = 0;
-  modal_curso.value = false;
-  limpiarCursoForm();
 
   if (nuevo) {
     await getCompetencias();

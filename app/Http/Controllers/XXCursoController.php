@@ -160,59 +160,7 @@ class CursoController extends Controller
 
     public function delete($id){
         $curso = Curso::find($id);
-
-        if (!$curso) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'Curso no encontrado.'
-            ], 404);
-        }
-
-        $periodoActivo = DB::table('periodo')->where('estado', 'activo')->value('id_periodo');
-        if ($periodoActivo && (int) $curso->id_periodo !== (int) $periodoActivo) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'Los cursos de períodos anteriores son solo de consulta.'
-            ], 422);
-        }
-
-        $esSuperadmin = (int) (auth()->user()->rol ?? -1) === 0;
-
-        if (!$esSuperadmin) {
-            $perteneceAEscuela = DB::table('curso')
-                ->join('programa', 'programa.id', '=', 'curso.id_programa')
-                ->where('curso.id', $id)
-                ->where('programa.id_escuela', auth()->user()->id_escuela)
-                ->exists();
-
-            if (!$perteneceAEscuela) {
-                return response()->json([
-                    'estado' => false,
-                    'mensaje' => 'No tiene permiso para eliminar este curso.'
-                ], 403);
-            }
-        }
-
-        $cantidadAlumnos = CursoDetalle::where('id_curso', $curso->id)->count();
-        if ($cantidadAlumnos > 0) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede eliminar el curso porque tiene ' . $cantidadAlumnos . ' alumno(s) matriculado(s). Retire primero las matrículas o deje el curso inactivo.'
-            ], 409);
-        }
-
-        $tieneDocumentos = DB::table('documentocurso')
-            ->where('id_curso', $curso->id)
-            ->exists();
-
-        if ($tieneDocumentos) {
-            return response()->json([
-                'estado' => false,
-                'mensaje' => 'No se puede eliminar el curso porque tiene documentos relacionados.'
-            ], 409);
-        }
-
-        $p = clone $curso;
+        $p = $curso;
         $curso->delete();
 
         $this->response['tipo'] = 'error';
@@ -222,6 +170,8 @@ class CursoController extends Controller
         $this->response['datos'] = $p;
         return response()->json($this->response, 200);
     }
+    //
+
 
 public function getEventoInduccionByAlumno(Request $request)
 {

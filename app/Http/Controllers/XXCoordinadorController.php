@@ -170,44 +170,37 @@ class CoordinadorController extends Controller
         return response()->json($this->response, 200);
     }
 
-    public function compes(Request $request)
-    {
-        $idPrograma = (int) $request->input('programa');
+    public function compes(Request $request){
 
-        if (!$idPrograma) {
-            return response()->json([
-                'estado' => true,
-                'datos' => [],
-            ], 200);
+        $res = DB::select('SELECT id_competencia FROM competencia_programa
+        JOIN programa ON programa.id = competencia_programa.id_programa
+        JOIN escuela ON programa.id_escuela = escuela.id
+        WHERE escuela.id = 26 AND  competencia_programa.estado = 1');
+
+        $competencias_lista = [];
+        foreach($res as $item) {
+            if( $this->contar($item->id_competencia) > 0){
+                array_push($competencias_lista, $item->id_competencia);
+            }
         }
 
-        $programaValido = DB::table('programa')
-            ->where('id', $idPrograma)
-            ->where('id_escuela', auth()->user()->id_escuela)
-            ->exists();
+        $idsString = '(' . implode(',', $competencias_lista) . ')';
 
-        if (!$programaValido) {
-            return response()->json([
-                'estado' => false,
-                'datos' => [],
-                'mensaje' => 'El programa seleccionado no pertenece a su escuela profesional.',
-            ], 403);
-        }
-
-        $competencias = DB::table('competencia_programa as cp')
-            ->join('competencia as c', 'c.id', '=', 'cp.id_competencia')
-            ->where('cp.id_programa', $idPrograma)
-            ->where('cp.estado', 1)
-            ->select('c.id as value', 'c.nombre as label')
-            ->distinct()
-            ->orderBy('c.id')
-            ->get();
-
-        return response()->json([
-            'estado' => true,
-            'datos' => $competencias,
-        ], 200);
+        $competencias = DB::select('SELECT id as value, nombre as label from competencia where id in ' .$idsString);
+        $this->response['datos'] = $competencias;
+        return response()->json($this->response, 200);
     }
+
+    private function contar( $id){
+        $res = DB::select(' SELECT COUNT(*) AS reg FROM matriz
+        JOIN datos_ingreso ON datos_ingreso.codigo_est = matriz.codigo_est
+        JOIN programa ON programa.id = datos_ingreso.id_programa
+        JOIN escuela ON programa.id_escuela = escuela.id
+        WHERE escuela.id = '.auth()->user()->id_escuela.' AND matriz.C'.$id.'_R <= 10.49');
+
+        return $res[0]->reg;
+    }
+    //bdhh JOIN datos_ingreso ON datos_ingreso.dni = matriz.dni
 
     // DOCENTE
     public function dashboardDocente()

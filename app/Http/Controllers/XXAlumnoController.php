@@ -62,107 +62,57 @@ class AlumnoController extends Controller
     }
     public function getAlumnosRegistro(Request $request)
     {
-        $idPrograma = (int) $request->input('programa');
-        $idCompetencia = (int) $request->input('curso');
-        $idCursoActual = (int) $request->input('id_curso', 0);
+        $query_where = [];
 
-        if (!$idPrograma || !$idCompetencia) {
-            return response()->json([
-                'estado' => false,
-                'datos' => [],
-                'mensaje' => 'Debe seleccionar un programa y una competencia.',
-            ], 422);
+        if ($request->programa) {
+            array_push($query_where, [DB::raw('programa.id'), '=', $request->programa]);
         }
 
-        $programa = DB::table('programa')
-            ->where('id', $idPrograma)
-            ->select('id', 'id_escuela')
-            ->first();
+        $id_competencia = (int) $request->curso;
+        $id_escuela = $request->escuela;
 
-        if (!$programa) {
-            return response()->json([
-                'estado' => false,
-                'datos' => [],
-                'mensaje' => 'Programa no encontrado.',
-            ], 404);
-        }
-
-        $esSuperadmin = (int) (auth()->user()->rol ?? -1) === 0;
-        if (!$esSuperadmin && (int) $programa->id_escuela !== (int) auth()->user()->id_escuela) {
-            return response()->json([
-                'estado' => false,
-                'datos' => [],
-                'mensaje' => 'El programa seleccionado no pertenece a su escuela profesional.',
-            ], 403);
-        }
-
-        $cursoActual = null;
-        if ($idCursoActual > 0) {
-            $cursoActual = DB::table('curso')
-                ->where('id', $idCursoActual)
-                ->where('id_programa', $idPrograma)
-                ->where('id_competencia', $idCompetencia)
-                ->first();
-
-            if (!$cursoActual) {
-                return response()->json([
-                    'estado' => false,
-                    'datos' => [],
-                    'mensaje' => 'El curso no coincide con el programa o la competencia seleccionados.',
-                ], 422);
-            }
-        }
-
+        // La nota actual del alumno se encuentra en matriz.Cx_R,
+        // donde X corresponde a la competencia seleccionada.
         $columnasCompetencia = [
-            1 => 'C1_R', 2 => 'C2_R', 3 => 'C3_R', 4 => 'C4_R',
-            5 => 'C5_R', 6 => 'C6_R', 7 => 'C7_R', 8 => 'C8_R',
-            9 => 'C9_R', 10 => 'C10_R', 11 => 'C11_R',
+            1 => 'C1_R',
+            2 => 'C2_R',
+            3 => 'C3_R',
+            4 => 'C4_R',
+            5 => 'C5_R',
+            6 => 'C6_R',
+            7 => 'C7_R',
+            8 => 'C8_R',
+            9 => 'C9_R',
+            10 => 'C10_R',
+            11 => 'C11_R',
         ];
 
-        $columnaNota = $columnasCompetencia[$idCompetencia] ?? null;
+        $competencia = $columnasCompetencia[$id_competencia] ?? null;
 
-        if (!$columnaNota) {
+        if (!$competencia) {
             return response()->json([
                 'estado' => false,
                 'datos' => [],
-                'mensaje' => 'La competencia seleccionada no tiene una columna de nota configurada.',
-            ], 422);
-        }
-
-        $competenciaHabilitada = DB::table('competencia_programa')
-            ->where('id_programa', $idPrograma)
-            ->where('id_competencia', $idCompetencia)
-            ->where('estado', 1)
-            ->exists();
-
-        if (!$competenciaHabilitada) {
-            return response()->json([
-                'estado' => false,
-                'datos' => [],
-                'mensaje' => 'La competencia no está habilitada para el programa seleccionado.',
+                'mensaje' => 'La competencia seleccionada no tiene una columna de nota configurada.'
             ], 422);
         }
 
         $res = DB::table('matriz')
             ->join('datos_ingreso', 'matriz.codigo_est', '=', 'datos_ingreso.codigo_est')
+            ->join('competencia_programa', 'datos_ingreso.id_programa', '=', 'competencia_programa.id_programa')
             ->join('estudiante', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
             ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
-            ->where('datos_ingreso.id_programa', $idPrograma)
-            ->where('matriz.' . $columnaNota, '<=', 10.49)
-            ->when($cursoActual, function ($query) use ($cursoActual, $idPrograma, $idCompetencia) {
-                // Si existen varios grupos para la misma competencia, un alumno
-                // no debe aparecer disponible si ya está matriculado en otro grupo.
-                $query->whereNotExists(function ($sub) use ($cursoActual, $idPrograma, $idCompetencia) {
-                    $sub->select(DB::raw(1))
-                        ->from('curso_detalle as cd_otro')
-                        ->join('curso as c_otro', 'c_otro.id', '=', 'cd_otro.id_curso')
-                        ->whereColumn('cd_otro.id_alumno', 'estudiante.id')
-                        ->where('c_otro.id_programa', $idPrograma)
-                        ->where('c_otro.id_periodo', $cursoActual->id_periodo)
-                        ->where('c_otro.id_competencia', $idCompetencia)
-                        ->where('c_otro.id', '<>', $cursoActual->id);
-                });
+            ->where($query_where)
+            ->whereIn('datos_ingreso.codigo_est', function ($query) use ($id_escuela) {
+                $query->select('estudiante.codigo_est')
+                    ->from('estudiante')
+                    ->join('datos_ingreso', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
+                    ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
+                    ->join('escuela', 'escuela.id', '=', 'programa.id_escuela')
+                    ->where('escuela.id', $id_escuela);
             })
+            ->where('competencia_programa.id_competencia', $id_competencia)
+            ->where('matriz.' . $competencia, '<=', 10.49)
             ->select(
                 'estudiante.id',
                 'programa.programa',
@@ -171,26 +121,18 @@ class AlumnoController extends Controller
                 'estudiante.nombres',
                 'estudiante.paterno',
                 'estudiante.materno',
-                DB::raw('matriz.' . $columnaNota . ' as nota_actual')
+                DB::raw('matriz.' . $competencia . ' as nota_actual')
             )
-            ->when($request->filled('term'), function ($query) use ($request) {
-                $term = trim((string) $request->term);
-                $query->where(function ($q) use ($term) {
-                    $q->where('estudiante.codigo_est', 'LIKE', '%' . $term . '%')
-                        ->orWhere('estudiante.nombres', 'LIKE', '%' . $term . '%')
-                        ->orWhere('estudiante.paterno', 'LIKE', '%' . $term . '%')
-                        ->orWhere('estudiante.materno', 'LIKE', '%' . $term . '%');
-                });
-            })
             ->distinct()
-            ->orderBy('estudiante.paterno')
             ->get();
 
-        return response()->json([
-            'estado' => true,
-            'datos' => $res,
-        ], 200);
+        $this->response['estado'] = true;
+        $this->response['datos'] = $res;
+
+        return response()->json($this->response, 200);
     }
+
+
 
     public function getAlumnosRegistroSSSS(Request $request){
 
