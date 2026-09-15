@@ -493,6 +493,7 @@ public function getDetalleCurso(Request $request)
             'estudiante.nombres',
             'estudiante.paterno',
             'estudiante.materno',
+            'estudiante.estado_nivelacion',
             'curso.nombre as curso',
             DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
             'curso_detalle.nota'
@@ -501,6 +502,7 @@ public function getDetalleCurso(Request $request)
         ->get();
 
     $registrados = (clone $base)
+        ->where('estudiante.estado_nivelacion', 1)
         ->select(
             'estudiante.id',
             'estudiante.codigo_est',
@@ -508,7 +510,8 @@ public function getDetalleCurso(Request $request)
             DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
             'estudiante.nombres',
             'estudiante.paterno',
-            'estudiante.materno'
+            'estudiante.materno',
+            'estudiante.estado_nivelacion'
         )
         ->orderBy('estudiante.paterno')
         ->get();

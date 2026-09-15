@@ -148,6 +148,7 @@ class AlumnoController extends Controller
             ->join('estudiante', 'estudiante.codigo_est', '=', 'datos_ingreso.codigo_est')
             ->join('programa', 'programa.id', '=', 'datos_ingreso.id_programa')
             ->where('datos_ingreso.id_programa', $idPrograma)
+            ->where('estudiante.estado_nivelacion', 1)
             ->where('matriz.' . $columnaNota, '<=', 10.49)
             ->when($cursoActual, function ($query) use ($cursoActual, $idPrograma, $idCompetencia) {
                 // Si existen varios grupos para la misma competencia, un alumno

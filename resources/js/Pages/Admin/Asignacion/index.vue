@@ -107,7 +107,9 @@
           </div>
 
           <div class="flex flex-wrap gap-2 align-items-center">
+            <Tag severity="secondary" :value="resumenPermisos" />
             <Button
+              v-if="permisos.puede_crear_curso"
               label="Nuevo curso"
               icon="pi pi-plus"
               severity="primary"
@@ -148,6 +150,7 @@
                   <span v-else style="color:#777">Sin docente asignado</span>
 
                   <Button
+                    v-if="permisos.puede_asignar_docente"
                     :label="data.id_docente ? 'Cambiar docente' : 'Asignar docente'"
                     icon="pi pi-user-edit"
                     size="small"
@@ -184,6 +187,7 @@
               <template #body="{ data }">
                 <div class="flex gap-2 justify-content-center">
                   <Button
+                    v-if="permisos.puede_editar_curso"
                     icon="pi pi-pencil"
                     size="small"
                     severity="secondary"
@@ -192,6 +196,7 @@
                     @click.stop="editarCurso(data)"
                   />
                   <Button
+                    v-if="permisos.puede_eliminar_curso"
                     icon="pi pi-trash"
                     size="small"
                     severity="danger"
@@ -210,6 +215,7 @@
       <div v-else>
         <div class="flex flex-wrap gap-2 mb-3" style="justify-content:space-between; align-items:center">
           <Button
+            v-if="permisos.puede_matricular"
             severity="primary"
             label="Seleccionar alumnos"
             icon="pi pi-users"
@@ -330,8 +336,10 @@
             optionValue="id"
             placeholder="Sin docente / seleccione un docente"
             style="width:100%; margin-top:6px"
+            :disabled="!permisos.puede_asignar_docente"
           />
-          <small style="color:#666">El curso puede guardarse sin docente y asignarlo posteriormente.</small>
+          <small v-if="permisos.puede_asignar_docente" style="color:#666">El curso puede guardarse sin docente y asignarlo posteriormente.</small>
+          <small v-else style="color:#b45309">La asignación de docentes está deshabilitada por Super Admin.</small>
         </div>
 
         <template #footer>
@@ -429,7 +437,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import DataTable from 'primevue/datatable';
@@ -445,6 +453,24 @@ import { useConfirm } from 'primevue/useconfirm';
 
 const toast = useToast();
 const confirm = useConfirm();
+
+const permisos = ref({
+  puede_crear_curso: false,
+  puede_editar_curso: false,
+  puede_eliminar_curso: false,
+  puede_matricular: false,
+  puede_asignar_docente: true,
+});
+
+const resumenPermisos = computed(() => {
+  const habilitados = [];
+  if (permisos.value.puede_crear_curso) habilitados.push('crear');
+  if (permisos.value.puede_editar_curso) habilitados.push('editar');
+  if (permisos.value.puede_eliminar_curso) habilitados.push('eliminar');
+  if (permisos.value.puede_matricular) habilitados.push('matricular');
+  if (permisos.value.puede_asignar_docente) habilitados.push('docente');
+  return habilitados.length ? `Permisos: ${habilitados.join(', ')}` : 'Sin acciones habilitadas';
+});
 
 const programas = ref([]);
 const programaSeleccionado = ref(null);
@@ -515,6 +541,15 @@ const mostrarError = (error, mensaje = 'Ocurrió un error') => {
   console.error(error);
   const detalle = error?.response?.data?.mensaje || error?.response?.data?.message || mensaje;
   showToast('error', 'Error', detalle);
+};
+
+const cargarPermisos = async () => {
+  try {
+    const res = await axios.get('/coordinador/asignacion-permisos');
+    permisos.value = { ...permisos.value, ...(res.data?.datos || {}) };
+  } catch (error) {
+    mostrarError(error, 'No se pudieron cargar los permisos de asignación');
+  }
 };
 
 const getMisProgramas = async () => {
@@ -659,6 +694,10 @@ const limpiarCursoForm = () => {
 };
 
 const abrirNuevoCurso = async () => {
+  if (!permisos.value.puede_crear_curso) {
+    showToast('warn', 'Permiso no habilitado', 'Super Admin no ha habilitado la creación de cursos para su escuela.');
+    return;
+  }
   if (!programaSeleccionado.value?.value) {
     showToast('warn', 'Falta programa', 'Seleccione un programa de estudio.');
     return;
@@ -675,6 +714,10 @@ const abrirNuevoCurso = async () => {
 };
 
 const editarCurso = async (item) => {
+  if (!permisos.value.puede_editar_curso) {
+    showToast('warn', 'Permiso no habilitado', 'Super Admin no ha habilitado la edición de cursos para su escuela.');
+    return;
+  }
   if (Number(item.id_periodo) !== Number(periodoActivoId.value)) {
     showToast('warn', 'Período de consulta', 'Los cursos de períodos anteriores son solo de consulta.');
     return;
@@ -745,6 +788,10 @@ const eliminarCurso = async (id) => {
 };
 
 const confirmarEliminarCurso = (event, item) => {
+  if (!permisos.value.puede_eliminar_curso) {
+    showToast('warn', 'Permiso no habilitado', 'Super Admin no ha habilitado la eliminación de cursos para su escuela.');
+    return;
+  }
   if (Number(item.id_periodo) !== Number(periodoActivoId.value)) {
     showToast('warn', 'Período de consulta', 'Los cursos de períodos anteriores son solo de consulta.');
     return;
@@ -762,6 +809,10 @@ const confirmarEliminarCurso = (event, item) => {
 };
 
 const abrirAsignarDocente = async (item) => {
+  if (!permisos.value.puede_asignar_docente) {
+    showToast('warn', 'Permiso no habilitado', 'Super Admin no ha habilitado la asignación de docentes para su escuela.');
+    return;
+  }
   cursoDocente.value = item;
   docenteAsignar.value = item.id_docente ?? null;
   await getDocenteXcompetencia(item.id_competencia);
@@ -797,6 +848,10 @@ const guardarDocenteAsignado = async () => {
 };
 
 const abrirseleccionar = async () => {
+  if (!permisos.value.puede_matricular) {
+    showToast('warn', 'Permiso no habilitado', 'Super Admin no ha habilitado la matrícula manual para su escuela.');
+    return;
+  }
   if (Number(cursoseleccionado.value?.id_periodo) !== Number(periodoActivoId.value)) {
     showToast('warn', 'Período de consulta', 'Los alumnos de períodos anteriores no se pueden modificar.');
     return;
@@ -926,6 +981,7 @@ watch(buscar, () => {
   if (cursoseleccionado.value) getDetalleCurso();
 });
 
+cargarPermisos();
 getMisProgramas();
 </script>
 

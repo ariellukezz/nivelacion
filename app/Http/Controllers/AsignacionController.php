@@ -7,6 +7,7 @@ use App\Models\Docente;
 use App\Models\CursoDetalle;
 use App\Models\Curso;
 use App\Models\Periodo;
+use App\Models\PermisoAsignacionEscuela;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -24,6 +25,35 @@ class AsignacionController extends Controller
     private function esSuperadmin(): bool
     {
         return (int) (auth()->user()->rol ?? -1) === 0;
+    }
+
+    private function permisoDirector(string $accion, int $idEscuela, ?int $idPeriodo = null): bool
+    {
+        if ($this->esSuperadmin()) {
+            return true;
+        }
+
+        $periodo = $idPeriodo ?: Periodo::activoId();
+        if (!$periodo) {
+            return false;
+        }
+
+        return PermisoAsignacionEscuela::permitido($idEscuela, $periodo, $accion);
+    }
+
+    private function respuestaSinPermiso(string $accion)
+    {
+        $mensajes = [
+            'crear' => 'Super Admin no ha habilitado la creación de cursos para su escuela en este período.',
+            'editar' => 'Super Admin no ha habilitado la edición de cursos para su escuela en este período.',
+            'matricular' => 'Super Admin no ha habilitado la matrícula manual para su escuela en este período.',
+            'asignar_docente' => 'Super Admin no ha habilitado la asignación de docentes para su escuela en este período.',
+        ];
+
+        return response()->json([
+            'estado' => false,
+            'mensaje' => $mensajes[$accion] ?? 'No tiene permiso para realizar esta acción.',
+        ], 403);
     }
 
     private function programaPermitido(int $idPrograma)
@@ -201,6 +231,7 @@ class AsignacionController extends Controller
                 'estudiante.nombres',
                 'estudiante.paterno',
                 'estudiante.materno',
+                'estudiante.estado_nivelacion',
                 'curso.nombre as curso',
                 DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
                 'curso_detalle.nota'
@@ -209,6 +240,7 @@ class AsignacionController extends Controller
             ->get();
 
         $registrados = (clone $base)
+            ->where('estudiante.estado_nivelacion', 1)
             ->select(
                 'estudiante.id',
                 'estudiante.codigo_est',
@@ -216,7 +248,8 @@ class AsignacionController extends Controller
                 DB::raw('matriz.' . $columnaNotaActual . ' as nota_actual'),
                 'estudiante.nombres',
                 'estudiante.paterno',
-                'estudiante.materno'
+                'estudiante.materno',
+                'estudiante.estado_nivelacion'
             )
             ->orderBy('estudiante.paterno')
             ->get();
@@ -286,6 +319,14 @@ class AsignacionController extends Controller
                 ], 422);
             }
 
+            if (!$this->permisoDirector('crear', (int) $programa->id_escuela, $idPeriodo)) {
+                return $this->respuestaSinPermiso('crear');
+            }
+
+            if ($request->filled('id_docente') && !$this->permisoDirector('asignar_docente', (int) $programa->id_escuela, $idPeriodo)) {
+                return $this->respuestaSinPermiso('asignar_docente');
+            }
+
             $duplicado = Curso::where('id_programa', $programa->id)
                 ->where('id_periodo', $idPeriodo)
                 ->where('id_competencia', (int) $request->id_competencia)
@@ -335,6 +376,24 @@ class AsignacionController extends Controller
                 'estado' => false,
                 'mensaje' => 'Los cursos de períodos anteriores son solo de consulta.',
             ], 422);
+        }
+
+        $estructuraCambia = trim((string) $curso->nombre) !== trim((string) $request->nombre)
+            || (int) $curso->id_competencia !== (int) $request->id_competencia
+            || (string) $curso->grupo !== (string) $request->grupo
+            || (int) $curso->estado !== (int) $request->boolean('estado')
+            || (int) $curso->id_programa !== (int) $request->id_programa;
+
+        $docenteActual = $curso->id_docente ? (int) $curso->id_docente : null;
+        $docenteNuevo = $request->filled('id_docente') ? (int) $request->id_docente : null;
+        $docenteCambia = $docenteActual !== $docenteNuevo;
+
+        if ($estructuraCambia && !$this->permisoDirector('editar', (int) $permitido->id_escuela, (int) $curso->id_periodo)) {
+            return $this->respuestaSinPermiso('editar');
+        }
+
+        if ($docenteCambia && !$this->permisoDirector('asignar_docente', (int) $permitido->id_escuela, (int) $curso->id_periodo)) {
+            return $this->respuestaSinPermiso('asignar_docente');
         }
 
         // Un curso no se mueve de programa desde edición. Si se requiere otro
@@ -437,6 +496,10 @@ class AsignacionController extends Controller
             ], 422);
         }
 
+        if (!$this->permisoDirector('matricular', (int) $curso->id_escuela, (int) $curso->id_periodo)) {
+            return $this->respuestaSinPermiso('matricular');
+        }
+
         if ((int) $curso->estado !== 1) {
             return response()->json([
                 'estado' => false,
@@ -470,6 +533,7 @@ class AsignacionController extends Controller
                         ->join('datos_ingreso', 'datos_ingreso.codigo_est', '=', 'estudiante.codigo_est')
                         ->join('matriz', 'matriz.codigo_est', '=', 'estudiante.codigo_est')
                         ->where('estudiante.id', $idAlumno)
+                        ->where('estudiante.estado_nivelacion', 1)
                         ->where('datos_ingreso.id_programa', $curso->id_programa)
                         ->where('matriz.' . $columnaNota, '<=', 10.49)
                         ->select('estudiante.codigo_est')
@@ -534,6 +598,15 @@ class AsignacionController extends Controller
 
         if ((int) $curso->id_periodo !== (int) Periodo::activoId()) {
             abort(403, 'No se puede matricular en un curso que no pertenece al período activo.');
+        }
+
+        if (!$this->permisoDirector('matricular', (int) $curso->id_escuela, (int) $curso->id_periodo)) {
+            abort(403, 'No tiene permiso para matricular alumnos en este período.');
+        }
+
+        $alumnoActivo = DB::table('estudiante')->where('id', $id_alumno)->where('estado_nivelacion', 1)->exists();
+        if (!$alumnoActivo) {
+            abort(422, 'El estudiante está retirado o inactivo para nivelación.');
         }
 
         CursoDetalle::firstOrCreate([

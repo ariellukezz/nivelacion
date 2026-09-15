@@ -116,7 +116,7 @@ class CoordinadorController extends Controller
 
     public function getAlumnos(Request $request){
 
-        $consulta = ['estudiante.id', 'estudiante.codigo_est','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
+        $consulta = ['estudiante.id', 'estudiante.codigo_est','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa', 'estudiante.estado_nivelacion', 'estudiante.motivo_estado_nivelacion', 'estudiante.fecha_estado_nivelacion'];
        //bdhh $consulta = ['estudiante.id', 'estudiante.dni','datos_ingreso.semestre', 'estudiante.nombres', 'estudiante.paterno', 'estudiante.materno' , 'estudiante.sexo', 'datos_ingreso.t_examen as tipo_examen', 'programa.programa'];
         if($request->codigo == true) { array_push($consulta,'estudiante.codigo'); }
         if($request->telefono == true) { array_push($consulta,'estudiante.telefono'); }
@@ -136,6 +136,9 @@ class CoordinadorController extends Controller
         ->join('programa','programa.id','datos_ingreso.id_programa')
         ->join('escuela','escuela.id','programa.id_escuela')
         ->where('escuela.id','=',auth()->user()->id_escuela)
+        ->when($request->filled('estado_nivelacion') && $request->estado_nivelacion !== 'todos', function ($query) use ($request) {
+            $query->where('estudiante.estado_nivelacion', (int) $request->estado_nivelacion);
+        })
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('estudiante.nombres', 'LIKE', '%' . $request->term . '%')

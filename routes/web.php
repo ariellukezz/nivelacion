@@ -30,6 +30,9 @@ use App\Http\Controllers\FichaRiesgoController;
 use App\Http\Controllers\NotaCoordinadorController;
 use App\Http\Controllers\AdmisionIntegracionController;
 use App\Http\Controllers\DataIngresoIntegracionController;
+use App\Http\Controllers\PermisoAsignacionController;
+use App\Http\Controllers\EstudianteEstadoController;
+use App\Http\Controllers\DireccionAsignacionController;
 
 // Acceso general y dashboard.
 Route::get('/dashboard', function () {
@@ -80,6 +83,7 @@ Route::middleware('auth','admin')->group(function () {
         // Módulo: estudiantes.
         Route::get('/estudiante', fn () => Inertia::render('Admin/Estudiante/index'))->name('coordinador-estudiante');
         Route::post('/get-alumnos', [CoordinadorController::class, 'getAlumnos']);
+        Route::patch('/estudiante/{id}/estado-nivelacion', [EstudianteEstadoController::class, 'actualizarDirector']);
 
         // Módulo: docentes.
         Route::get('/docente', fn () => Inertia::render('Admin/Docente/index'))->name('coordinador-docente');
@@ -91,6 +95,7 @@ Route::middleware('auth','admin')->group(function () {
 
         // Módulo: asignación docente.
         Route::get('/asignacion', fn () => Inertia::render('Admin/Asignacion/index'))->name('coordinador-asignacion');
+        Route::get('/asignacion-permisos', [PermisoAsignacionController::class, 'director']);
         Route::post('/get-docente-competencia', [AsignacionController::class, 'getDocentesXcompetencia']);
         Route::post('/save-curso', [AsignacionController::class, 'save']);
         Route::post('/get-cursos', [AsignacionController::class, 'getCursos']);
@@ -415,6 +420,11 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
 
     // Módulo: asignación.
     Route::get('/asignacion', fn () => Inertia::render('Superadmi/Asignacion/index'))->name('asignacion-superadmi');
+    Route::get('/asignacion-permisos', [PermisoAsignacionController::class, 'superadmin']);
+    Route::post('/asignacion-permisos', [PermisoAsignacionController::class, 'guardar']);
+    Route::post('/asignacion-masiva/preview', [DireccionAsignacionController::class, 'preview']);
+    Route::post('/asignacion-masiva/crear-cursos', [DireccionAsignacionController::class, 'crearCursos']);
+    Route::post('/asignacion-masiva/matricular', [DireccionAsignacionController::class, 'matricular']);
     //Route::get('asignacion', [SuperadmiController::class, 'index'])->name('asignacion-index');
     Route::post('get-cursos', [SuperadmiController::class, 'getCursos']);
     Route::post('get-detalle-curso', [SuperadmiController::class, 'getDetalleCurso']);

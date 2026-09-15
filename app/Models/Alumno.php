@@ -30,7 +30,11 @@ class Alumno extends Model
         'apto',
         'direccion',
         'telefono',
-        'usuario_id'
+        'usuario_id',
+        'estado_nivelacion',
+        'motivo_estado_nivelacion',
+        'fecha_estado_nivelacion',
+        'usuario_estado_nivelacion_id'
     ];
 
 

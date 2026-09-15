@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Curso;
 use App\Models\Alumno;
 use App\Models\CursoDetalle;
+use App\Models\PermisoAsignacionEscuela;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -60,6 +61,7 @@ class CursoController extends Controller
         ->join('datos_ingreso', 'estudiante.codigo_est', 'datos_ingreso.codigo_est')
        //bdhh ->join('datos_ingreso', 'estudiante.dni', 'datos_ingreso.dni')
         ->where('curso_detalle.id_curso',"=", $request->curso)
+        ->where('estudiante.estado_nivelacion', 1)
         ->where(function ($query) use ($request) {
             return $query
                 ->orWhere('estudiante.codigo_est', 'LIKE', '%' . $request->term . '%')
@@ -179,16 +181,24 @@ class CursoController extends Controller
         $esSuperadmin = (int) (auth()->user()->rol ?? -1) === 0;
 
         if (!$esSuperadmin) {
-            $perteneceAEscuela = DB::table('curso')
+            $relacion = DB::table('curso')
                 ->join('programa', 'programa.id', '=', 'curso.id_programa')
                 ->where('curso.id', $id)
                 ->where('programa.id_escuela', auth()->user()->id_escuela)
-                ->exists();
+                ->select('programa.id_escuela', 'curso.id_periodo')
+                ->first();
 
-            if (!$perteneceAEscuela) {
+            if (!$relacion) {
                 return response()->json([
                     'estado' => false,
                     'mensaje' => 'No tiene permiso para eliminar este curso.'
+                ], 403);
+            }
+
+            if (!PermisoAsignacionEscuela::permitido((int) $relacion->id_escuela, (int) $relacion->id_periodo, 'eliminar')) {
+                return response()->json([
+                    'estado' => false,
+                    'mensaje' => 'Super Admin no ha habilitado la eliminación de cursos para su escuela en este período.'
                 ], 403);
             }
         }

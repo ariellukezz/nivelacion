@@ -83,6 +83,22 @@
     </div>
 
     <div class="bg-white shadow-xs p-4 asignacion-container">
+      <div v-if="!cursoseleccionado" class="flex justify-content-end gap-2 mb-3" style="flex-wrap:wrap">
+        <Button
+          label="Permisos de Directores"
+          icon="pi pi-lock"
+          severity="secondary"
+          size="small"
+          @click="abrirPermisos"
+        />
+        <Button
+          label="Operaciones masivas"
+          icon="pi pi-cog"
+          severity="help"
+          size="small"
+          @click="abrirMasivo"
+        />
+      </div>
       <!-- PASO 1: ESCUELA -->
       <div v-if="!escuela" class="card">
         <div class="section-title">Seleccione una Escuela Profesional</div>
@@ -238,6 +254,11 @@
           <Column field="nombres" header="Nombres" />
           <Column field="paterno" header="Paterno" />
           <Column field="materno" header="Materno" />
+          <Column field="estado_nivelacion" header="Estado" style="width: 100px">
+            <template #body="{ data }">
+              <Tag :severity="Number(data.estado_nivelacion) === 1 ? 'success' : 'danger'" :value="Number(data.estado_nivelacion) === 1 ? 'Activo' : 'Retirado'" />
+            </template>
+          </Column>
           <Column field="nota_actual" header="Nota inicial" style="width: 95px" />
           <Column field="nota" header="Nota curso" style="width: 95px" />
           <Column header="Condición" style="width: 110px">
@@ -367,6 +388,235 @@
           <Button label="Guardar matrícula" size="small" @click="asignar" />
         </template>
       </Dialog>
+
+      <!-- PERMISOS DEL DIRECTOR POR ESCUELA Y PERÍODO -->
+      <Dialog
+        v-model:visible="modalPermisos"
+        modal
+        header="Permisos del Director por Escuela"
+        :style="{ width: '700px', maxWidth: '96vw' }"
+      >
+        <div class="mb-3 text-sm" style="color:#555">
+          Por defecto el Director solo puede asignar/cambiar docente. Super Admin puede habilitar temporalmente otras acciones por Escuela Profesional y período.
+        </div>
+
+        <div class="grid">
+          <div class="col-12 md:col-7">
+            <label class="field-label">Escuela Profesional</label>
+            <Dropdown
+              v-model="permisoEscuelaId"
+              :options="escuelas"
+              optionLabel="escuela"
+              optionValue="id"
+              filter
+              class="w-full"
+              placeholder="Seleccione escuela"
+              @change="cargarPermisos"
+            />
+          </div>
+          <div class="col-12 md:col-5">
+            <label class="field-label">Período</label>
+            <Dropdown
+              v-model="permisoPeriodoId"
+              :options="periodosPermiso"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+              placeholder="Seleccione período"
+              @change="cargarPermisos"
+            >
+              <template #option="slotProps">
+                <div class="flex align-items-center gap-2">
+                  <span>{{ slotProps.option.label }}</span>
+                  <Tag v-if="slotProps.option.estado === 'activo'" severity="success" value="Activo" />
+                </div>
+              </template>
+            </Dropdown>
+          </div>
+        </div>
+
+        <div v-if="permisoEscuelaId && permisoPeriodoId" class="grid mt-2">
+          <div class="col-12 md:col-6 permission-row">
+            <span>Asignar / cambiar docente</span>
+            <InputSwitch v-model="permisoForm.puede_asignar_docente" />
+          </div>
+          <div class="col-12 md:col-6 permission-row">
+            <span>Crear cursos</span>
+            <InputSwitch v-model="permisoForm.puede_crear_curso" />
+          </div>
+          <div class="col-12 md:col-6 permission-row">
+            <span>Editar cursos</span>
+            <InputSwitch v-model="permisoForm.puede_editar_curso" />
+          </div>
+          <div class="col-12 md:col-6 permission-row">
+            <span>Eliminar cursos</span>
+            <InputSwitch v-model="permisoForm.puede_eliminar_curso" />
+          </div>
+          <div class="col-12 md:col-6 permission-row">
+            <span>Matricular alumnos manualmente</span>
+            <InputSwitch v-model="permisoForm.puede_matricular" />
+          </div>
+        </div>
+
+        <template #footer>
+          <Button label="Cerrar" outlined size="small" @click="modalPermisos = false" />
+          <Button
+            label="Guardar permisos"
+            icon="pi pi-save"
+            size="small"
+            :disabled="!permisoEscuelaId || !permisoPeriodoId"
+            :loading="guardandoPermisos"
+            @click="guardarPermisos"
+          />
+        </template>
+      </Dialog>
+
+      <!-- OPERACIONES MASIVAS DE DIRECCIÓN -->
+      <Dialog
+        v-model:visible="modalMasivo"
+        modal
+        header="Operaciones masivas de Dirección"
+        :style="{ width: '980px', maxWidth: '97vw' }"
+      >
+        <div class="mb-3 text-sm" style="color:#555">
+          Las operaciones se realizan únicamente sobre el período activo. Solo se consideran competencias que tengan estudiantes activos pendientes de nivelar; las competencias sin demanda no generan cursos.
+        </div>
+
+        <div class="grid">
+          <div class="col-12 md:col-6">
+            <label class="field-label">Ámbito</label>
+            <Dropdown
+              v-model="masivo.ambito"
+              :options="ambitosMasivos"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+            />
+          </div>
+
+          <div v-if="masivo.ambito !== 'todas'" class="col-12 md:col-6">
+            <label class="field-label">Escuela profesional</label>
+            <Dropdown
+              v-model="masivo.id_escuela"
+              :options="escuelas"
+              optionLabel="escuela"
+              optionValue="id"
+              filter
+              class="w-full"
+              placeholder="Seleccione escuela"
+            />
+          </div>
+
+          <div v-if="masivo.ambito === 'programa'" class="col-12 md:col-8">
+            <label class="field-label">Programa de estudio</label>
+            <Dropdown
+              v-model="masivo.id_programa"
+              :options="programasMasivo"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              class="w-full"
+              placeholder="Seleccione programa"
+            />
+          </div>
+
+          <div class="col-12 md:col-4">
+            <label class="field-label">Grupo</label>
+            <Dropdown v-model="masivo.grupo" :options="grupos" optionLabel="label" optionValue="value" class="w-full" />
+          </div>
+        </div>
+
+        <div v-if="previewMasivo" class="p-3 mt-2" style="background:#f7f7f7; border:1px solid #ddd; border-radius:8px">
+          <div class="font-semibold mb-2">Vista previa — {{ previewMasivo.periodo }}</div>
+          <div class="grid text-sm">
+            <div class="col-6 md:col-3"><strong>Programas:</strong> {{ previewMasivo.programas }}</div>
+            <div class="col-6 md:col-3"><strong>Grupo:</strong> {{ previewMasivo.grupo }}</div>
+            <div class="col-6 md:col-3"><strong>Competencias habilitadas:</strong> {{ previewMasivo.competencias_programa }}</div>
+            <div class="col-6 md:col-3"><strong>Con demanda:</strong> {{ previewMasivo.competencias_con_demanda || 0 }}</div>
+
+            <div class="col-6 md:col-3"><strong>Sin demanda:</strong> {{ previewMasivo.competencias_sin_demanda || 0 }}</div>
+            <div class="col-6 md:col-3"><strong>Cursos necesarios:</strong> {{ previewMasivo.cursos_necesarios || 0 }}</div>
+            <div class="col-6 md:col-3"><strong>Cursos existentes:</strong> {{ previewMasivo.cursos_existentes }}</div>
+            <div class="col-6 md:col-3"><strong>Cursos por crear:</strong> {{ previewMasivo.cursos_faltantes_estimados }}</div>
+
+            <div class="col-6 md:col-3"><strong>Cursos ambiguos:</strong> {{ previewMasivo.cursos_ambiguos }}</div>
+            <div class="col-6 md:col-3"><strong>Cursos inactivos:</strong> {{ previewMasivo.cursos_inactivos || 0 }}</div>
+            <div class="col-6 md:col-3"><strong>Estudiantes activos:</strong> {{ previewMasivo.alumnos_activos }}</div>
+            <div class="col-6 md:col-3"><strong>Matrículas pendientes:</strong> {{ previewMasivo.matriculas_potenciales }}</div>
+          </div>
+
+          <Message
+            v-if="Number(previewMasivo.competencias_con_demanda || 0) === 0"
+            severity="info"
+            :closable="false"
+            class="mt-2"
+          >
+            No hay estudiantes activos pendientes de nivelar en el ámbito seleccionado. No es necesario crear cursos ni realizar matrícula masiva.
+          </Message>
+
+          <div v-if="Array.isArray(previewMasivo.detalle_demanda) && previewMasivo.detalle_demanda.length" class="mt-3">
+            <div class="font-semibold mb-2">Detalle de competencias con demanda</div>
+            <DataTable
+              :value="previewMasivo.detalle_demanda"
+              class="p-datatable-sm compact-table"
+              :paginator="true"
+              :rows="8"
+              responsiveLayout="scroll"
+            >
+              <Column field="escuela" header="Escuela" />
+              <Column field="programa" header="Programa" />
+              <Column field="competencia" header="Competencia" />
+              <Column field="pendientes" header="Pendientes" style="width:100px" />
+              <Column header="Curso" style="width:120px">
+                <template #body="{ data }">
+                  <Tag
+                    v-if="data.estado_curso === 'activo'"
+                    severity="success"
+                    value="Activo"
+                  />
+                  <Tag
+                    v-else-if="data.estado_curso === 'faltante'"
+                    severity="warning"
+                    value="Por crear"
+                  />
+                  <Tag
+                    v-else-if="data.estado_curso === 'inactivo'"
+                    severity="danger"
+                    value="Inactivo"
+                  />
+                  <Tag
+                    v-else
+                    severity="danger"
+                    value="Ambiguo"
+                  />
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
+
+        <template #footer>
+          <Button label="Cerrar" outlined size="small" @click="modalMasivo = false" />
+          <Button label="Vista previa" icon="pi pi-search" severity="secondary" size="small" :loading="procesandoMasivo" @click="previsualizarMasivo" />
+          <Button
+            label="Crear cursos necesarios"
+            icon="pi pi-plus"
+            size="small"
+            :disabled="!previewMasivo || Number(previewMasivo.cursos_faltantes_estimados || 0) <= 0"
+            :loading="procesandoMasivo"
+            @click="ejecutarMasivo('crear-cursos')"
+          />
+          <Button
+            label="Matricular alumnos elegibles"
+            icon="pi pi-users"
+            severity="success"
+            size="small"
+            :disabled="!previewMasivo || Number(previewMasivo.matriculas_potenciales || 0) <= 0 || Number(previewMasivo.cursos_faltantes_estimados || 0) > 0 || Number(previewMasivo.cursos_ambiguos || 0) > 0 || Number(previewMasivo.cursos_inactivos || 0) > 0"
+            :loading="procesandoMasivo"
+            @click="ejecutarMasivo('matricular')"
+          />
+        </template>
+      </Dialog>
     </div>
   </AuthenticatedLayout>
 </template>
@@ -383,6 +633,7 @@ import Column from 'primevue/column';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputSwitch from 'primevue/inputswitch';
+import Message from 'primevue/message';
 import Toast from 'primevue/toast';
 import Tag from 'primevue/tag';
 import ConfirmPopup from 'primevue/confirmpopup';
@@ -442,6 +693,30 @@ const modal_registro = ref(false);
 const alumnosregistro = ref([]);
 const alumnos_seleccionados_registro = ref([]);
 const seleccionadosTemp = ref([]);
+
+const modalPermisos = ref(false);
+const permisoEscuelaId = ref(null);
+const permisoPeriodoId = ref(null);
+const periodosPermiso = ref([]);
+const guardandoPermisos = ref(false);
+const permisoForm = ref({
+  puede_crear_curso: false,
+  puede_editar_curso: false,
+  puede_eliminar_curso: false,
+  puede_matricular: false,
+  puede_asignar_docente: true,
+});
+
+const modalMasivo = ref(false);
+const programasMasivo = ref([]);
+const previewMasivo = ref(null);
+const procesandoMasivo = ref(false);
+const ambitosMasivos = [
+  { value: 'todas', label: 'Todas las escuelas' },
+  { value: 'escuela', label: 'Una escuela profesional' },
+  { value: 'programa', label: 'Un programa de estudio' },
+];
+const masivo = ref({ ambito: 'todas', id_escuela: null, id_programa: null, grupo: 'A' });
 
 const esPeriodoActivo = computed(() =>
   periodoActivo.value !== null && Number(periodoSeleccionado.value) === Number(periodoActivo.value)
@@ -645,8 +920,11 @@ const getDetalleCurso = async () => {
       curso: cursoseleccionado.value.id,
     });
     detalle_curso.value = obtenerLista(res.data);
-    alumnos_seleccionados_registro.value = obtenerLista({ datos: res.data?.registrados });
-    seleccionadosTemp.value = [...alumnos_seleccionados_registro.value];
+    const registradosActivos = obtenerLista({ datos: res.data?.registrados }).filter(
+      (alumno) => Number(alumno.estado_nivelacion) === 1
+    );
+    alumnos_seleccionados_registro.value = registradosActivos;
+    seleccionadosTemp.value = [...registradosActivos];
   } catch (error) {
     detalle_curso.value = [];
     mostrarError(error, 'No se pudo cargar el detalle del curso');
@@ -739,6 +1017,170 @@ const descargarPDF = (id) => {
   window.open(`${base}/generar-pdf/${id}`, '_self');
 };
 
+const cargarPermisos = async () => {
+  if (!permisoEscuelaId.value) return;
+
+  try {
+    const res = await axios.get(`${base}/asignacion-permisos`, {
+      params: {
+        id_escuela: permisoEscuelaId.value,
+        id_periodo: permisoPeriodoId.value || null,
+      },
+    });
+
+    if (Array.isArray(res.data?.periodos)) periodosPermiso.value = res.data.periodos;
+    if (!permisoPeriodoId.value && res.data?.periodo_activo) {
+      permisoPeriodoId.value = Number(res.data.periodo_activo);
+    }
+
+    if (res.data?.datos) {
+      permisoForm.value = {
+        puede_crear_curso: Boolean(res.data.datos.puede_crear_curso),
+        puede_editar_curso: Boolean(res.data.datos.puede_editar_curso),
+        puede_eliminar_curso: Boolean(res.data.datos.puede_eliminar_curso),
+        puede_matricular: Boolean(res.data.datos.puede_matricular),
+        puede_asignar_docente: Boolean(res.data.datos.puede_asignar_docente),
+      };
+    }
+  } catch (error) {
+    mostrarError(error, 'No se pudieron cargar los permisos');
+  }
+};
+
+const abrirPermisos = async () => {
+  permisoEscuelaId.value = escuela.value?.id || null;
+  permisoPeriodoId.value = null;
+  permisoForm.value = {
+    puede_crear_curso: false,
+    puede_editar_curso: false,
+    puede_eliminar_curso: false,
+    puede_matricular: false,
+    puede_asignar_docente: true,
+  };
+  modalPermisos.value = true;
+
+  if (permisoEscuelaId.value) {
+    await cargarPermisos();
+  } else {
+    try {
+      const res = await axios.get(`${base}/asignacion-permisos`);
+      periodosPermiso.value = Array.isArray(res.data?.periodos) ? res.data.periodos : [];
+      permisoPeriodoId.value = res.data?.periodo_activo ? Number(res.data.periodo_activo) : null;
+    } catch (error) {
+      mostrarError(error, 'No se pudieron cargar los períodos');
+    }
+  }
+};
+
+const guardarPermisos = async () => {
+  if (!permisoEscuelaId.value || !permisoPeriodoId.value) {
+    showToast('warn', 'Falta información', 'Seleccione escuela y período.');
+    return;
+  }
+
+  guardandoPermisos.value = true;
+  try {
+    const res = await axios.post(`${base}/asignacion-permisos`, {
+      id_escuela: permisoEscuelaId.value,
+      id_periodo: permisoPeriodoId.value,
+      ...permisoForm.value,
+    });
+    showToast(res.data?.tipo || 'success', res.data?.titulo || 'Permisos actualizados', res.data?.mensaje || 'Permisos guardados.');
+  } catch (error) {
+    mostrarError(error, 'No se pudieron guardar los permisos');
+  } finally {
+    guardandoPermisos.value = false;
+  }
+};
+
+const cargarProgramasMasivo = async () => {
+  programasMasivo.value = [];
+  masivo.value.id_programa = null;
+  previewMasivo.value = null;
+
+  if (!masivo.value.id_escuela) return;
+
+  try {
+    const res = await axios.post(`${base}/get-programas-escuela`, {
+      id_escuela: masivo.value.id_escuela,
+      term: '',
+    });
+    programasMasivo.value = obtenerLista(res.data);
+  } catch (error) {
+    mostrarError(error, 'No se pudieron cargar los programas');
+  }
+};
+
+const abrirMasivo = async () => {
+  previewMasivo.value = null;
+  programasMasivo.value = [];
+
+  if (programaSeleccionado.value?.value && escuela.value?.id) {
+    masivo.value = {
+      ambito: 'programa',
+      id_escuela: escuela.value.id,
+      id_programa: programaSeleccionado.value.value,
+      grupo: 'A',
+    };
+    await cargarProgramasMasivo();
+    masivo.value.id_programa = programaSeleccionado.value.value;
+  } else if (escuela.value?.id) {
+    masivo.value = { ambito: 'escuela', id_escuela: escuela.value.id, id_programa: null, grupo: 'A' };
+  } else {
+    masivo.value = { ambito: 'todas', id_escuela: null, id_programa: null, grupo: 'A' };
+  }
+
+  modalMasivo.value = true;
+};
+
+const payloadMasivo = () => ({
+  ambito: masivo.value.ambito,
+  id_escuela: masivo.value.id_escuela || null,
+  id_programa: masivo.value.id_programa || null,
+  grupo: masivo.value.grupo || 'A',
+});
+
+const validarMasivo = () => {
+  if (masivo.value.ambito === 'escuela' && !masivo.value.id_escuela) {
+    showToast('warn', 'Falta escuela', 'Seleccione una escuela profesional.');
+    return false;
+  }
+  if (masivo.value.ambito === 'programa' && (!masivo.value.id_escuela || !masivo.value.id_programa)) {
+    showToast('warn', 'Falta programa', 'Seleccione una escuela y un programa de estudio.');
+    return false;
+  }
+  return true;
+};
+
+const previsualizarMasivo = async () => {
+  if (!validarMasivo()) return;
+  procesandoMasivo.value = true;
+  try {
+    const res = await axios.post(`${base}/asignacion-masiva/preview`, payloadMasivo());
+    previewMasivo.value = res.data?.datos || null;
+  } catch (error) {
+    previewMasivo.value = null;
+    mostrarError(error, 'No se pudo generar la vista previa');
+  } finally {
+    procesandoMasivo.value = false;
+  }
+};
+
+const ejecutarMasivo = async (accion) => {
+  if (!previewMasivo.value || !validarMasivo()) return;
+  procesandoMasivo.value = true;
+  try {
+    const res = await axios.post(`${base}/asignacion-masiva/${accion}`, payloadMasivo());
+    showToast(res.data?.tipo || 'success', res.data?.titulo || 'Proceso completado', res.data?.mensaje || 'Operación realizada.');
+    await previsualizarMasivo();
+    if (programaSeleccionado.value) await getCursos();
+  } catch (error) {
+    mostrarError(error, 'No se pudo completar la operación masiva');
+  } finally {
+    procesandoMasivo.value = false;
+  }
+};
+
 const Inicio = () => {
   escuela.value = null;
   programaSeleccionado.value = null;
@@ -819,6 +1261,25 @@ watch(cursocompetencia, async (value) => {
   }
 });
 
+watch(() => masivo.value.ambito, async (value) => {
+  previewMasivo.value = null;
+  if (value === 'todas') {
+    masivo.value.id_escuela = null;
+    masivo.value.id_programa = null;
+    programasMasivo.value = [];
+  } else if (value === 'escuela') {
+    masivo.value.id_programa = null;
+  }
+});
+
+watch(() => masivo.value.id_escuela, async () => {
+  previewMasivo.value = null;
+  if (masivo.value.ambito === 'programa') await cargarProgramasMasivo();
+});
+
+watch(() => masivo.value.id_programa, () => { previewMasivo.value = null; });
+watch(() => masivo.value.grupo, () => { previewMasivo.value = null; });
+
 watch(visible, (value) => {
   if (!value) limpiarCurso();
 });
@@ -878,6 +1339,17 @@ getEscuelas();
   padding-top: 0.55rem;
   padding-bottom: 0.55rem;
   font-size: 0.85rem;
+}
+
+.permission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 0.25rem;
 }
 
 @media (max-width: 900px) {
