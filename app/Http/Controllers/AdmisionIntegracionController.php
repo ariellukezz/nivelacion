@@ -313,50 +313,80 @@ class AdmisionIntegracionController extends Controller
             'id_programa_admision' => 'required|integer'
         ]);
 
+        $proceso = AdmisionProceso::where('id_admision', $request->id_proceso_admision)->first();
+        $idPeriodo = (int) ($proceso->id_periodo ?? 0);
+
         $programaLocal = DB::table('programa')
             ->where('id_admision', $request->id_programa_admision)
             ->select('id', 'programa')
             ->first();
 
-        if (!$programaLocal) {
-            return response()->json([
-                'estado' => false,
-                'tipo' => 'warn',
-                'titulo' => 'PROGRAMA SIN EQUIVALENCIA',
-                'mensaje' => 'El programa no tiene equivalencia local.'
-            ]);
-        }
-
+        $programaFallback = 'Programa Admisión ' . (int) $request->id_programa_admision;
         $response = $api->postulantes(
             (int) $request->id_proceso_admision,
             (int) $request->id_programa_admision
         );
-
         $items = $response['data'] ?? [];
 
-        $existentes = AdmisionPostulante::query()
-            ->where('id_proceso_admision', $request->id_proceso_admision)
-            ->pluck('codigo', 'dni');
+        $dnis = collect($items)
+            ->pluck('DNI')
+            ->map(fn ($v) => trim((string) $v))
+            ->filter()
+            ->unique()
+            ->values();
 
-        $totalApi = count($items);
-        $conCodigo = 0;
-        $sinCodigo = 0;
-        $nuevosConCodigo = 0;
-        $yaSincronizados = 0;
-        $codigoCambiado = 0;
+        $codigos = collect($items)
+            ->pluck('codigo')
+            ->map(fn ($v) => trim((string) $v))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $existentesPeriodo = collect();
+        if ($idPeriodo && $dnis->isNotEmpty()) {
+            $existentesPeriodo = DB::table('admision_postulante as ap')
+                ->join('admision_proceso as pr', 'pr.id_admision', '=', 'ap.id_proceso_admision')
+                ->where('pr.id_periodo', $idPeriodo)
+                ->whereIn('ap.dni', $dnis)
+                ->select('ap.dni', 'ap.codigo', 'ap.id_proceso_admision')
+                ->orderByDesc('ap.id')
+                ->get()
+                ->keyBy(fn ($item) => trim((string) $item->dni));
+        }
+
+        // En esta etapa SOLO se valida contra admision_postulante.
+        $codigoAdmision = $codigos->isEmpty()
+            ? collect()
+            : AdmisionPostulante::query()
+                ->whereIn('codigo', $codigos)
+                ->select('codigo', 'dni', 'id_proceso_admision')
+                ->get()
+                ->keyBy(fn ($item) => trim((string) $item->codigo));
+
+        $cont = [
+            'con_codigo' => 0,
+            'sin_codigo' => 0,
+            'nuevos_con_codigo' => 0,
+            'ya_sincronizados' => 0,
+            'codigo_cambiado' => 0,
+            'conflicto_codigo' => 0,
+        ];
+
         $pendientes = [];
+        $postulantesApi = [];
 
         foreach ($items as $item) {
             $dni = trim((string) ($item['DNI'] ?? ''));
             $codigo = trim((string) ($item['codigo'] ?? ''));
-
             if ($dni === '') {
                 continue;
             }
 
-            if ($codigo === '') {
-                $sinCodigo++;
+            $estado = 'PENDIENTE_CODIGO';
+            $codigoGuardado = null;
 
+            if ($codigo === '') {
+                $cont['sin_codigo']++;
                 $pendientes[] = [
                     'dni' => $dni,
                     'estudiante' => trim(
@@ -364,44 +394,248 @@ class AdmisionIntegracionController extends Controller
                         ($item['segundo_apellido'] ?? '') . ' ' .
                         ($item['nombres'] ?? '')
                     ),
-                    'programa' => $item['programa']
-                        ?? $programaLocal->programa,
-                    'id_programa_admision' =>
-                        $item['id_programa']
-                        ?? (int) $request->id_programa_admision
+                    'programa' => $item['programa'] ?? ($programaLocal->programa ?? $programaFallback),
                 ];
-
-                continue;
-            }
-
-            $conCodigo++;
-
-            if (!$existentes->has($dni)) {
-                $nuevosConCodigo++;
-                continue;
-            }
-
-            $codigoGuardado = trim((string) $existentes->get($dni));
-
-            if ($codigoGuardado !== $codigo) {
-                $codigoCambiado++;
             } else {
-                $yaSincronizados++;
+                $cont['con_codigo']++;
+                $existente = $existentesPeriodo->get($dni);
+
+                if ($existente) {
+                    $codigoGuardado = trim((string) $existente->codigo);
+                    if ($codigoGuardado === $codigo) {
+                        $estado = 'YA_SINCRONIZADO';
+                        $cont['ya_sincronizados']++;
+                    } else {
+                        $estado = 'CODIGO_CAMBIADO';
+                        $cont['codigo_cambiado']++;
+                    }
+                } else {
+                    $owner = $codigoAdmision->get($codigo);
+
+                    // El código es único dentro de admision_postulante.
+                    // Si el registro fue borrado, no habrá owner y volverá a ser NUEVO.
+                    if ($owner) {
+                        $estado = 'CONFLICTO_CODIGO';
+                        $cont['conflicto_codigo']++;
+                    } else {
+                        $estado = 'NUEVO_CON_CODIGO';
+                        $cont['nuevos_con_codigo']++;
+                    }
+                }
+            }
+
+            $postulantesApi[] = [
+                'dni' => $dni,
+                'codigo' => $codigo !== '' ? $codigo : null,
+                'codigo_guardado' => $codigoGuardado,
+                'con_codigo' => $codigo !== '',
+                'estado_sincronizacion' => $estado,
+                'estudiante' => trim(
+                    ($item['primer_apellido'] ?? '') . ' ' .
+                    ($item['segundo_apellido'] ?? '') . ' ' .
+                    ($item['nombres'] ?? '')
+                ),
+                'programa' => $item['programa'] ?? ($programaLocal->programa ?? $programaFallback),
+                'id_programa_admision' => $item['id_programa'] ?? (int) $request->id_programa_admision,
+                'id_proceso_admision' => (int) $request->id_proceso_admision,
+            ];
+        }
+
+        return response()->json(array_merge([
+            'estado' => true,
+            'programa' => $programaLocal->programa ?? $programaFallback,
+            'programa_vinculado' => (bool) $programaLocal,
+            'id_programa_admision' => (int) $request->id_programa_admision,
+            'total_api' => count($items),
+            'pendientes_sin_codigo' => $pendientes,
+            'postulantes_api' => $postulantesApi,
+        ], $cont));
+    }
+
+    public function sincronizarNuevosCodigo(Request $request, AdmisionApiService $api)
+    {
+        $request->validate([
+            'id_periodo' => 'required|integer|exists:periodo,id_periodo',
+            'id_programa_admision' => 'nullable|integer'
+        ]);
+
+        $idPeriodo = (int) $request->id_periodo;
+        $idProgramaFiltro = $request->filled('id_programa_admision')
+            ? (int) $request->id_programa_admision
+            : null;
+
+        $procesos = AdmisionProceso::where('id_periodo', $idPeriodo)->get();
+        if ($procesos->isEmpty()) {
+            return response()->json([
+                'estado' => false,
+                'tipo' => 'warn',
+                'titulo' => 'SIN PROCESOS',
+                'mensaje' => 'No hay procesos de Admisión vinculados al período seleccionado.'
+            ], 422);
+        }
+
+        $programasApi = collect($api->programas()['data'] ?? []);
+        if ($idProgramaFiltro) {
+            $programasApi = $programasApi
+                ->filter(fn ($item) => (int) ($item['id'] ?? 0) === $idProgramaFiltro)
+                ->values();
+        }
+
+        $programasLocal = DB::table('programa')
+            ->whereNotNull('id_admision')
+            ->select('id', 'programa', 'id_admision')
+            ->get()
+            ->keyBy('id_admision');
+
+        $apiPorDni = [];
+        $erroresApi = [];
+
+        foreach ($procesos as $proceso) {
+            foreach ($programasApi as $programaApi) {
+                $idProgApi = (int) ($programaApi['id'] ?? 0);
+                if (!$idProgApi) {
+                    continue;
+                }
+
+                try {
+                    $items = $api->postulantes((int) $proceso->id_admision, $idProgApi)['data'] ?? [];
+
+                    foreach ($items as $item) {
+                        $dni = trim((string) ($item['DNI'] ?? ''));
+                        if ($dni === '') {
+                            continue;
+                        }
+
+                        $codigo = trim((string) ($item['codigo'] ?? ''));
+                        $nuevo = [
+                            'item' => $item,
+                            'dni' => $dni,
+                            'codigo' => $codigo,
+                            'id_proceso_admision' => (int) $proceso->id_admision,
+                            'id_programa_admision' => (int) ($item['id_programa'] ?? $idProgApi),
+                        ];
+
+                        if (!isset($apiPorDni[$dni]) || ($apiPorDni[$dni]['codigo'] === '' && $codigo !== '')) {
+                            $apiPorDni[$dni] = $nuevo;
+                        } elseif (
+                            $codigo !== '' &&
+                            $apiPorDni[$dni]['codigo'] !== '' &&
+                            $apiPorDni[$dni]['codigo'] !== $codigo
+                        ) {
+                            $apiPorDni[$dni]['conflicto_api'] = true;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    $erroresApi[] = $proceso->nombre . ' / ' .
+                        ($programaApi['nombre'] ?? $idProgApi) . ': ' . $e->getMessage();
+                }
             }
         }
 
+        $res = [
+            'insertados' => 0,
+            'ya_sincronizados' => 0,
+            'sin_codigo' => 0,
+            'codigo_cambiado' => 0,
+            'conflicto_codigo' => 0,
+            'conflicto_api' => 0,
+            'error_programa' => 0,
+        ];
+
+        DB::transaction(function () use (&$res, $apiPorDni, $idPeriodo, $programasLocal) {
+            foreach ($apiPorDni as $r) {
+                $dni = $r['dni'];
+                $codigo = $r['codigo'];
+                $item = $r['item'];
+
+                if (!empty($r['conflicto_api'])) {
+                    $res['conflicto_api']++;
+                    continue;
+                }
+
+                if ($codigo === '') {
+                    $res['sin_codigo']++;
+                    continue;
+                }
+
+                $local = $programasLocal->get($r['id_programa_admision']);
+                if (!$local) {
+                    $res['error_programa']++;
+                    continue;
+                }
+
+                $existentePeriodo = DB::table('admision_postulante as ap')
+                    ->join('admision_proceso as pr', 'pr.id_admision', '=', 'ap.id_proceso_admision')
+                    ->where('pr.id_periodo', $idPeriodo)
+                    ->where('ap.dni', $dni)
+                    ->select('ap.id', 'ap.codigo')
+                    ->first();
+
+                if ($existentePeriodo) {
+                    if (trim((string) $existentePeriodo->codigo) === $codigo) {
+                        $res['ya_sincronizados']++;
+                    } else {
+                        $res['codigo_cambiado']++;
+                    }
+                    continue;
+                }
+
+                // SOLO admision_postulante participa en la validación de código.
+                // El código es único: si ya existe en esta tabla, no se duplica.
+                $ownerCodigo = AdmisionPostulante::query()
+                    ->where('codigo', $codigo)
+                    ->select('id', 'dni', 'codigo')
+                    ->first();
+
+                if ($ownerCodigo) {
+                    $res['conflicto_codigo']++;
+                    continue;
+                }
+
+                // Si no existe el DNI en el período y el código tampoco existe,
+                // el registro es recuperable/nuevo y se inserta nuevamente.
+                AdmisionPostulante::create([
+                    'id_proceso_admision' => $r['id_proceso_admision'],
+                    'id_programa_admision' => $r['id_programa_admision'],
+                    'id_programa_nivelacion' => $local->id,
+                    'codigo' => $codigo,
+                    'dni' => $dni,
+                    'paterno' => $item['primer_apellido'] ?? null,
+                    'materno' => $item['segundo_apellido'] ?? null,
+                    'nombres' => $item['nombres'] ?? null,
+                    'sexo' => $item['sexo'] ?? null,
+                    'email' => $item['email'] ?? null,
+                    'f_nacimiento' => $item['fec_nacimiento'] ?? null,
+                    'ubigeo_nacimiento' => $item['ubigeo_nacimiento'] ?? null,
+                    'estado_civil' => $item['estado_civil'] ?? null,
+                    'anio_egreso' => $item['anio_egreso'] ?? null,
+                    'tipo_colegio' => $item['gestion'] ?? null,
+                    'nombre_colegio' => $item['nombre'] ?? null,
+                    'ubigeo_colegio' => $item['c_ubigeo'] ?? null,
+                    'direccion' => $item['direccion'] ?? null,
+                    'telefono' => $item['celular'] ?? null,
+                    'f_examen' => $item['f_examen'] ?? null,
+                    'modalidad' => $item['modalidad'] ?? null,
+                    'puntaje' => $item['puntaje'] ?? null,
+                    'proceso_nombre' => $item['proceso'] ?? null,
+                    'programa_nombre' => $item['programa'] ?? $local->programa,
+                    'departamento' => $item['departamento'] ?? null,
+                    'provincia' => $item['provincia'] ?? null,
+                    'distrito' => $item['distrito'] ?? null,
+                    'sincronizado_at' => now(),
+                ]);
+
+                $res['insertados']++;
+            }
+        });
+
         return response()->json([
             'estado' => true,
-            'programa' => $programaLocal->programa,
-            'id_programa_admision' =>
-                (int) $request->id_programa_admision,
-            'total_api' => $totalApi,
-            'con_codigo' => $conCodigo,
-            'sin_codigo' => $sinCodigo,
-            'nuevos_con_codigo' => $nuevosConCodigo,
-            'ya_sincronizados' => $yaSincronizados,
-            'codigo_cambiado' => $codigoCambiado,
-            'pendientes_sin_codigo' => $pendientes
+            'tipo' => 'success',
+            'titulo' => 'SINCRONIZACIÓN INCREMENTAL',
+            'mensaje' => "Se insertaron {$res['insertados']} postulantes nuevos con código. No se duplicaron registros ya sincronizados.",
+            'datos' => $res,
+            'errores_api' => $erroresApi,
         ]);
     }
 
@@ -472,6 +706,42 @@ class AdmisionIntegracionController extends Controller
         ]);
     }
 
+    /**
+     * Devuelve los DNI únicos de la matriz del período seleccionado.
+     * Se usa para comparar en el navegador la matriz contra la verificación
+     * EN VIVO de la API. No modifica ningún registro.
+     */
+    public function matrizPeriodo(Request $request)
+    {
+        $request->validate([
+            'id_periodo' => 'required|integer|exists:periodo,id_periodo'
+        ]);
+
+        $idPeriodo = (int) $request->id_periodo;
+
+        $datos = AdmisionMatriz::query()
+            ->where('id_periodo', $idPeriodo)
+            ->whereNotNull('dni')
+            ->where('dni', '<>', '')
+            ->select('dni', 'observacion')
+            ->orderBy('dni')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'dni' => trim((string) $item->dni),
+                    'observacion' => $item->observacion
+                ];
+            })
+            ->unique('dni')
+            ->values();
+
+        return response()->json([
+            'estado' => true,
+            'total' => $datos->count(),
+            'datos' => $datos
+        ]);
+    }
+
     public function resumen(Request $request)
     {
         $request->validate([
@@ -492,12 +762,7 @@ class AdmisionIntegracionController extends Controller
             ->count();
 
         $ultimaSincronizacion = DB::table('admision_postulante as ap')
-            ->join(
-                'admision_proceso as pr',
-                'pr.id_admision',
-                '=',
-                'ap.id_proceso_admision'
-            )
+            ->join('admision_proceso as pr', 'pr.id_admision', '=', 'ap.id_proceso_admision')
             ->where('pr.id_periodo', $periodo)
             ->max('ap.sincronizado_at');
 
@@ -505,18 +770,12 @@ class AdmisionIntegracionController extends Controller
             'estado' => true,
             'datos' => [
                 'api' => $totalApi,
-                'matriz' => AdmisionMatriz::where(
-                    'id_periodo',
-                    $periodo
-                )->count(),
-                'listos' => (int) ($estados['LISTO'] ?? 0),
+                'matriz' => AdmisionMatriz::where('id_periodo', $periodo)->count(),
+                'completo' => (int) ($estados['COMPLETO'] ?? 0),
                 'solo_matriz' => (int) ($estados['SOLO MATRIZ'] ?? 0),
                 'solo_api' => (int) ($estados['SOLO API'] ?? 0),
-                'error_programa' =>
-                    (int) ($estados['ERROR PROGRAMA'] ?? 0),
-                'ya_registrado' =>
-                    (int) ($estados['YA REGISTRADO'] ?? 0),
-                'ultima_sincronizacion' => $ultimaSincronizacion
+                'error_programa' => (int) ($estados['ERROR PROGRAMA'] ?? 0),
+                'ultima_sincronizacion' => $ultimaSincronizacion,
             ]
         ]);
     }
@@ -586,19 +845,6 @@ class AdmisionIntegracionController extends Controller
 
         $dniUnion = $apiDni->union($matrizDni);
 
-        $periodoNombre = DB::table('periodo')
-            ->where('id_periodo', $periodo)
-            ->value('nombre');
-
-        // "Ya registrado" significa MISMO DNI en el MISMO periodo.
-        // El mismo DNI en otro periodo es válido porque tendrá otro codigo_est.
-        $registrados = DB::table('estudiante as e')
-            ->join('datos_ingreso as di', 'di.codigo_est', '=', 'e.codigo_est')
-            ->whereNotNull('e.dni')
-            ->whereRaw('UPPER(TRIM(di.semestre)) = ?', [strtoupper(trim((string) $periodoNombre))])
-            ->select('e.dni')
-            ->distinct();
-
         return DB::query()
             ->fromSub($dniUnion, 'x')
             ->leftJoinSub($this->apiSeleccionPeriodo($periodo), 'api_sel', 'api_sel.dni', '=', 'x.dni')
@@ -608,7 +854,6 @@ class AdmisionIntegracionController extends Controller
                     ->where('m.id_periodo', '=', $periodo);
             })
             ->leftJoin('programa as p', 'p.id', '=', 'a.id_programa_nivelacion')
-            ->leftJoinSub($registrados, 'e', 'e.dni', '=', 'x.dni')
             ->select(
                 'x.dni',
                 'a.codigo',
@@ -624,10 +869,391 @@ class AdmisionIntegracionController extends Controller
                     WHEN a.dni IS NULL THEN 'SOLO MATRIZ'
                     WHEN m.dni IS NULL THEN 'SOLO API'
                     WHEN a.id_programa_nivelacion IS NULL THEN 'ERROR PROGRAMA'
-                    WHEN e.dni IS NOT NULL THEN 'YA REGISTRADO'
-                    ELSE 'LISTO'
+                    ELSE 'COMPLETO'
                 END AS estado_cruce")
             );
+    }
+
+
+    /**
+     * Cobertura EN VIVO del periodo seleccionado.
+     *
+     * - Consulta todos los procesos de Admision vinculados al periodo.
+     * - Consulta todos los programas de la API, incluso si aun no tienen equivalencia local.
+     * - No inserta ni modifica postulantes.
+     * - Los postulantes sin codigo se muestran como pendientes, pero NO se guardan.
+     * - La comparacion API <-> Matriz se realiza por DNI unico dentro del periodo.
+     */
+    public function reporteCobertura(Request $request, AdmisionApiService $api)
+    {
+        $request->validate([
+            'id_periodo' => 'required|integer|exists:periodo,id_periodo',
+            'id_programa_admision' => 'nullable|integer'
+        ]);
+
+        $idPeriodo = (int) $request->id_periodo;
+        $idProgramaFiltro = $request->filled('id_programa_admision')
+            ? (int) $request->id_programa_admision
+            : null;
+
+        $procesos = AdmisionProceso::query()
+            ->where('id_periodo', $idPeriodo)
+            ->select('id_admision', 'nombre')
+            ->orderBy('id_admision')
+            ->get();
+
+        $matriz = AdmisionMatriz::query()
+            ->where('id_periodo', $idPeriodo)
+            ->whereNotNull('dni')
+            ->where('dni', '<>', '')
+            ->select('dni', 'observacion')
+            ->get()
+            ->map(fn ($item) => [
+                'dni' => trim((string) $item->dni),
+                'observacion' => $item->observacion,
+            ])
+            ->filter(fn ($item) => $item['dni'] !== '')
+            ->unique('dni')
+            ->keyBy('dni');
+
+        $programasApi = collect($api->programas()['data'] ?? []);
+        if ($idProgramaFiltro) {
+            $programasApi = $programasApi
+                ->filter(fn ($item) => (int) ($item['id'] ?? 0) === $idProgramaFiltro)
+                ->values();
+        }
+
+        $programasLocal = DB::table('programa')
+            ->whereNotNull('id_admision')
+            ->select('id', 'programa', 'id_admision')
+            ->get()
+            ->keyBy('id_admision');
+
+        $apiPorDni = [];
+        $erroresApi = [];
+
+        foreach ($procesos as $proceso) {
+            foreach ($programasApi as $programaApi) {
+                $idProgramaApi = (int) ($programaApi['id'] ?? 0);
+                if (!$idProgramaApi) {
+                    continue;
+                }
+
+                try {
+                    $response = $api->postulantes((int) $proceso->id_admision, $idProgramaApi);
+
+                    foreach (($response['data'] ?? []) as $item) {
+                        $dni = trim((string) ($item['DNI'] ?? ''));
+                        if ($dni === '') {
+                            continue;
+                        }
+
+                        $codigo = trim((string) ($item['codigo'] ?? ''));
+                        $idProgramaItem = (int) ($item['id_programa'] ?? $idProgramaApi);
+
+                        $registro = [
+                            'dni' => $dni,
+                            'codigo' => $codigo !== '' ? $codigo : null,
+                            'estudiante' => trim(
+                                ($item['primer_apellido'] ?? '') . ' ' .
+                                ($item['segundo_apellido'] ?? '') . ' ' .
+                                ($item['nombres'] ?? '')
+                            ),
+                            'programa' => $item['programa'] ?? ($programaApi['nombre'] ?? ('Programa ' . $idProgramaItem)),
+                            'id_programa_admision' => $idProgramaItem,
+                            'id_proceso_admision' => (int) $proceso->id_admision,
+                            'proceso_nombre' => $item['proceso'] ?? $proceso->nombre,
+                            'conflicto_api' => false,
+                            'programas_api_periodo' => [$idProgramaItem],
+                        ];
+
+                        if (!isset($apiPorDni[$dni])) {
+                            $apiPorDni[$dni] = $registro;
+                            continue;
+                        }
+
+                        $actual = $apiPorDni[$dni];
+                        $codActual = trim((string) ($actual['codigo'] ?? ''));
+
+                        if (!in_array($idProgramaItem, $actual['programas_api_periodo'], true)) {
+                            $actual['programas_api_periodo'][] = $idProgramaItem;
+                        }
+
+                        if ($codActual === '' && $codigo !== '') {
+                            $registro['programas_api_periodo'] = $actual['programas_api_periodo'];
+                            $apiPorDni[$dni] = $registro;
+                            continue;
+                        }
+
+                        if ($codActual !== '' && $codigo !== '' && $codActual !== $codigo) {
+                            $actual['conflicto_api'] = true;
+                        }
+
+                        if (count($actual['programas_api_periodo']) > 1) {
+                            $actual['conflicto_api'] = true;
+                        }
+
+                        $apiPorDni[$dni] = $actual;
+                    }
+                } catch (\Throwable $e) {
+                    $erroresApi[] = [
+                        'proceso' => $proceso->nombre,
+                        'programa' => $programaApi['nombre'] ?? $idProgramaApi,
+                        'mensaje' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+
+        $apiActual = collect($apiPorDni)->keyBy('dni');
+        $dnisApi = $apiActual->keys();
+        $dnisMatriz = $matriz->keys();
+
+        $dnisConCodigo = $apiActual->filter(fn ($item) => !empty($item['codigo']))->keys();
+        $dnisSinCodigo = $apiActual->filter(fn ($item) => empty($item['codigo']))->keys();
+        $dnisCoinciden = $dnisApi->intersect($dnisMatriz)->values();
+        $dnisCoincidenConCodigo = $dnisCoinciden->intersect($dnisConCodigo)->values();
+        $dnisCoincidenSinCodigo = $dnisCoinciden->intersect($dnisSinCodigo)->values();
+        $dnisSoloMatriz = $dnisMatriz->diff($dnisApi)->values();
+        $dnisSoloApi = $dnisApi->diff($dnisMatriz)->values();
+
+        $existentesPeriodo = DB::table('admision_postulante as ap')
+            ->join('admision_proceso as pr', 'pr.id_admision', '=', 'ap.id_proceso_admision')
+            ->where('pr.id_periodo', $idPeriodo)
+            ->select('ap.dni', 'ap.codigo', 'ap.id_programa_admision', 'ap.id_proceso_admision')
+            ->orderByDesc('ap.id')
+            ->get()
+            ->keyBy(fn ($item) => trim((string) $item->dni));
+
+        $codigosApi = $apiActual->pluck('codigo')->filter()->unique()->values();
+        $codigoAdmision = $codigosApi->isEmpty()
+            ? collect()
+            : AdmisionPostulante::query()
+                ->whereIn('codigo', $codigosApi)
+                ->select('codigo', 'dni', 'id_proceso_admision')
+                ->get()
+                ->keyBy(fn ($item) => trim((string) $item->codigo));
+
+        $listas = [
+            'matriz_total' => [],
+            'api_total' => [],
+            'api_con_codigo' => [],
+            'api_sin_codigo' => [],
+            'coinciden' => [],
+            'coinciden_con_codigo' => [],
+            'coinciden_sin_codigo' => [],
+            'no_coinciden' => [],
+            'solo_matriz' => [],
+            'solo_api' => [],
+            'nuevos_con_codigo' => [],
+            'ya_sincronizados' => [],
+            'codigo_cambiado' => [],
+            'conflicto_codigo' => [],
+            'conflicto_api' => [],
+            'error_programa' => [],
+        ];
+
+        foreach ($matriz as $dni => $item) {
+            $listas['matriz_total'][] = [
+                'dni' => $dni,
+                'codigo' => null,
+                'estudiante' => null,
+                'programa' => null,
+                'proceso_nombre' => null,
+                'observacion' => $item['observacion'],
+                'situacion' => 'MATRIZ',
+            ];
+        }
+
+        $registros = collect();
+
+        foreach ($apiActual as $dni => $item) {
+            $fila = [
+                'dni' => $dni,
+                'codigo' => $item['codigo'],
+                'codigo_guardado' => null,
+                'estudiante' => $item['estudiante'],
+                'programa' => $item['programa'],
+                'id_programa_admision' => $item['id_programa_admision'],
+                'id_proceso_admision' => $item['id_proceso_admision'],
+                'proceso_nombre' => $item['proceso_nombre'],
+                'observacion' => $matriz->get($dni)['observacion'] ?? null,
+                'situacion' => null,
+            ];
+
+            $listas['api_total'][] = $fila;
+            if (!empty($item['codigo'])) {
+                $listas['api_con_codigo'][] = $fila;
+            } else {
+                $tmp = $fila;
+                $tmp['situacion'] = 'API SIN CÓDIGO';
+                $listas['api_sin_codigo'][] = $tmp;
+            }
+
+            if ($dnisCoinciden->contains($dni)) {
+                $tmp = $fila;
+                $tmp['situacion'] = !empty($item['codigo']) ? 'COINCIDE CON CÓDIGO' : 'COINCIDE SIN CÓDIGO';
+                $listas['coinciden'][] = $tmp;
+                if (!empty($item['codigo'])) {
+                    $listas['coinciden_con_codigo'][] = $tmp;
+                } else {
+                    $listas['coinciden_sin_codigo'][] = $tmp;
+                }
+            }
+
+            if ($dnisSoloApi->contains($dni)) {
+                $tmp = $fila;
+                $tmp['situacion'] = 'SOLO API';
+                $listas['solo_api'][] = $tmp;
+                $listas['no_coinciden'][] = $tmp;
+            }
+
+            $incidencia = null;
+            $sincronizado = false;
+            $existente = $existentesPeriodo->get($dni);
+
+            if (empty($item['codigo'])) {
+                // Aún no puede sincronizarse.
+            } elseif (!empty($item['conflicto_api'])) {
+                $incidencia = 'CONFLICTO API MISMO PERÍODO';
+                $tmp = $fila;
+                $tmp['situacion'] = $incidencia;
+                $listas['conflicto_api'][] = $tmp;
+            } elseif (!$programasLocal->get($item['id_programa_admision'])) {
+                $incidencia = 'PROGRAMA SIN EQUIVALENCIA';
+                $tmp = $fila;
+                $tmp['situacion'] = $incidencia;
+                $listas['error_programa'][] = $tmp;
+            } elseif ($existente) {
+                $fila['codigo_guardado'] = $existente->codigo;
+                if (trim((string) $existente->codigo) === trim((string) $item['codigo'])) {
+                    $sincronizado = true;
+                    $tmp = $fila;
+                    $tmp['situacion'] = 'YA SINCRONIZADO';
+                    $listas['ya_sincronizados'][] = $tmp;
+                } else {
+                    $incidencia = 'CÓDIGO CAMBIADO';
+                    $tmp = $fila;
+                    $tmp['situacion'] = $incidencia;
+                    $listas['codigo_cambiado'][] = $tmp;
+                }
+            } else {
+                $codigo = trim((string) $item['codigo']);
+                $owner = $codigoAdmision->get($codigo);
+
+                if ($owner) {
+                    $incidencia = 'CONFLICTO DE CÓDIGO';
+                    $tmp = $fila;
+                    $tmp['situacion'] = $incidencia;
+                    $listas['conflicto_codigo'][] = $tmp;
+                } else {
+                    $tmp = $fila;
+                    $tmp['situacion'] = 'NUEVO CON CÓDIGO';
+                    $listas['nuevos_con_codigo'][] = $tmp;
+                }
+            }
+
+            $tieneMatriz = $matriz->has($dni);
+            $estadoPrincipal = $incidencia
+                ? 'INCIDENCIA'
+                : ($tieneMatriz ? 'COMPLETO' : 'SOLO_API');
+
+            $registros->push([
+                'dni' => $dni,
+                'codigo' => $item['codigo'],
+                'estudiante' => $item['estudiante'],
+                'programa' => $item['programa'],
+                'id_programa_admision' => $item['id_programa_admision'],
+                'proceso_nombre' => $item['proceso_nombre'],
+                'matriz' => $tieneMatriz,
+                'api' => true,
+                'con_codigo' => !empty($item['codigo']),
+                'sincronizado' => $sincronizado,
+                'estado_principal' => $estadoPrincipal,
+                'incidencia' => $incidencia,
+                'observacion' => $matriz->get($dni)['observacion'] ?? null,
+            ]);
+        }
+
+        foreach ($dnisSoloMatriz as $dni) {
+            $item = $matriz->get($dni);
+            $fila = [
+                'dni' => $dni,
+                'codigo' => null,
+                'estudiante' => null,
+                'programa' => null,
+                'proceso_nombre' => null,
+                'observacion' => $item['observacion'] ?? null,
+                'situacion' => 'SOLO MATRIZ',
+            ];
+            $listas['solo_matriz'][] = $fila;
+            $listas['no_coinciden'][] = $fila;
+
+            $registros->push([
+                'dni' => $dni,
+                'codigo' => null,
+                'estudiante' => null,
+                'programa' => null,
+                'id_programa_admision' => null,
+                'proceso_nombre' => null,
+                'matriz' => true,
+                'api' => false,
+                'con_codigo' => false,
+                'sincronizado' => false,
+                'estado_principal' => 'SOLO_MATRIZ',
+                'incidencia' => null,
+                'observacion' => $item['observacion'] ?? null,
+            ]);
+        }
+
+        foreach ($listas as $clave => $items) {
+            $listas[$clave] = collect($items)
+                ->sortBy(fn ($item) => ($item['estudiante'] ?? '') . ($item['dni'] ?? ''))
+                ->values();
+        }
+
+        $registros = $registros
+            ->sortBy(fn ($item) => ($item['programa'] ?? 'ZZZ') . '|' . ($item['estudiante'] ?? '') . '|' . $item['dni'])
+            ->values();
+
+        $programasReporte = $registros
+            ->filter(fn ($item) => !empty($item['id_programa_admision']) && !empty($item['programa']))
+            ->map(fn ($item) => [
+                'id' => (int) $item['id_programa_admision'],
+                'label' => $item['programa'],
+            ])
+            ->unique('id')
+            ->sortBy('label')
+            ->values();
+
+        return response()->json([
+            'estado' => true,
+            'id_periodo' => $idPeriodo,
+            'periodo' => DB::table('periodo')->where('id_periodo', $idPeriodo)->value('nombre'),
+            'resumen' => [
+                'matriz_total' => $matriz->count(),
+                'api_total' => $apiActual->count(),
+                'api_con_codigo' => $dnisConCodigo->count(),
+                'api_sin_codigo' => $dnisSinCodigo->count(),
+                'coinciden' => $dnisCoinciden->count(),
+                'coinciden_con_codigo' => $dnisCoincidenConCodigo->count(),
+                'coinciden_sin_codigo' => $dnisCoincidenSinCodigo->count(),
+                'no_coinciden' => $dnisSoloMatriz->count() + $dnisSoloApi->count(),
+                'solo_matriz' => $dnisSoloMatriz->count(),
+                'solo_api' => $dnisSoloApi->count(),
+                'nuevos_con_codigo' => count($listas['nuevos_con_codigo']),
+                'ya_sincronizados' => count($listas['ya_sincronizados']),
+                'codigo_cambiado' => count($listas['codigo_cambiado']),
+                'conflicto_codigo' => count($listas['conflicto_codigo']),
+                'conflicto_api' => count($listas['conflicto_api']),
+                'error_programa' => count($listas['error_programa']),
+            ],
+            'listas' => $listas,
+            'registros' => $registros,
+            'programas_reporte' => $programasReporte,
+            'filtro_programa' => $idProgramaFiltro,
+            'errores_api' => $erroresApi,
+        ]);
     }
 
     public function reporte()
@@ -645,114 +1271,178 @@ class AdmisionIntegracionController extends Controller
     public function reporteData(Request $request)
     {
         $request->validate([
-            'id_periodo' => 'required|integer|exists:periodo,id_periodo',
-            'id_proceso_admision' => 'nullable|integer',
-            'id_programa_admision' => 'nullable|integer',
-            'estado' => 'nullable|string|max:30',
-            'dni' => 'nullable|string|max:20',
-            'codigo' => 'nullable|string|max:30',
-            'nombre' => 'nullable|string|max:120',
-            'observacion' => 'nullable|in:si,no',
-            'per_page' => 'nullable|integer|min:10|max:200'
+            'id_periodo' => 'required|integer|exists:periodo,id_periodo'
         ]);
 
-        $query = DB::query()->fromSub(
-            $this->cruceBase((int) $request->id_periodo),
-            'cruce'
-        );
+        $idPeriodo = (int) $request->id_periodo;
 
-        if ($request->filled('id_proceso_admision')) {
-            $query->where(
-                'id_proceso_admision',
-                $request->id_proceso_admision
-            );
-        }
+        $matriz = AdmisionMatriz::query()
+            ->where('id_periodo', $idPeriodo)
+            ->whereNotNull('dni')
+            ->where('dni', '<>', '')
+            ->select('dni', 'observacion', 'importado_at')
+            ->get()
+            ->map(fn ($item) => [
+                'dni' => trim((string) $item->dni),
+                'observacion' => $item->observacion,
+                'importado_at' => $item->importado_at,
+            ])
+            ->filter(fn ($item) => $item['dni'] !== '')
+            ->unique('dni')
+            ->keyBy('dni');
 
-        if ($request->filled('id_programa_admision')) {
-            $query->where(
-                'id_programa_admision',
-                $request->id_programa_admision
-            );
-        }
-
-        if ($request->filled('estado')) {
-            $query->where('estado_cruce', $request->estado);
-        }
-
-        if ($request->filled('dni')) {
-            $query->where(
-                'dni',
-                'like',
-                '%' . trim($request->dni) . '%'
-            );
-        }
-
-        if ($request->filled('codigo')) {
-            $query->where(
-                'codigo',
-                'like',
-                '%' . trim($request->codigo) . '%'
-            );
-        }
-
-        if ($request->filled('nombre')) {
-            $nombre = '%' . trim($request->nombre) . '%';
-
-            $query->where(function ($q) use ($nombre) {
-                $q->where('estudiante', 'like', $nombre)
-                    ->orWhere('programa', 'like', $nombre)
-                    ->orWhere('programa_admision', 'like', $nombre)
-                    ->orWhere('proceso_nombre', 'like', $nombre);
-            });
-        }
-
-        if ($request->observacion === 'si') {
-            $query->whereNotNull('observacion_matriz')
-                ->where('observacion_matriz', '<>', '');
-        }
-
-        if ($request->observacion === 'no') {
-            $query->where(function ($q) {
-                $q->whereNull('observacion_matriz')
-                    ->orWhere('observacion_matriz', '');
-            });
-        }
-
-        $resumenQuery = clone $query;
-
-        $resumen = DB::query()
-            ->fromSub($resumenQuery, 'r')
+        $apiRows = DB::table('admision_postulante as ap')
+            ->join('admision_proceso as pr', 'pr.id_admision', '=', 'ap.id_proceso_admision')
+            ->leftJoin('programa as p', 'p.id', '=', 'ap.id_programa_nivelacion')
+            ->where('pr.id_periodo', $idPeriodo)
+            ->whereNotNull('ap.dni')
+            ->where('ap.dni', '<>', '')
             ->select(
-                DB::raw('COUNT(*) AS total'),
-                DB::raw("SUM(CASE WHEN estado_cruce = 'LISTO' THEN 1 ELSE 0 END) AS listos"),
-                DB::raw("SUM(CASE WHEN estado_cruce = 'SOLO MATRIZ' THEN 1 ELSE 0 END) AS solo_matriz"),
-                DB::raw("SUM(CASE WHEN estado_cruce = 'SOLO API' THEN 1 ELSE 0 END) AS solo_api"),
-                DB::raw("SUM(CASE WHEN estado_cruce = 'ERROR PROGRAMA' THEN 1 ELSE 0 END) AS error_programa"),
-                DB::raw("SUM(CASE WHEN estado_cruce = 'YA REGISTRADO' THEN 1 ELSE 0 END) AS ya_registrado")
+                'ap.id',
+                'ap.dni',
+                'ap.codigo',
+                'ap.paterno',
+                'ap.materno',
+                'ap.nombres',
+                'ap.id_programa_admision',
+                'ap.id_programa_nivelacion',
+                'ap.programa_nombre',
+                'ap.proceso_nombre',
+                'ap.sincronizado_at',
+                'p.programa as programa_nivelacion'
             )
-            ->first();
+            ->orderByDesc('ap.id')
+            ->get();
 
-        $perPage = (int) ($request->per_page ?: 50);
+        $apiAgrupado = $apiRows->groupBy(fn ($item) => trim((string) $item->dni));
+        $apiPorDni = collect();
+        $incidencias = collect();
 
-        $datos = $query
-            ->orderBy('estado_cruce')
-            ->orderBy('programa')
-            ->orderBy('estudiante')
-            ->paginate($perPage);
+        foreach ($apiAgrupado as $dni => $grupo) {
+            if ($dni === '') {
+                continue;
+            }
+
+            $principal = $grupo->first();
+            $codigos = $grupo->pluck('codigo')
+                ->map(fn ($v) => trim((string) $v))
+                ->filter()
+                ->unique()
+                ->values();
+
+            $programas = $grupo->pluck('id_programa_admision')
+                ->filter(fn ($v) => $v !== null && $v !== '')
+                ->map(fn ($v) => (int) $v)
+                ->unique()
+                ->values();
+
+            $incidencia = null;
+            if ($codigos->count() > 1) {
+                $incidencia = 'MÁS DE UN CÓDIGO EN EL MISMO PERÍODO';
+            } elseif ($programas->count() > 1) {
+                $incidencia = 'MÁS DE UN PROGRAMA EN EL MISMO PERÍODO';
+            } elseif (empty($principal->id_programa_nivelacion)) {
+                $incidencia = 'PROGRAMA SIN EQUIVALENCIA';
+            }
+
+            $apiPorDni->put($dni, $principal);
+            if ($incidencia) {
+                $incidencias->put($dni, $incidencia);
+            }
+        }
+
+        $dnis = $matriz->keys()->merge($apiPorDni->keys())->unique()->values();
+        $registros = collect();
+
+        foreach ($dnis as $dni) {
+            $matrizItem = $matriz->get($dni);
+            $apiItem = $apiPorDni->get($dni);
+
+            $tieneMatriz = (bool) $matrizItem;
+            $tieneApi = (bool) $apiItem;
+            $codigo = $apiItem ? trim((string) ($apiItem->codigo ?? '')) : '';
+            $tieneCodigo = $codigo !== '';
+            $sincronizado = $tieneApi && $tieneCodigo;
+            $incidencia = $incidencias->get($dni);
+
+            if ($incidencia) {
+                $estadoPrincipal = 'INCIDENCIA';
+            } elseif ($tieneMatriz && $tieneApi) {
+                $estadoPrincipal = 'COMPLETO';
+            } elseif ($tieneMatriz) {
+                $estadoPrincipal = 'SOLO_MATRIZ';
+            } else {
+                $estadoPrincipal = 'SOLO_API';
+            }
+
+            $registros->push([
+                'dni' => $dni,
+                'codigo' => $codigo !== '' ? $codigo : null,
+                'estudiante' => $apiItem
+                    ? trim(implode(' ', array_filter([
+                        $apiItem->paterno ?? null,
+                        $apiItem->materno ?? null,
+                        $apiItem->nombres ?? null,
+                    ])))
+                    : null,
+                'programa' => $apiItem
+                    ? ($apiItem->programa_nivelacion ?: $apiItem->programa_nombre)
+                    : null,
+                'id_programa_admision' => $apiItem
+                    ? ($apiItem->id_programa_admision !== null
+                        ? (int) $apiItem->id_programa_admision
+                        : null)
+                    : null,
+                'proceso_nombre' => $apiItem->proceso_nombre ?? null,
+                'matriz' => $tieneMatriz,
+                'api' => $tieneApi,
+                'con_codigo' => $tieneCodigo,
+                'sincronizado' => $sincronizado,
+                'estado_principal' => $estadoPrincipal,
+                'incidencia' => $incidencia,
+                'observacion' => $matrizItem['observacion'] ?? null,
+                'sincronizado_at' => $apiItem->sincronizado_at ?? null,
+                'importado_at' => $matrizItem['importado_at'] ?? null,
+            ]);
+        }
+
+        $registros = $registros
+            ->sortBy(fn ($item) =>
+                ($item['programa'] ?? 'ZZZ') . '|' .
+                ($item['estudiante'] ?? '') . '|' .
+                $item['dni']
+            )
+            ->values();
+
+        $resumen = [
+            'total' => $registros->count(),
+            'matriz_total' => $matriz->count(),
+            'api_sincronizados' => $apiPorDni->count(),
+            'completo' => $registros->where('estado_principal', 'COMPLETO')->count(),
+            'solo_matriz' => $registros->where('estado_principal', 'SOLO_MATRIZ')->count(),
+            'solo_api' => $registros->where('estado_principal', 'SOLO_API')->count(),
+            'incidencias' => $registros->where('estado_principal', 'INCIDENCIA')->count(),
+            'con_codigo' => $registros->where('con_codigo', true)->count(),
+            'sincronizados' => $registros->where('sincronizado', true)->count(),
+            'ultima_sincronizacion' => $apiRows->max('sincronizado_at'),
+            'ultima_matriz' => $matriz->pluck('importado_at')->filter()->max(),
+        ];
+
+        $programas = $registros
+            ->filter(fn ($item) => !empty($item['id_programa_admision']) && !empty($item['programa']))
+            ->map(fn ($item) => [
+                'value' => (int) $item['id_programa_admision'],
+                'label' => $item['programa'],
+            ])
+            ->unique('value')
+            ->sortBy('label')
+            ->values();
 
         return response()->json([
             'estado' => true,
-            'resumen' => [
-                'total' => (int) ($resumen->total ?? 0),
-                'listos' => (int) ($resumen->listos ?? 0),
-                'solo_matriz' => (int) ($resumen->solo_matriz ?? 0),
-                'solo_api' => (int) ($resumen->solo_api ?? 0),
-                'error_programa' =>
-                    (int) ($resumen->error_programa ?? 0),
-                'ya_registrado' =>
-                    (int) ($resumen->ya_registrado ?? 0)
-            ],
-            'datos' => $datos
+            'resumen' => $resumen,
+            'registros' => $registros,
+            'programas' => $programas,
         ]);
     }
 

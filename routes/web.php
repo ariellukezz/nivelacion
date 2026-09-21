@@ -500,7 +500,8 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
     Route::post('subir-imagen-notificacion', [UsuarioController::class, 'subirImagenNotificacion']);
 
     // Módulo: integración con Admisión.
-    Route::get('/admision-integracion', [AdmisionIntegracionController::class, 'index'])->name('admision-integracion');
+    Route::get('/admision-integracion', [AdmisionIntegracionController::class, 'index'])
+        ->name('admision-integracion');
     Route::get('/admision/procesos', [AdmisionIntegracionController::class, 'procesos']);
     Route::post('/admision/sincronizar-procesos', [AdmisionIntegracionController::class, 'sincronizarProcesos']);
     Route::post('/admision/asignar-periodo', [AdmisionIntegracionController::class, 'asignarPeriodo']);
@@ -512,6 +513,14 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
     Route::post('/admision/verificar-postulantes', [AdmisionIntegracionController::class, 'verificarPostulantes']);
     Route::get('/admision-reportes', [AdmisionIntegracionController::class, 'reporte'])->name('admision-reportes');
     Route::get('/admision/reporte-data', [AdmisionIntegracionController::class, 'reporteData']);
+    Route::get('/admision/matriz-periodo', [AdmisionIntegracionController::class, 'matrizPeriodo']);
+
+    Route::get('/admision/matriz-periodo',[AdmisionIntegracionController::class, 'matrizPeriodo']);
+    Route::get('/admision/reporte-cobertura',[AdmisionIntegracionController::class, 'reporteCobertura']);
+    Route::post('/admision/sincronizar-nuevos-codigo',[AdmisionIntegracionController::class, 'sincronizarNuevosCodigo']);
+
+
+
     });
 
 // Rutas públicas o especiales.

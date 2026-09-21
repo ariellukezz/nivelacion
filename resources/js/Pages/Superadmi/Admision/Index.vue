@@ -1,5 +1,5 @@
 <template>
-  <Head title="Integración Admisión" />
+  <Head title="Integración de Admisión" />
 
   <AuthenticatedLayout>
     <Toast />
@@ -7,494 +7,334 @@
     <div class="p-4 bg-white rounded-lg shadow-xs space-y-5">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
-          <h2 class="text-xl font-bold text-gray-800">Integración con Admisión</h2>
+          <h2 class="text-xl font-bold text-gray-800">Integración de Admisión</h2>
           <p class="text-sm text-gray-500">
-            API y matriz se almacenan primero en tablas de trabajo. La matriz se controla por Periodo de Nivelación.
+            Flujo operativo: seleccione el período, cargue la matriz, verifique la API y sincronice únicamente los nuevos con código.
           </p>
         </div>
 
-        <Button
-          label="Actualizar procesos"
-          icon="pi pi-refresh"
-          :loading="loadingProcesos"
-          @click="sincronizarProcesos"
-        />
+        <Link href="/superadmi/admision-reportes">
+          <Button label="Ver reportes" icon="pi pi-chart-bar" severity="secondary" outlined />
+        </Link>
       </div>
 
-      <!-- Procesos y periodo -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-1">Proceso de Admisión</label>
-          <Dropdown
-            v-model="procesoId"
-            :options="procesos"
-            optionLabel="nombre"
-            optionValue="id_admision"
-            placeholder="Seleccione proceso"
-            filter
-            class="w-full"
-            @change="cambioProceso"
-          />
+      <!-- 1. Periodo y ámbito -->
+      <section class="border rounded-lg p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</span>
+          <div>
+            <h3 class="font-bold text-gray-800">Período y ámbito de trabajo</h3>
+            <p class="text-xs text-gray-500">Todo lo que se verifique o sincronice queda limitado al período seleccionado.</p>
+          </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-semibold mb-1">Periodo de Nivelación</label>
-          <Dropdown
-            v-model="periodoId"
-            :options="periodos"
-            optionLabel="label"
-            optionValue="id_periodo"
-            placeholder="Seleccione periodo"
-            showClear
-            class="w-full"
-            @change="cambioPeriodo"
-          />
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Período</label>
+            <Dropdown
+              v-model="periodoId"
+              :options="periodosOpciones"
+              optionLabel="label"
+              optionValue="id_periodo"
+              placeholder="Seleccione período"
+              class="w-full"
+              @change="cambioPeriodo"
+            />
+          </div>
 
-        <div class="flex items-end">
-          <Button
-            label="Guardar relación"
-            icon="pi pi-link"
-            severity="secondary"
-            :disabled="!procesoSeleccionado"
-            @click="guardarPeriodo"
-          />
-        </div>
-      </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Ámbito de API</label>
+            <Dropdown
+              v-model="ambito"
+              :options="ambitos"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+              @change="cambioAmbito"
+            />
+          </div>
 
-      <div v-if="procesoSeleccionado" class="p-3 rounded border bg-gray-50 text-sm">
-        <strong>{{ procesoSeleccionado.nombre }}</strong>
-        <span class="ml-2 text-gray-500">Semestre: {{ procesoSeleccionado.semestre_detectado || '-' }}</span>
-        <span class="ml-2 text-gray-500">Sede: {{ sedeNombre(procesoSeleccionado.id_sede_filial) }}</span>
-      </div>
-
-      <!-- API -->
-      <div class="border-t pt-5">
-        <div class="flex flex-col lg:flex-row lg:items-end gap-4">
-          <div class="flex-1">
+          <div v-if="ambito === 'programa'">
             <label class="block text-sm font-semibold mb-1">Programa de Admisión</label>
-
             <Dropdown
               v-model="programaId"
-              :options="programas"
+              :options="programasVinculados"
               optionLabel="label"
               optionValue="id_admision"
               placeholder="Seleccione programa"
               filter
               class="w-full"
-            >
-              <template #option="slotProps">
-                <div>
-                  <div class="font-semibold">{{ slotProps.option.nombre_admision }}</div>
-                  <small :class="slotProps.option.vinculado ? 'text-green-600' : 'text-red-600'">
-                    {{
-                      slotProps.option.vinculado
-                        ? `Nivelación: ${slotProps.option.programa_nivelacion}`
-                        : 'Sin equivalencia en programa.id_admision'
-                    }}
-                  </small>
-                </div>
-              </template>
-            </Dropdown>
-          </div>
-
-          <Button
-            label="Verificar programas"
-            icon="pi pi-check-circle"
-            severity="secondary"
-            :loading="loadingProgramas"
-            @click="cargarProgramas"
-          />
-
-          <Button
-            label="Sincronizar postulantes"
-            icon="pi pi-cloud-download"
-            :disabled="!procesoId || !programaId"
-            :loading="loadingPostulantes"
-            @click="sincronizarPostulantes"
-          />
-
-          <Button
-            label="Verificar proceso"
-            icon="pi pi-search"
-            severity="secondary"
-            :disabled="!procesoId || !periodoId || loadingVerificacion"
-            :loading="loadingVerificacion"
-            @click="verificarProcesoCompleto"
-          />
-
-          <Button
-            label="Sincronizar proceso completo"
-            icon="pi pi-sync"
-            severity="success"
-            :disabled="!procesoId || !periodoId || loadingProcesoCompleto"
-            :loading="loadingProcesoCompleto"
-            @click="sincronizarProcesoCompleto"
-          />
-        </div>
-      </div>
-
-      <div
-        v-if="verificacion.iniciada"
-        class="p-4 rounded-lg border bg-blue-50 text-blue-900"
-      >
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-          <div>
-            <div class="font-bold">Verificación del proceso</div>
-            <div class="text-sm">{{ procesoSeleccionado?.nombre || '-' }}</div>
-          </div>
-          <Tag
-            :value="verificacion.nuevos_con_codigo > 0 ? 'HAY NUEVOS DATOS' : 'SIN NUEVOS CÓDIGOS'"
-            :severity="verificacion.nuevos_con_codigo > 0 ? 'success' : 'info'"
-          />
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4">
-          <ResumenCard titulo="API revisados" :valor="verificacion.total_api" />
-          <ResumenCard titulo="Con código" :valor="verificacion.con_codigo" />
-          <ResumenCard titulo="Nuevos con código" :valor="verificacion.nuevos_con_codigo" />
-          <ResumenCard titulo="Ya sincronizados" :valor="verificacion.ya_sincronizados" />
-          <ResumenCard titulo="Código cambiado" :valor="verificacion.codigo_cambiado" />
-          <ResumenCard titulo="Pendientes sin código" :valor="verificacion.sin_codigo" />
-        </div>
-
-        <div class="mt-3 text-sm">
-          <strong>Programas revisados:</strong>
-          {{ verificacion.actual }} / {{ verificacion.total_programas }}
-        </div>
-
-        <div class="mt-2 h-3 rounded-full bg-blue-100 overflow-hidden">
-          <div
-            class="h-full bg-blue-600 transition-all"
-            :style="{ width: `${verificacion.porcentaje}%` }"
-          ></div>
-        </div>
-
-        <div
-          v-if="verificacion.pendientes.length"
-          class="mt-4"
-        >
-          <div class="font-semibold mb-2">
-            Pendientes de código / control biométrico
-          </div>
-
-          <DataTable
-            :value="verificacion.pendientes"
-            class="p-datatable-sm"
-            :rows="10"
-            paginator
-            scrollable
-            tableStyle="min-width: 45rem"
-          >
-            <Column field="dni" header="DNI" />
-            <Column field="estudiante" header="Estudiante" />
-            <Column field="programa" header="Programa" />
-          </DataTable>
-        </div>
-      </div>
-
-      <div
-        v-if="progresoProceso.iniciado"
-        class="p-4 rounded-lg border bg-green-50 text-green-900"
-      >
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-          <div>
-            <div class="font-bold">Sincronización del proceso completo</div>
-            <div class="text-sm">{{ procesoSeleccionado?.nombre || '-' }}</div>
-          </div>
-
-          <div class="text-sm font-semibold">
-            {{ progresoProceso.actual }} / {{ progresoProceso.total }} programas
-          </div>
-        </div>
-
-        <div class="mt-3 h-3 rounded-full bg-green-100 overflow-hidden">
-          <div
-            class="h-full bg-green-600 transition-all"
-            :style="{ width: `${progresoProceso.porcentaje}%` }"
-          ></div>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4">
-          <ResumenCard titulo="API recibidos" :valor="progresoProceso.total_api" />
-          <ResumenCard titulo="Con código" :valor="progresoProceso.con_codigo" />
-          <ResumenCard titulo="Insertados" :valor="progresoProceso.insertados" />
-          <ResumenCard titulo="Actualizados" :valor="progresoProceso.actualizados" />
-          <ResumenCard titulo="Sin código omitidos" :valor="progresoProceso.sin_codigo" />
-          <ResumenCard titulo="Errores" :valor="progresoProceso.errores.length" />
-        </div>
-
-        <div class="mt-3 text-sm">
-          <strong>Programa actual:</strong>
-          {{ progresoProceso.programa || 'Preparando...' }}
-        </div>
-
-        <div
-          v-if="progresoProceso.pendientes.length"
-          class="mt-4"
-        >
-          <div class="font-semibold mb-2">
-            Registros sin código que NO ingresaron a la base
-          </div>
-
-          <DataTable
-            :value="progresoProceso.pendientes"
-            class="p-datatable-sm"
-            :rows="10"
-            paginator
-            scrollable
-            tableStyle="min-width: 45rem"
-          >
-            <Column field="dni" header="DNI" />
-            <Column field="estudiante" header="Estudiante" />
-            <Column field="programa" header="Programa" />
-          </DataTable>
-        </div>
-
-        <div
-          v-if="progresoProceso.omitidos.length"
-          class="mt-2 text-xs text-amber-700"
-        >
-          {{ progresoProceso.omitidos.length }} programa(s) no fueron consultados porque todavía no tienen equivalencia en programa.id_admision.
-        </div>
-      </div>
-
-      <!-- Matriz -->
-      <div class="border-t pt-5">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
-          <div>
-            <h3 class="font-bold text-gray-800">Matriz de competencias</h3>
-            <p class="text-sm text-gray-500">
-              La matriz pertenece al periodo. El programa y el nuevo código del estudiante llegarán desde Admisión.
-            </p>
-          </div>
-
-          <Button
-            label="Descargar plantilla"
-            icon="pi pi-file-excel"
-            severity="success"
-            outlined
-            :disabled="!periodoId"
-            @click="descargarPlantillaMatriz"
-          />
-        </div>
-
-        <div
-          v-if="periodoSeleccionado"
-          class="mb-4 p-4 rounded border bg-blue-50 text-blue-900"
-        >
-          <div class="text-sm font-semibold">Periodo destino de la matriz</div>
-          <div class="text-lg font-bold mt-1">
-            ID {{ periodoSeleccionado.id_periodo }} - {{ periodoSeleccionado.nombre }}
-          </div>
-          <div class="text-xs text-blue-700 mt-1">
-            Cada fila del Excel debe contener este mismo id_periodo.
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-semibold mb-1">Archivo Excel</label>
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              @change="leerMatriz"
-              class="w-full border rounded p-2"
+              @change="limpiarVerificacion"
             />
-            <small class="text-gray-500">
-              Obligatorios: id_periodo y dni. También puede usar observacion para registrar una nota adicional.
-            </small>
+          </div>
+        </div>
+
+        <div v-if="ambito === 'programa'" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+          En modo Programa, la API se consulta solo para ese programa. Los registros <strong>Solo Matriz</strong> no pueden atribuirse a un programa hasta que aparezcan en la API, porque la matriz no guarda programa.
+        </div>
+      </section>
+
+      <!-- 2. Matriz -->
+      <section class="border rounded-lg p-4 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</span>
+            <div>
+              <h3 class="font-bold text-gray-800">Matriz de competencias</h3>
+              <p class="text-xs text-gray-500">Se importa por período y DNI. Volver a importar actualiza los registros existentes.</p>
+            </div>
           </div>
 
+          <div class="flex flex-wrap gap-2">
+            <Button
+              label="Descargar plantilla"
+              icon="pi pi-download"
+              severity="secondary"
+              outlined
+              :disabled="!periodoId"
+              @click="descargarPlantillaMatriz"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <ResumenCard titulo="Matriz actualmente cargada" :valor="matrizExistente" />
+          <ResumenCard titulo="Archivo leído" :valor="preview.total" />
+          <ResumenCard titulo="Registros válidos" :valor="preview.validos" />
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center gap-3">
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            class="block w-full text-sm border rounded p-2"
+            :disabled="!periodoId"
+            @change="leerMatriz"
+          />
+
           <Button
-            label="Importar matriz"
+            label="Importar / actualizar matriz"
             icon="pi pi-upload"
-            severity="info"
             :disabled="!puedeImportarMatriz"
             :loading="loadingMatriz"
             @click="importarMatriz"
           />
         </div>
 
-        <!-- Previsualización -->
-        <div v-if="matrizLeida" class="mt-5 border rounded-lg overflow-hidden">
-          <div class="p-4 bg-gray-50 border-b">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-              <div>
-                <h4 class="font-bold text-gray-800">Previsualización antes de importar</h4>
-                <p class="text-sm text-gray-500">{{ archivoMatriz }}</p>
-              </div>
-
-              <Tag
-                :value="puedeImportarMatriz ? 'LISTA PARA IMPORTAR' : 'REVISAR ARCHIVO'"
-                :severity="puedeImportarMatriz ? 'success' : 'danger'"
-              />
-            </div>
-          </div>
-
-          <div class="p-4">
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
-              <ResumenCard titulo="Periodo ID" :valor="periodoId" />
-              <ResumenCard titulo="Filas Excel" :valor="preview.total" />
-              <ResumenCard titulo="DNI únicos" :valor="preview.unicos" />
-              <ResumenCard titulo="Duplicados" :valor="preview.duplicados" />
-              <ResumenCard titulo="Periodo diferente" :valor="preview.periodo_diferente" />
-              <ResumenCard titulo="Listos" :valor="preview.validos" />
-            </div>
-
-            <div
-              v-if="preview.errores.length"
-              class="mb-4 p-3 rounded border border-red-200 bg-red-50 text-sm text-red-700"
-            >
-              <div class="font-semibold mb-1">Observaciones del archivo:</div>
-              <div v-for="(error, index) in preview.errores.slice(0, 10)" :key="index">
-                • {{ error }}
-              </div>
-              <div v-if="preview.errores.length > 10" class="mt-1">
-                ... y {{ preview.errores.length - 10 }} observaciones adicionales.
-              </div>
-            </div>
-
-            <div class="text-sm mb-3">
-              <strong>Se insertará/actualizará en:</strong>
-              periodo ID {{ periodoSeleccionado?.id_periodo }} - {{ periodoSeleccionado?.nombre }}
-            </div>
-
-            <DataTable
-              :value="preview.filas"
-              class="p-datatable-sm"
-              scrollable
-              tableStyle="min-width: 72rem"
-              :rows="20"
-              paginator
-            >
-              <Column field="fila" header="Fila" frozen />
-              <Column field="id_periodo" header="ID periodo" />
-              <Column field="dni" header="DNI" />
-              <Column field="C1" header="C1" />
-              <Column field="C2" header="C2" />
-              <Column field="C3" header="C3" />
-              <Column field="C4" header="C4" />
-              <Column field="C5" header="C5" />
-              <Column field="C6" header="C6" />
-              <Column field="C7" header="C7" />
-              <Column field="C8" header="C8" />
-              <Column field="C9" header="C9" />
-              <Column field="C10" header="C10" />
-              <Column field="C11" header="C11" />
-              <Column field="nivelar" header="Nivelar" />
-              <Column field="observacion" header="Observación" style="min-width: 18rem" />
-              <Column field="estado" header="Estado">
-                <template #body="{ data }">
-                  <Tag
-                    :value="data.estado"
-                    :severity="data.estado === 'OK' ? 'success' : 'danger'"
-                  />
-                </template>
-              </Column>
-            </DataTable>
-          </div>
+        <div v-if="archivoMatriz" class="text-sm text-gray-600">
+          Archivo: <strong>{{ archivoMatriz }}</strong>
         </div>
-      </div>
 
-      <!-- Cruce -->
-      <div v-if="periodoId" class="border-t pt-5">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
-          <div>
-            <h3 class="font-bold text-gray-800">Cruce por DNI + periodo</h3>
-            <p class="text-xs text-gray-500">
-              API muestra únicamente los registros guardados con código. Los pendientes sin código se visualizan durante la verificación y no ingresan a la base.
-            </p>
+        <div v-if="matrizLeida" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <ResumenCard titulo="DNI únicos" :valor="preview.unicos" />
+          <ResumenCard titulo="DNI duplicados" :valor="preview.duplicados" />
+          <ResumenCard titulo="Período diferente" :valor="preview.periodo_diferente" />
+          <ResumenCard titulo="Observaciones" :valor="preview.errores.length" />
+        </div>
+
+        <div v-if="preview.errores.length" class="border border-amber-200 bg-amber-50 rounded p-3 text-sm text-amber-800">
+          <div class="font-semibold mb-1">Revise el archivo antes de importar:</div>
+          <div v-for="(error, i) in preview.errores.slice(0, 8)" :key="i">• {{ error }}</div>
+          <div v-if="preview.errores.length > 8">... y {{ preview.errores.length - 8 }} observación(es) más.</div>
+        </div>
+      </section>
+
+      <!-- 3. API -->
+      <section class="border rounded-lg p-4 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</span>
+            <div>
+              <h3 class="font-bold text-gray-800">API de Admisión</h3>
+              <p class="text-xs text-gray-500">Primero se muestra lo guardado en nuestra base. La API solo se consulta cuando presione Consultar novedades.</p>
+            </div>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <Link href="/superadmi/admision-reportes">
-              <Button
-                label="Reportes detallados"
-                icon="pi pi-chart-bar"
-                severity="secondary"
-                outlined
-              />
-            </Link>
-
             <Button
-              label="Actualizar resumen"
+              label="Consultar novedades API"
               icon="pi pi-refresh"
-              text
-              @click="cargarResumenYCruce"
+              :loading="loadingVerificacion"
+              :disabled="!puedeVerificar"
+              @click="verificarApi"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
-          <ResumenCard titulo="API con código" :valor="resumen.api" />
-          <ResumenCard titulo="Matriz" :valor="resumen.matriz" />
-          <ResumenCard titulo="Listos" :valor="resumen.listos" />
-          <ResumenCard titulo="Solo matriz" :valor="resumen.solo_matriz" />
-          <ResumenCard titulo="Solo API" :valor="resumen.solo_api" />
-          <ResumenCard titulo="Error programa" :valor="resumen.error_programa" />
-          <ResumenCard titulo="Ya registrados periodo" :valor="resumen.ya_registrado" />
+        <div class="border rounded-lg p-4 bg-gray-50 space-y-3">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>
+              <div class="font-semibold text-gray-800">Estado guardado en nuestra base</div>
+              <div class="text-xs text-gray-500">Carga rápida, sin consultar la API.</div>
+            </div>
+            <Button label="Actualizar datos locales" icon="pi pi-refresh" severity="secondary" outlined :loading="loadingLocal" :disabled="!periodoId" @click="cargarEstadoLocal" />
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <ResumenCard titulo="Matriz" :valor="estadoLocal.matriz_total" />
+            <ResumenCard titulo="API sincronizada" :valor="estadoLocal.api_sincronizados" />
+            <ResumenCard titulo="Completo" :valor="estadoLocal.completo" />
+            <ResumenCard titulo="Solo Matriz" :valor="estadoLocal.solo_matriz" />
+            <ResumenCard titulo="Solo API" :valor="estadoLocal.solo_api" />
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
+            <div>Última matriz: <strong>{{ formatoFecha(estadoLocal.ultima_matriz) }}</strong></div>
+            <div>Última sincronización API: <strong>{{ formatoFecha(estadoLocal.ultima_sincronizacion) }}</strong></div>
+          </div>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-3 mb-3">
-          <InputText
-            v-model="term"
-            placeholder="DNI, código, estudiante o programa"
-            class="flex-1"
-            @keyup.enter="cargarCruce(1)"
-          />
-
-          <Dropdown
-            v-model="estadoFiltro"
-            :options="estados"
-            placeholder="Todos los estados"
-            showClear
-            class="w-full md:w-64"
-          />
-
-          <Button label="Buscar" icon="pi pi-search" @click="cargarCruce(1)" />
+        <div v-if="!verificacion.hecha" class="border border-dashed rounded-lg p-4 text-sm text-gray-500">
+          Presione <strong>Consultar novedades API</strong> solamente cuando quiera comprobar si Admisión tiene nuevos códigos o cambios que todavía no están guardados.
         </div>
 
-        <DataTable
-          :value="cruce.data"
-          :loading="loadingCruce"
-          class="p-datatable-sm"
-          scrollable
-          tableStyle="min-width: 70rem"
-        >
-          <Column field="dni" header="DNI" frozen />
-          <Column field="codigo" header="Código API" />
-          <Column field="estudiante" header="Estudiante" />
-          <Column field="programa" header="Programa Nivelación" />
-          <Column field="programa_admision" header="Programa Admisión" />
-          <Column field="proceso_nombre" header="Proceso Admisión" />
-          <Column field="observacion_matriz" header="Observación matriz" style="min-width: 18rem" />
-          <Column field="estado_cruce" header="Estado">
-            <template #body="{ data }">
-              <Tag :value="data.estado_cruce" :severity="severityEstado(data.estado_cruce)" />
-            </template>
-          </Column>
-        </DataTable>
+        <div v-else class="space-y-4">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ResumenCard titulo="API total" :valor="verificacion.resumen.api_total" />
+            <ResumenCard titulo="Con código" :valor="verificacion.resumen.api_con_codigo" />
+            <ResumenCard titulo="Sin código" :valor="verificacion.resumen.api_sin_codigo" />
+            <ResumenCard titulo="Matriz del período" :valor="verificacion.resumen.matriz_total" />
+          </div>
 
-        <div
-          class="flex justify-end items-center gap-2 mt-3"
-          v-if="cruce.last_page > 1"
-        >
-          <Button
-            icon="pi pi-angle-left"
-            text
-            :disabled="cruce.current_page <= 1"
-            @click="cargarCruce(cruce.current_page - 1)"
-          />
-          <span class="text-sm">Página {{ cruce.current_page }} de {{ cruce.last_page }}</span>
-          <Button
-            icon="pi pi-angle-right"
-            text
-            :disabled="cruce.current_page >= cruce.last_page"
-            @click="cargarCruce(cruce.current_page + 1)"
-          />
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div class="border rounded-lg p-4 bg-green-50">
+              <div class="text-sm text-gray-600">Completo API + Matriz</div>
+              <div class="text-3xl font-bold text-green-800">{{ verificacion.resumen.coinciden || 0 }}</div>
+              <div class="text-xs text-gray-600 mt-2">
+                Con código: <strong>{{ verificacion.resumen.coinciden_con_codigo || 0 }}</strong> ·
+                Sin código: <strong>{{ verificacion.resumen.coinciden_sin_codigo || 0 }}</strong>
+              </div>
+            </div>
+
+            <div class="border rounded-lg p-4 bg-amber-50">
+              <div class="text-sm text-gray-600">Solo Matriz</div>
+              <div class="text-3xl font-bold text-amber-800">{{ ambito === 'programa' ? '—' : (verificacion.resumen.solo_matriz || 0) }}</div>
+              <div class="text-xs text-gray-600 mt-2">{{ ambito === 'programa' ? 'No se puede atribuir Solo Matriz a un programa hasta que aparezca en API.' : 'Todavía no aparece en la API del período.' }}</div>
+            </div>
+
+            <div class="border rounded-lg p-4 bg-blue-50">
+              <div class="text-sm text-gray-600">Solo API</div>
+              <div class="text-3xl font-bold text-blue-800">{{ verificacion.resumen.solo_api || 0 }}</div>
+              <div class="text-xs text-gray-600 mt-2">Aparece en API, pero aún no está en la matriz.</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ResumenCard titulo="Nuevos con código" :valor="verificacion.resumen.nuevos_con_codigo" />
+            <ResumenCard titulo="Ya sincronizados" :valor="verificacion.resumen.ya_sincronizados" />
+            <ResumenCard titulo="Incidencias" :valor="totalIncidencias" />
+            <ResumenCard titulo="Programas sin equivalencia" :valor="verificacion.resumen.error_programa" />
+          </div>
+
+          <div
+            v-if="Number(verificacion.resumen.nuevos_con_codigo || 0) > 0 || progresoSync.visible"
+            class="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3"
+          >
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+              <div>
+                <div class="font-bold text-green-900">
+                  {{ Number(verificacion.resumen.nuevos_con_codigo || 0) }} nuevo(s) con código listo(s) para sincronizar
+                </div>
+                <div class="text-xs text-green-800">
+                  Solo se insertan los nuevos válidos. Los ya sincronizados, códigos cambiados o conflictos no se duplican.
+                </div>
+              </div>
+              <Button
+                :label="`Sincronizar ${Number(verificacion.resumen.nuevos_con_codigo || 0)} nuevo(s)`"
+                icon="pi pi-cloud-download"
+                severity="success"
+                :loading="loadingSincronizacion"
+                :disabled="loadingSincronizacion || !Number(verificacion.resumen.nuevos_con_codigo || 0)"
+                @click="sincronizarNuevos"
+              />
+            </div>
+
+            <div v-if="progresoSync.visible" class="space-y-2">
+              <div class="flex justify-between gap-3 text-sm">
+                <span class="font-semibold">{{ progresoSync.mensaje }}</span>
+                <span>{{ progresoSync.porcentaje }}%</span>
+              </div>
+              <div class="w-full h-3 bg-white border rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-green-600 transition-all duration-300"
+                  :style="{ width: `${progresoSync.porcentaje}%` }"
+                ></div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <div>Programas: <strong>{{ progresoSync.actual }}/{{ progresoSync.total }}</strong></div>
+                <div>Insertados: <strong>{{ progresoSync.insertados }}</strong></div>
+                <div>Ya sincronizados: <strong>{{ progresoSync.ya_sincronizados }}</strong></div>
+                <div>Incidencias: <strong>{{ progresoSync.incidencias }}</strong></div>
+              </div>
+              <div v-if="progresoSync.programa" class="text-xs text-gray-600">
+                Programa actual: <strong>{{ progresoSync.programa }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="verificacion.errores_api?.length" class="border border-orange-200 bg-orange-50 rounded p-3 text-sm text-orange-800">
+            {{ verificacion.errores_api.length }} consulta(s) de API presentaron error. Los totales pueden estar incompletos.
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- Configuración avanzada -->
+      <details class="border rounded-lg">
+        <summary class="cursor-pointer p-4 font-semibold text-gray-800 bg-gray-50">
+          Configuración avanzada: procesos y equivalencias de programas
+        </summary>
+
+        <div class="p-4 space-y-5">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <div class="font-semibold">Procesos de Admisión</div>
+              <div class="text-xs text-gray-500">Actualice el catálogo ocasionalmente y vincule cada proceso con su período de Nivelación.</div>
+            </div>
+            <Button
+              label="Actualizar catálogo de procesos"
+              icon="pi pi-refresh"
+              severity="secondary"
+              outlined
+              :loading="loadingProcesos"
+              @click="sincronizarProcesos"
+            />
+          </div>
+
+          <DataTable :value="procesos" class="p-datatable-sm" paginator :rows="10">
+            <Column field="id_admision" header="ID" />
+            <Column field="nombre" header="Proceso" style="min-width: 20rem" />
+            <Column field="semestre_detectado" header="Detectado" />
+            <Column header="Período Nivelación" style="min-width: 15rem">
+              <template #body="{ data }">
+                <Dropdown
+                  v-model="data.id_periodo"
+                  :options="periodosOpciones"
+                  optionLabel="label"
+                  optionValue="id_periodo"
+                  showClear
+                  class="w-full"
+                  @change="guardarPeriodoProceso(data)"
+                />
+              </template>
+            </Column>
+          </DataTable>
+
+          <div>
+            <div class="font-semibold mb-2">Equivalencias de programas</div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+              <ResumenCard titulo="Programas API" :valor="programas.length" />
+              <ResumenCard titulo="Vinculados" :valor="programasVinculados.length" />
+              <ResumenCard titulo="Sin equivalencia" :valor="programasSinVincular.length" />
+            </div>
+
+            <div v-if="programasSinVincular.length" class="border border-amber-200 bg-amber-50 rounded p-3 text-sm">
+              <div class="font-semibold mb-2">Programas que requieren configurar programa.id_admision:</div>
+              <div v-for="item in programasSinVincular" :key="item.id_admision">
+                • ID {{ item.id_admision }} - {{ item.nombre_admision }}
+              </div>
+            </div>
+            <div v-else class="text-sm text-green-700">Todos los programas de Admisión están vinculados.</div>
+          </div>
+        </div>
+      </details>
     </div>
   </AuthenticatedLayout>
 </template>
@@ -507,172 +347,119 @@ import Button from 'primevue/button';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
 import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import XLSX from 'xlsx';
 
 const props = defineProps({
-  periodos: {
-    type: Array,
-    default: () => []
-  }
+  periodos: { type: Array, default: () => [] }
 });
 
 const toast = useToast();
-
+const periodoId = ref(null);
+const ambito = ref('todo');
+const programaId = ref(null);
 const procesos = ref([]);
 const programas = ref([]);
-const procesoId = ref(null);
-const periodoId = ref(null);
-const programaId = ref(null);
-
-const matrizData = ref([]);
-const archivoMatriz = ref('');
-const matrizLeida = ref(false);
-const preview = ref({
-  total: 0,
-  unicos: 0,
-  duplicados: 0,
-  periodo_diferente: 0,
-  validos: 0,
-  errores: [],
-  filas: []
+const matrizExistente = ref(0);
+const estadoLocal = ref({
+  matriz_total: 0, api_sincronizados: 0, completo: 0, solo_matriz: 0, solo_api: 0, incidencias: 0,
+  ultima_sincronizacion: null, ultima_matriz: null
 });
-
-const term = ref('');
-const estadoFiltro = ref(null);
 
 const loadingProcesos = ref(false);
-const loadingProgramas = ref(false);
-const loadingPostulantes = ref(false);
-const loadingProcesoCompleto = ref(false);
-const loadingVerificacion = ref(false);
+const loadingLocal = ref(false);
 const loadingMatriz = ref(false);
-
-const progresoProceso = ref({
-  iniciado: false,
+const loadingVerificacion = ref(false);
+const loadingSincronizacion = ref(false);
+const progresoSync = ref({
+  visible: false,
+  porcentaje: 0,
   actual: 0,
   total: 0,
-  porcentaje: 0,
   programa: '',
-  total_api: 0,
-  con_codigo: 0,
+  mensaje: '',
   insertados: 0,
-  actualizados: 0,
-  pendientes: [],
-  errores: [],
-  omitidos: []
-});
-
-const verificacion = ref({
-  iniciada: false,
-  actual: 0,
-  total_programas: 0,
-  porcentaje: 0,
-  total_api: 0,
-  con_codigo: 0,
-  nuevos_con_codigo: 0,
   ya_sincronizados: 0,
-  codigo_cambiado: 0,
-  pendientes: [],
+  incidencias: 0,
   errores: []
 });
-const loadingCruce = ref(false);
 
-const resumen = ref({
-  api: 0,
-  matriz: 0,
-  listos: 0,
-  solo_matriz: 0,
-  solo_api: 0,
-  error_programa: 0,
-  ya_registrado: 0,
-  ultima_sincronizacion: null
+const archivoMatriz = ref('');
+const matrizData = ref([]);
+const matrizLeida = ref(false);
+const preview = ref({ total: 0, unicos: 0, duplicados: 0, periodo_diferente: 0, validos: 0, errores: [] });
+
+const verificacion = ref({
+  hecha: false,
+  resumen: {},
+  registros: [],
+  errores_api: []
 });
 
-const cruce = ref({
-  data: [],
-  current_page: 1,
-  last_page: 1
-});
-
-const estados = [
-  'LISTO',
-  'SOLO MATRIZ',
-  'SOLO API',
-  'ERROR PROGRAMA',
-  'YA REGISTRADO'
+const ambitos = [
+  { label: 'Todo el período', value: 'todo' },
+  { label: 'Un programa específico', value: 'programa' }
 ];
 
-const periodos = computed(() =>
-  props.periodos.map(item => ({
-    ...item,
-    label: `ID ${item.id_periodo} - ${item.nombre}`
-  }))
-);
-
-const procesoSeleccionado = computed(() =>
-  procesos.value.find(x => Number(x.id_admision) === Number(procesoId.value)) || null
-);
+const periodosOpciones = computed(() => props.periodos.map(item => ({
+  ...item,
+  label: `${item.nombre}${String(item.estado).toLowerCase() === 'activo' ? ' - Activo' : ''}`
+})));
 
 const periodoSeleccionado = computed(() =>
   props.periodos.find(x => Number(x.id_periodo) === Number(periodoId.value)) || null
 );
 
-const puedeImportarMatriz = computed(() =>
-  Boolean(
-    periodoId.value &&
-    matrizLeida.value &&
-    matrizData.value.length &&
-    preview.value.duplicados === 0 &&
-    preview.value.periodo_diferente === 0 &&
-    preview.value.errores.length === 0
-  )
+const programasVinculados = computed(() => programas.value
+  .filter(x => x.vinculado)
+  .map(x => ({ ...x, label: `${x.id_admision} - ${x.nombre_admision}` }))
+  .sort((a, b) => String(a.nombre_admision).localeCompare(String(b.nombre_admision)))
 );
+
+const programasSinVincular = computed(() => programas.value.filter(x => !x.vinculado));
+
+const puedeVerificar = computed(() =>
+  Boolean(periodoId.value && (ambito.value === 'todo' || programaId.value))
+);
+
+const puedeImportarMatriz = computed(() => Boolean(
+  periodoId.value && matrizLeida.value && matrizData.value.length &&
+  preview.value.duplicados === 0 && preview.value.periodo_diferente === 0 && preview.value.errores.length === 0
+));
+
+const totalIncidencias = computed(() => {
+  const r = verificacion.value.resumen || {};
+  return Number(r.codigo_cambiado || 0) + Number(r.conflicto_codigo || 0) + Number(r.conflicto_api || 0) + Number(r.error_programa || 0);
+});
 
 const ResumenCard = {
   props: ['titulo', 'valor'],
-  setup(props) {
-    return () => h(
-      'div',
-      { class: 'border rounded-lg p-3 bg-gray-50' },
-      [
-        h('div', { class: 'text-xs text-gray-500' }, props.titulo),
-        h('div', { class: 'text-xl font-bold text-gray-800 mt-1' }, String(props.valor ?? 0))
-      ]
-    );
+  setup(componentProps) {
+    return () => h('div', { class: 'border rounded-lg p-3 bg-gray-50' }, [
+      h('div', { class: 'text-xs text-gray-500' }, componentProps.titulo),
+      h('div', { class: 'text-xl font-bold text-gray-800 mt-1' }, String(componentProps.valor ?? 0))
+    ]);
   }
 };
 
-const showToast = (severity, summary, detail) =>
-  toast.add({ severity, summary, detail, life: 4000 });
+const showToast = (severity, summary, detail) => toast.add({ severity, summary, detail, life: 4500 });
 
-const sedeNombre = id =>
-  ({ 1: 'Puno', 2: 'Azángaro', 3: 'Chucuito Juli' }[id] || `Sede ${id ?? '-'}`);
+const formatoFecha = valor => {
+  if (!valor) return 'Sin registros';
+  const d = new Date(valor);
+  return Number.isNaN(d.getTime()) ? String(valor) : d.toLocaleString();
+};
 
-const severityEstado = estado => ({
-  'LISTO': 'success',
-  'SOLO MATRIZ': 'warning',
-  'SOLO API': 'info',
-  'ERROR PROGRAMA': 'danger',
-  'YA REGISTRADO': 'info'
-}[estado] || 'info');
+const limpiarVerificacion = () => {
+  verificacion.value = { hecha: false, resumen: {}, registros: [], errores_api: [] };
+};
 
 const limpiarPreview = () => {
-  matrizData.value = [];
   archivoMatriz.value = '';
+  matrizData.value = [];
   matrizLeida.value = false;
-  preview.value = {
-    total: 0,
-    unicos: 0,
-    duplicados: 0,
-    periodo_diferente: 0,
-    validos: 0,
-    errores: [],
-    filas: []
-  };
+  preview.value = { total: 0, unicos: 0, duplicados: 0, periodo_diferente: 0, validos: 0, errores: [] };
 };
 
 const cargarProcesos = async () => {
@@ -680,317 +467,220 @@ const cargarProcesos = async () => {
   procesos.value = data.datos || [];
 };
 
+const cargarProgramas = async () => {
+  const { data } = await axios.get('/superadmi/admision/programas');
+  programas.value = data.datos || [];
+};
+
+const cargarEstadoLocal = async () => {
+  if (!periodoId.value) return;
+  loadingLocal.value = true;
+  try {
+    const { data } = await axios.get('/superadmi/admision/reporte-data', {
+      params: { id_periodo: periodoId.value, summary_only: 1 }
+    });
+    estadoLocal.value = data.resumen || {};
+    matrizExistente.value = Number(data.resumen?.matriz_total || 0);
+  } catch (e) {
+    showToast('error', 'ERROR', e.response?.data?.message || 'No se pudo cargar el estado local.');
+  } finally {
+    loadingLocal.value = false;
+  }
+};
+
+const cargarMatrizExistente = async () => {
+  matrizExistente.value = 0;
+  if (!periodoId.value) return;
+  const { data } = await axios.get('/superadmi/admision/matriz-periodo', {
+    params: { id_periodo: periodoId.value }
+  });
+  matrizExistente.value = Number(data.total || 0);
+};
+
+const cambioPeriodo = async () => {
+  programaId.value = null;
+  limpiarPreview();
+  limpiarVerificacion();
+  await Promise.all([cargarMatrizExistente(), cargarEstadoLocal()]);
+};
+
+const cambioAmbito = () => {
+  programaId.value = null;
+  limpiarVerificacion();
+};
+
 const sincronizarProcesos = async () => {
   loadingProcesos.value = true;
-
   try {
     const { data } = await axios.post('/superadmi/admision/sincronizar-procesos');
-    showToast(data.tipo, data.titulo, data.mensaje);
+    showToast(data.tipo || 'success', data.titulo || 'PROCESOS', data.mensaje || 'Procesos actualizados.');
     await cargarProcesos();
   } catch (e) {
-    showToast(
-      'error',
-      'ERROR',
-      e.response?.data?.message || 'No se pudo consultar la API de procesos.'
-    );
+    showToast('error', 'ERROR', e.response?.data?.message || 'No se pudieron actualizar los procesos.');
   } finally {
     loadingProcesos.value = false;
   }
 };
 
-const cambioProceso = async () => {
-  periodoId.value = procesoSeleccionado.value?.id_periodo || null;
-  programaId.value = null;
-  verificacion.value.iniciada = false;
-  limpiarPreview();
-  await cargarResumenYCruce();
-};
-
-const cambioPeriodo = async () => {
-  limpiarPreview();
-  await cargarResumenYCruce();
-};
-
-const guardarPeriodo = async () => {
-  if (!procesoSeleccionado.value) return;
-
-  const { data } = await axios.post('/superadmi/admision/asignar-periodo', {
-    id: procesoSeleccionado.value.id,
-    id_periodo: periodoId.value
-  });
-
-  showToast(data.tipo, data.titulo, data.mensaje);
-  await cargarProcesos();
-};
-
-const cargarProgramas = async () => {
-  loadingProgramas.value = true;
-
+const guardarPeriodoProceso = async proceso => {
   try {
-    const { data } = await axios.get('/superadmi/admision/programas');
-
-    programas.value = (data.datos || []).map(x => ({
-      ...x,
-      label: `${x.id_admision} - ${x.nombre_admision}`
-    }));
-
-    if (data.sin_vincular > 0) {
-      showToast(
-        'warn',
-        'PROGRAMAS PENDIENTES',
-        `${data.sin_vincular} programas de Admisión no tienen equivalencia local.`
-      );
-    }
-  } catch (e) {
-    showToast(
-      'error',
-      'ERROR',
-      e.response?.data?.message || 'No se pudo consultar los programas de Admisión.'
-    );
-  } finally {
-    loadingProgramas.value = false;
-  }
-};
-
-const sincronizarPostulantes = async () => {
-  loadingPostulantes.value = true;
-
-  try {
-    const { data } = await axios.post('/superadmi/admision/sincronizar-postulantes', {
-      id_proceso_admision: procesoId.value,
-      id_programa_admision: programaId.value
+    const { data } = await axios.post('/superadmi/admision/asignar-periodo', {
+      id: proceso.id,
+      id_periodo: proceso.id_periodo || null
     });
-
-    showToast(data.tipo, data.titulo, data.mensaje);
-
-    if (data.estado && data.pendientes_sin_codigo?.length) {
-      progresoProceso.value.iniciado = true;
-      progresoProceso.value.pendientes = data.pendientes_sin_codigo;
-      progresoProceso.value.total_api = data.total_api || 0;
-      progresoProceso.value.con_codigo = data.con_codigo || 0;
-      progresoProceso.value.sin_codigo = data.sin_codigo || 0;
-      progresoProceso.value.insertados = data.insertados || 0;
-      progresoProceso.value.actualizados = data.actualizados || 0;
-    }
-
-    if (data.estado) {
-      await cargarResumenYCruce();
-    }
+    showToast(data.tipo || 'success', data.titulo || 'PERÍODO', data.mensaje || 'Relación actualizada.');
+    limpiarVerificacion();
   } catch (e) {
-    showToast(
-      'error',
-      'ERROR',
-      e.response?.data?.message || 'No se pudo sincronizar postulantes.'
-    );
-  } finally {
-    loadingPostulantes.value = false;
+    showToast('error', 'ERROR', e.response?.data?.message || 'No se pudo relacionar el proceso.');
   }
 };
 
-const verificarProcesoCompleto = async () => {
-  if (!procesoId.value || !periodoId.value) return;
-
+const verificarApi = async () => {
+  if (!puedeVerificar.value) return;
   loadingVerificacion.value = true;
-
-  verificacion.value = {
-    iniciada: true,
-    actual: 0,
-    total_programas: 0,
-    porcentaje: 0,
-    total_api: 0,
-    con_codigo: 0,
-      nuevos_con_codigo: 0,
-    ya_sincronizados: 0,
-    codigo_cambiado: 0,
-    pendientes: [],
-    errores: []
-  };
-
   try {
-    if (!programas.value.length) {
-      await cargarProgramas();
+    const params = { id_periodo: periodoId.value };
+    if (ambito.value === 'programa') params.id_programa_admision = programaId.value;
+
+    const { data } = await axios.get('/superadmi/admision/reporte-cobertura', { params });
+    verificacion.value = {
+      hecha: true,
+      resumen: data.resumen || {},
+      registros: data.registros || [],
+      errores_api: data.errores_api || []
+    };
+    matrizExistente.value = Number(data.resumen?.matriz_total || matrizExistente.value);
+
+    if (data.errores_api?.length) {
+      showToast('warn', 'VERIFICACIÓN PARCIAL', `${data.errores_api.length} consulta(s) a la API presentaron error.`);
+    } else {
+      showToast('success', 'VERIFICACIÓN COMPLETA', 'La API fue comparada con la matriz del período seleccionado.');
     }
-
-    const lista = programas.value.filter(x => x.vinculado);
-
-    verificacion.value.total_programas = lista.length;
-
-    for (let i = 0; i < lista.length; i++) {
-      const programa = lista[i];
-
-      try {
-        const { data } = await axios.post(
-          '/superadmi/admision/verificar-postulantes',
-          {
-            id_proceso_admision: procesoId.value,
-            id_programa_admision: programa.id_admision
-          }
-        );
-
-        if (data.estado) {
-          verificacion.value.total_api += Number(data.total_api || 0);
-          verificacion.value.con_codigo += Number(data.con_codigo || 0);
-          verificacion.value.sin_codigo += Number(data.sin_codigo || 0);
-          verificacion.value.nuevos_con_codigo += Number(
-            data.nuevos_con_codigo || 0
-          );
-          verificacion.value.ya_sincronizados += Number(
-            data.ya_sincronizados || 0
-          );
-          verificacion.value.codigo_cambiado += Number(
-            data.codigo_cambiado || 0
-          );
-
-          if (data.pendientes_sin_codigo?.length) {
-            verificacion.value.pendientes.push(
-              ...data.pendientes_sin_codigo
-            );
-          }
-        } else {
-          verificacion.value.errores.push(
-            `${programa.nombre_admision}: ${data.mensaje || 'Error'}`
-          );
-        }
-      } catch (e) {
-        verificacion.value.errores.push(
-          `${programa.nombre_admision}: ${
-            e.response?.data?.message ||
-            e.response?.data?.mensaje ||
-            'Error de consulta'
-          }`
-        );
-      }
-
-      verificacion.value.actual = i + 1;
-      verificacion.value.porcentaje = Math.round(
-        ((i + 1) / lista.length) * 100
-      );
-    }
-
-    showToast(
-      verificacion.value.nuevos_con_codigo > 0 ? 'success' : 'info',
-      verificacion.value.nuevos_con_codigo > 0
-        ? 'HAY NUEVOS DATOS'
-        : 'SIN NUEVOS CÓDIGOS',
-      `${verificacion.value.nuevos_con_codigo} nuevos registros con código y ${verificacion.value.sin_codigo} pendientes sin código.`
-    );
+  } catch (e) {
+    showToast('error', 'ERROR', e.response?.data?.message || 'No se pudo verificar la API.');
   } finally {
     loadingVerificacion.value = false;
   }
 };
 
-const sincronizarProcesoCompleto = async () => {
-  if (!procesoId.value || !periodoId.value) return;
+const sincronizarNuevos = async () => {
+  const cantidad = Number(verificacion.value.resumen?.nuevos_con_codigo || 0);
+  if (!cantidad) return;
+  if (!window.confirm(`Se sincronizarán ${cantidad} postulante(s) nuevo(s) con código. ¿Continuar?`)) return;
 
-  loadingProcesoCompleto.value = true;
+  // Obtenemos únicamente los programas que realmente tienen nuevos válidos.
+  const nuevos = (verificacion.value.registros || []).filter(r =>
+    r.api && r.con_codigo && !r.sincronizado && !r.incidencia && r.id_programa_admision
+  );
 
-  progresoProceso.value = {
-    iniciado: true,
-    actual: 0,
-    total: 0,
+  const grupos = new Map();
+  for (const r of nuevos) {
+    const id = Number(r.id_programa_admision);
+    if (!grupos.has(id)) {
+      const catalogo = programasVinculados.value.find(x => Number(x.id_admision) === id);
+      grupos.set(id, {
+        id,
+        nombre: r.programa || catalogo?.nombre_admision || `Programa ${id}`,
+        cantidad: 0
+      });
+    }
+    grupos.get(id).cantidad++;
+  }
+
+  let programasObjetivo = [...grupos.values()];
+
+  // Respaldo: si la verificación reportó nuevos pero no llegó el detalle,
+  // sincronizamos el programa seleccionado o los programas vinculados.
+  if (!programasObjetivo.length) {
+    if (ambito.value === 'programa' && programaId.value) {
+      const p = programasVinculados.value.find(x => Number(x.id_admision) === Number(programaId.value));
+      programasObjetivo = [{
+        id: Number(programaId.value),
+        nombre: p?.nombre_admision || `Programa ${programaId.value}`,
+        cantidad
+      }];
+    } else {
+      programasObjetivo = programasVinculados.value.map(p => ({
+        id: Number(p.id_admision),
+        nombre: p.nombre_admision,
+        cantidad: 0
+      }));
+    }
+  }
+
+  loadingSincronizacion.value = true;
+  progresoSync.value = {
+    visible: true,
     porcentaje: 0,
-    programa: 'Preparando...',
-    total_api: 0,
-    con_codigo: 0,
-      insertados: 0,
-    actualizados: 0,
-    pendientes: [],
-    errores: [],
-    omitidos: []
+    actual: 0,
+    total: programasObjetivo.length,
+    programa: '',
+    mensaje: 'Preparando sincronización...',
+    insertados: 0,
+    ya_sincronizados: 0,
+    incidencias: 0,
+    errores: []
   };
 
   try {
-    if (!programas.value.length) {
-      await cargarProgramas();
-    }
-
-    const vinculados = programas.value.filter(x => x.vinculado);
-    const noVinculados = programas.value.filter(x => !x.vinculado);
-
-    progresoProceso.value.total = vinculados.length;
-    progresoProceso.value.omitidos = noVinculados.map(
-      x => `${x.id_admision} - ${x.nombre_admision}`
-    );
-
-    for (let i = 0; i < vinculados.length; i++) {
-      const programa = vinculados[i];
-
-      progresoProceso.value.actual = i + 1;
-      progresoProceso.value.programa =
-        `${programa.id_admision} - ${programa.nombre_admision}`;
+    for (let i = 0; i < programasObjetivo.length; i++) {
+      const programa = programasObjetivo[i];
+      progresoSync.value.actual = i + 1;
+      progresoSync.value.programa = programa.nombre;
+      progresoSync.value.mensaje = `Sincronizando ${programa.nombre}...`;
+      progresoSync.value.porcentaje = Math.round((i / programasObjetivo.length) * 100);
 
       try {
-        const { data } = await axios.post(
-          '/superadmi/admision/sincronizar-postulantes',
-          {
-            id_proceso_admision: procesoId.value,
-            id_programa_admision: programa.id_admision
-          }
-        );
+        const { data } = await axios.post('/superadmi/admision/sincronizar-nuevos-codigo', {
+          id_periodo: periodoId.value,
+          id_programa_admision: programa.id
+        });
 
-        if (data.estado) {
-          progresoProceso.value.total_api += Number(data.total_api || 0);
-          progresoProceso.value.con_codigo += Number(data.con_codigo || 0);
-          progresoProceso.value.sin_codigo += Number(data.sin_codigo || 0);
-          progresoProceso.value.insertados += Number(data.insertados || 0);
-          progresoProceso.value.actualizados += Number(data.actualizados || 0);
-
-          if (data.pendientes_sin_codigo?.length) {
-            progresoProceso.value.pendientes.push(
-              ...data.pendientes_sin_codigo
-            );
-          }
-        } else {
-          progresoProceso.value.errores.push(
-            `${programa.nombre_admision}: ${data.mensaje || 'Error'}`
-          );
-        }
+        const d = data.datos || {};
+        progresoSync.value.insertados += Number(d.insertados || 0);
+        progresoSync.value.ya_sincronizados += Number(d.ya_sincronizados || 0);
+        progresoSync.value.incidencias +=
+          Number(d.codigo_cambiado || 0) +
+          Number(d.conflicto_codigo || 0) +
+          Number(d.conflicto_api || 0) +
+          Number(d.error_programa || 0);
       } catch (e) {
-        progresoProceso.value.errores.push(
-          `${programa.nombre_admision}: ${
-            e.response?.data?.message ||
-            e.response?.data?.mensaje ||
-            'Error de comunicación'
-          }`
-        );
+        progresoSync.value.errores.push({
+          programa: programa.nombre,
+          mensaje: e.response?.data?.message || 'Error de sincronización'
+        });
       }
 
-      progresoProceso.value.porcentaje = Math.round(
-        ((i + 1) / vinculados.length) * 100
-      );
+      progresoSync.value.porcentaje = Math.round(((i + 1) / programasObjetivo.length) * 100);
     }
 
-    showToast(
-      progresoProceso.value.errores.length ? 'warn' : 'success',
-      'SINCRONIZACIÓN FINALIZADA',
-      `${progresoProceso.value.insertados} nuevos, ${progresoProceso.value.actualizados} actualizados y ${progresoProceso.value.sin_codigo} sin código omitidos.`
-    );
+    progresoSync.value.programa = '';
+    progresoSync.value.mensaje = progresoSync.value.errores.length
+      ? 'Sincronización finalizada con observaciones.'
+      : 'Sincronización completada correctamente.';
+    progresoSync.value.porcentaje = 100;
 
-    await cargarResumenYCruce();
+    await cargarEstadoLocal();
 
-    // Refresca la verificación para mostrar si aún quedan nuevos.
-    await verificarProcesoCompleto();
+    // Evita volver a sincronizar usando el mismo resultado anterior.
+    verificacion.value = { hecha: false, resumen: {}, registros: [], errores_api: [] };
+
+    if (progresoSync.value.errores.length) {
+      showToast('warn', 'SINCRONIZACIÓN PARCIAL', `${progresoSync.value.insertados} nuevo(s) insertado(s). ${progresoSync.value.errores.length} programa(s) presentaron error.`);
+    } else {
+      showToast('success', 'SINCRONIZACIÓN COMPLETADA', `${progresoSync.value.insertados} postulante(s) nuevo(s) fueron sincronizados.`);
+    }
   } finally {
-    loadingProcesoCompleto.value = false;
+    loadingSincronizacion.value = false;
   }
 };
 
 const descargarPlantillaMatriz = () => {
-  if (!periodoId.value) {
-    showToast(
-      'warn',
-      'SELECCIONE PERIODO',
-      'Seleccione primero el Periodo de Nivelación.'
-    );
-    return;
-  }
-
-  const nombrePeriodo = (periodoSeleccionado.value?.nombre || 'PERIODO')
-    .replace(/[^a-zA-Z0-9_-]+/g, '_');
-
+  if (!periodoId.value) return;
+  const nombre = (periodoSeleccionado.value?.nombre || 'PERIODO').replace(/[^a-zA-Z0-9_-]+/g, '_');
   const link = document.createElement('a');
   link.href = '/plantillas/Plantilla_Matriz_Nivelacion_Ingresantes.xlsx';
-  link.download = `Matriz_ID_${periodoId.value}_${nombrePeriodo}.xlsx`;
+  link.download = `Matriz_ID_${periodoId.value}_${nombre}.xlsx`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -998,76 +688,25 @@ const descargarPlantillaMatriz = () => {
 
 const leerMatriz = event => {
   const file = event.target.files?.[0];
-
-  if (!file) return;
-
-  if (!periodoId.value) {
-    event.target.value = '';
-    showToast(
-      'warn',
-      'SELECCIONE PERIODO',
-      'Seleccione primero el periodo al que se insertará la matriz.'
-    );
-    return;
-  }
+  if (!file || !periodoId.value) return;
 
   limpiarPreview();
   archivoMatriz.value = file.name;
-
   const reader = new FileReader();
 
   reader.onload = e => {
     try {
-      const workbook = XLSX.read(
-        new Uint8Array(e.target.result),
-        { type: 'array' }
-      );
+      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const hoja = workbook.Sheets['MATRIZ'] || workbook.Sheets[workbook.SheetNames[0]];
+      const filas = XLSX.utils.sheet_to_json(hoja, { defval: null });
+      if (!filas.length) throw new Error('La hoja MATRIZ está vacía.');
 
-      const hoja =
-        workbook.Sheets['MATRIZ'] ||
-        workbook.Sheets[workbook.SheetNames[0]];
-
-      const filas = XLSX.utils.sheet_to_json(
-        hoja,
-        { defval: null }
-      );
-
-      if (!filas.length) {
-        showToast(
-          'warn',
-          'MATRIZ VACÍA',
-          'La hoja MATRIZ no contiene registros.'
-        );
-        return;
-      }
-
-      const tienePeriodo = filas.some(row =>
-        row.id_periodo !== undefined
-      );
-
-      const tieneDni = filas.some(row =>
-        row.dni !== undefined || row.DNI !== undefined
-      );
-
-      if (!tienePeriodo || !tieneDni) {
-        showToast(
-          'error',
-          'COLUMNAS OBLIGATORIAS',
-          'El Excel debe contener las columnas id_periodo y dni.'
-        );
-        return;
-      }
-
-      const conteoDni = {};
+      const conteo = {};
       const errores = [];
-
       const datos = filas.map((row, index) => {
         const dni = String(row.dni ?? row.DNI ?? '').trim();
         const filaPeriodo = Number(row.id_periodo ?? 0);
-
-        if (dni) {
-          conteoDni[dni] = (conteoDni[dni] || 0) + 1;
-        }
+        if (dni) conteo[dni] = (conteo[dni] || 0) + 1;
 
         const item = {
           fila: index + 2,
@@ -1075,103 +714,47 @@ const leerMatriz = event => {
           dni,
           nivelar: row.nivelar ?? null,
           no_nivelar: row.no_nivelar ?? null,
-          observacion: row.observacion !== null && row.observacion !== undefined
-            ? String(row.observacion).trim()
-            : null
+          observacion: row.observacion != null ? String(row.observacion).trim() : null
         };
-
         for (let i = 1; i <= 11; i++) {
           item[`C${i}`] = row[`C${i}`] ?? null;
           item[`C${i}_R`] = row[`C${i}_R`] ?? null;
         }
-
         return item;
       });
 
-      const duplicadosDni = new Set(
-        Object.entries(conteoDni)
-          .filter(([, cantidad]) => cantidad > 1)
-          .map(([dni]) => dni)
-      );
-
+      const duplicados = new Set(Object.entries(conteo).filter(([, n]) => n > 1).map(([dni]) => dni));
       let periodoDiferente = 0;
       let validos = 0;
 
-      const filasPreview = datos.map(item => {
-        let estado = 'OK';
-
-        if (!item.id_periodo) {
-          estado = 'SIN PERIODO';
-          errores.push(`Fila ${item.fila}: falta id_periodo.`);
-        } else if (Number(item.id_periodo) !== Number(periodoId.value)) {
-          estado = 'PERIODO DIFERENTE';
+      datos.forEach(item => {
+        if (!item.dni) errores.push(`Fila ${item.fila}: falta DNI.`);
+        else if (!item.id_periodo) errores.push(`Fila ${item.fila}: falta id_periodo.`);
+        else if (Number(item.id_periodo) !== Number(periodoId.value)) {
           periodoDiferente++;
-          errores.push(
-            `Fila ${item.fila}: id_periodo ${item.id_periodo}; seleccionado ${periodoId.value}.`
-          );
-        }
-
-        if (!item.dni) {
-          estado = 'SIN DNI';
-          errores.push(`Fila ${item.fila}: falta DNI.`);
+          errores.push(`Fila ${item.fila}: pertenece al período ${item.id_periodo}.`);
+        } else if (duplicados.has(item.dni)) {
+          // contado aparte
         } else if (item.observacion && item.observacion.length > 255) {
-          estado = 'OBSERVACIÓN LARGA';
-          errores.push(`Fila ${item.fila}: observacion supera los 255 caracteres.`);
-        } else if (duplicadosDni.has(item.dni)) {
-          estado = 'DNI DUPLICADO';
-        }
-
-        if (estado === 'OK') {
-          validos++;
-        }
-
-        return {
-          ...item,
-          estado
-        };
+          errores.push(`Fila ${item.fila}: observación supera 255 caracteres.`);
+        } else validos++;
       });
 
-      if (duplicadosDni.size) {
-        errores.push(
-          `Existen ${duplicadosDni.size} DNI repetidos dentro del mismo archivo y periodo.`
-        );
-      }
+      if (duplicados.size) errores.push(`Existen ${duplicados.size} DNI duplicado(s) en el archivo.`);
 
-      matrizData.value = datos.filter(item => item.dni);
-
+      matrizData.value = datos.filter(x => x.dni);
       preview.value = {
         total: datos.length,
-        unicos: Object.keys(conteoDni).length,
-        duplicados: duplicadosDni.size,
+        unicos: Object.keys(conteo).length,
+        duplicados: duplicados.size,
         periodo_diferente: periodoDiferente,
         validos,
-        errores,
-        filas: filasPreview
+        errores
       };
-
       matrizLeida.value = true;
-
-      if (errores.length) {
-        showToast(
-          'warn',
-          'PREVISUALIZACIÓN CON OBSERVACIONES',
-          'Revise el resumen antes de importar.'
-        );
-      } else {
-        showToast(
-          'success',
-          'MATRIZ VALIDADA',
-          `${validos} registros listos para ID ${periodoId.value} - ${periodoSeleccionado.value?.nombre}.`
-        );
-      }
     } catch (e) {
       limpiarPreview();
-
-      showToast(
-        'error',
-        'ARCHIVO NO VÁLIDO',
-        'No se pudo leer el Excel. Use la plantilla descargada desde el sistema.'
-      );
+      showToast('error', 'ARCHIVO NO VÁLIDO', e.message || 'No se pudo leer el Excel.');
     }
   };
 
@@ -1180,121 +763,35 @@ const leerMatriz = event => {
 
 const importarMatriz = async () => {
   if (!puedeImportarMatriz.value) return;
-
   loadingMatriz.value = true;
-
   try {
     const chunkSize = 500;
     let procesados = 0;
-
     for (let i = 0; i < matrizData.value.length; i += chunkSize) {
       const chunk = matrizData.value.slice(i, i + chunkSize);
-
-      const { data } = await axios.post(
-        '/superadmi/admision/importar-matriz',
-        {
-          id_periodo: periodoId.value,
-          archivo_origen: archivoMatriz.value,
-          datos: chunk
-        }
-      );
-
-      if (!data.estado) {
-        throw new Error(data.mensaje || 'Error al importar matriz.');
-      }
-
+      const { data } = await axios.post('/superadmi/admision/importar-matriz', {
+        id_periodo: periodoId.value,
+        archivo_origen: archivoMatriz.value,
+        datos: chunk
+      });
+      if (!data.estado) throw new Error(data.mensaje || 'Error al importar matriz.');
       procesados += chunk.length;
     }
-
-    showToast(
-      'success',
-      'MATRIZ IMPORTADA',
-      `${procesados} registros insertados/actualizados en ID ${periodoId.value} - ${periodoSeleccionado.value?.nombre}.`
-    );
-
+    showToast('success', 'MATRIZ IMPORTADA', `${procesados} registros insertados/actualizados.`);
     limpiarPreview();
-    await cargarResumenYCruce();
+    limpiarVerificacion();
+    await Promise.all([cargarMatrizExistente(), cargarEstadoLocal()]);
   } catch (e) {
-    showToast(
-      'error',
-      'ERROR',
-      e.response?.data?.message ||
-        e.message ||
-        'No se pudo importar la matriz.'
-    );
+    showToast('error', 'ERROR', e.response?.data?.message || e.message || 'No se pudo importar la matriz.');
   } finally {
     loadingMatriz.value = false;
   }
 };
 
-const cargarResumen = async () => {
-  if (!periodoId.value) return;
-
-  const { data } = await axios.get(
-    '/superadmi/admision/resumen',
-    {
-      params: {
-        id_periodo: periodoId.value
-      }
-    }
-  );
-
-  resumen.value = data.datos;
-};
-
-const cargarCruce = async (page = 1) => {
-  if (!periodoId.value) return;
-
-  loadingCruce.value = true;
-
-  try {
-    const { data } = await axios.get(
-      '/superadmi/admision/cruce',
-      {
-        params: {
-          id_periodo: periodoId.value,
-          estado: estadoFiltro.value,
-          term: term.value,
-          page
-        }
-      }
-    );
-
-    cruce.value = data.datos;
-  } finally {
-    loadingCruce.value = false;
-  }
-};
-
-const cargarResumenYCruce = async () => {
-  if (!periodoId.value) {
-    resumen.value = {
-      api: 0,
-      matriz: 0,
-      listos: 0,
-      solo_matriz: 0,
-      solo_api: 0,
-          error_programa: 0,
-      ya_registrado: 0
-    };
-
-    cruce.value = {
-      data: [],
-      current_page: 1,
-      last_page: 1
-    };
-
-    return;
-  }
-
-  await Promise.all([
-    cargarResumen(),
-    cargarCruce(1)
-  ]);
-};
-
 onMounted(async () => {
-  await cargarProcesos();
-  await cargarProgramas();
+  await Promise.all([cargarProcesos(), cargarProgramas()]);
+  const activo = periodosOpciones.value.find(x => String(x.estado).toLowerCase() === 'activo');
+  periodoId.value = activo?.id_periodo ?? periodosOpciones.value[0]?.id_periodo ?? null;
+  await Promise.all([cargarMatrizExistente(), cargarEstadoLocal()]);
 });
 </script>
