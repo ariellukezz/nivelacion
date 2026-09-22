@@ -277,6 +277,22 @@
         </NavLink>
         </li>
 
+        <li
+        class="relative px-6 py-3"
+        :class="[route().current('integracion-nivelacion') ? 'activado' : '']"
+        >
+        <NavLink
+            :href="route('integracion-nivelacion')"
+            :active="route().current('integracion-nivelacion')"
+        >
+            <template #icon>
+            <i class="pi pi-cloud-download"></i>
+            </template>
+
+            Integración a Nivelación
+        </NavLink>
+        </li>
+
         <!-- Menú desplegable para Configuración de Periodo -->
     <div style="border-bottom: 1px solid #f4f4f433; margin-top: 10px; margin-bottom: 20PX;"></div>
       <div class="ml-6" style="margin-bottom: 10px;">

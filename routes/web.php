@@ -33,6 +33,8 @@ use App\Http\Controllers\DataIngresoIntegracionController;
 use App\Http\Controllers\PermisoAsignacionController;
 use App\Http\Controllers\EstudianteEstadoController;
 use App\Http\Controllers\DireccionAsignacionController;
+use App\Http\Controllers\IntegracionNivelacionController;
+
 
 // Acceso general y dashboard.
 Route::get('/dashboard', function () {
@@ -519,8 +521,16 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
     Route::get('/admision/reporte-cobertura',[AdmisionIntegracionController::class, 'reporteCobertura']);
     Route::post('/admision/sincronizar-nuevos-codigo',[AdmisionIntegracionController::class, 'sincronizarNuevosCodigo']);
 
+    // Dentro del grupo que YA tiene prefijo /superadmi:
+    Route::get('/integracion-nivelacion', [IntegracionNivelacionController::class, 'index'])
+        ->name('integracion-nivelacion');
+    Route::get('/integracion-nivelacion/datos', [IntegracionNivelacionController::class, 'datos']);
+    Route::post('/integracion-nivelacion/integrar', [IntegracionNivelacionController::class, 'integrar']);
 
 
+
+
+    
     });
 
 // Rutas públicas o especiales.
