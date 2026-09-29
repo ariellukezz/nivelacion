@@ -34,6 +34,8 @@ use App\Http\Controllers\PermisoAsignacionController;
 use App\Http\Controllers\EstudianteEstadoController;
 use App\Http\Controllers\DireccionAsignacionController;
 use App\Http\Controllers\IntegracionNivelacionController;
+use App\Http\Controllers\PsicopedagogicoController;
+use App\Http\Controllers\PsicopedagogicoReporteController;
 
 
 // Acceso general y dashboard.
@@ -349,6 +351,16 @@ Route::get('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'verFi
 Route::put('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'actualizarSupervisor']);
 Route::delete('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'eliminarSupervisor']);
 Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'exportarDataSupervisor']);
+
+// reprote de fichas psicologia
+Route::get('/servicio-psicopedagogico',[PsicopedagogicoReporteController::class, 'index']
+)->name('supervisor.psicopedagogico');
+Route::get('/servicio-psicopedagogico/data',[PsicopedagogicoReporteController::class, 'data']);
+Route::get('/servicio-psicopedagogico/evidencia/{id}',[PsicopedagogicoReporteController::class, 'evidencia'])->whereNumber('id');
+Route::get('/servicio-psicopedagogico/evidencia/{id}/descargar',[PsicopedagogicoReporteController::class, 'descargarEvidencia']
+)->whereNumber('id');
+
+
     });
 
 // ROL 0: Superadministrador.
@@ -537,6 +549,15 @@ Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'expo
 Route::get('/dni/{dni}', [SuperadmiController::class, 'show'])->whereNumber('dni');
 Route::get('/fichariesgo', [FichaRiesgoController::class,'index'])->name('fichariesgo');
 Route::post('/fichariesgo/guardar', [FichaRiesgoController::class,'guardar'])->name('fichariesgo.guardar');
+
+// rutas  publica psicologia 
+
+Route::get('/servicio-psicopedagogico',[PsicopedagogicoController::class, 'index']
+)->name('psicopedagogico.form');
+Route::get('/servicio-psicopedagogico/buscar-estudiante',[PsicopedagogicoController::class, 'buscarEstudiante']);
+Route::post('/servicio-psicopedagogico',[PsicopedagogicoController::class, 'store']
+)->name('psicopedagogico.store');
+
 
 // Autenticación Laravel/Breeze.
 require __DIR__.'/auth.php';
