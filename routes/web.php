@@ -353,13 +353,17 @@ Route::delete('/fichas-riesgo/{id}', [FichaRiesgoAcademicoController::class, 'el
 Route::get('/fichas-riesgo-excel', [FichaRiesgoAcademicoController::class, 'exportarDataSupervisor']);
 
 // reprote de fichas psicologia
-Route::get('/servicio-psicopedagogico',[PsicopedagogicoReporteController::class, 'index']
-)->name('supervisor.psicopedagogico');
-Route::get('/servicio-psicopedagogico/data',[PsicopedagogicoReporteController::class, 'data']);
-Route::get('/servicio-psicopedagogico/evidencia/{id}',[PsicopedagogicoReporteController::class, 'evidencia'])->whereNumber('id');
-Route::get('/servicio-psicopedagogico/evidencia/{id}/descargar',[PsicopedagogicoReporteController::class, 'descargarEvidencia']
-)->whereNumber('id');
+Route::get('/servicio-psicopedagogico', [PsicopedagogicoReporteController::class, 'index'])->name('supervisor.psicopedagogico');
+Route::get('/servicio-psicopedagogico/data', [PsicopedagogicoReporteController::class, 'data']);
 
+// EDITAR UNA ATENCIÓN DESDE SUPERVISOR.
+Route::post('/servicio-psicopedagogico/{id}/actualizar', [PsicopedagogicoReporteController::class, 'update'])->whereNumber('id');
+
+// BORRAR UNA ATENCIÓN DESDE SUPERVISOR.
+Route::delete('/servicio-psicopedagogico/{id}', [PsicopedagogicoReporteController::class, 'destroy'])->whereNumber('id');
+
+Route::get('/servicio-psicopedagogico/evidencia/{id}', [PsicopedagogicoReporteController::class, 'evidencia'])->whereNumber('id');
+Route::get('/servicio-psicopedagogico/evidencia/{id}/descargar', [PsicopedagogicoReporteController::class, 'descargarEvidencia'])->whereNumber('id');
 
     });
 
@@ -542,7 +546,7 @@ Route::get('/servicio-psicopedagogico/evidencia/{id}/descargar',[Psicopedagogico
 
 
 
-    
+
     });
 
 // Rutas públicas o especiales.
@@ -550,7 +554,7 @@ Route::get('/dni/{dni}', [SuperadmiController::class, 'show'])->whereNumber('dni
 Route::get('/fichariesgo', [FichaRiesgoController::class,'index'])->name('fichariesgo');
 Route::post('/fichariesgo/guardar', [FichaRiesgoController::class,'guardar'])->name('fichariesgo.guardar');
 
-// rutas  publica psicologia 
+// rutas  publica psicologia
 
 Route::get('/servicio-psicopedagogico',[PsicopedagogicoController::class, 'index']
 )->name('psicopedagogico.form');

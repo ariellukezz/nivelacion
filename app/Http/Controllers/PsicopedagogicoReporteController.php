@@ -260,6 +260,365 @@ class PsicopedagogicoReporteController extends Controller
     }
 
     /**
+     * Devuelve TODOS los registros que coinciden con los filtros actuales.
+     * Se usa exclusivamente para generar el Excel desde el frontend.
+     */
+    public function exportData(Request $request)
+    {
+        $q = $this->queryBase($request);
+
+        $registros = $q
+            ->orderByDesc('a.fecha_atencion')
+            ->orderByDesc('a.id')
+            ->get()
+            ->map(function ($r) {
+                $condiciones = $this->decodeArray($r->condicion_academica);
+                $diagnosticos = $this->decodeArray($r->presuncion_diagnostica);
+                $problemas = $this->decodeArray($r->problemas_academicos);
+
+                return [
+                    'Fecha' => $r->fecha_atencion,
+                    'Semestre académico' => $r->semestre_academico,
+                    'Profesional responsable' => $r->profesional,
+                    'N.º sesión' => $r->numero_sesion,
+
+                    'Código estudiante' => $r->codigo_estudiante,
+                    'DNI' => $r->dni,
+                    'Estudiante' => $r->estudiante,
+                    'Edad' => $r->edad,
+                    'Sexo' => $r->sexo,
+                    'Celular' => $r->celular,
+
+                    'Facultad' => $r->facultad,
+                    'Escuela Profesional' => $r->escuela_profesional,
+                    'Ciclo' => $r->ciclo,
+
+                    'Condición académica' => implode(' | ', $condiciones),
+
+                    'Discapacidad' => match ($r->discapacidad) {
+                        'SI_CONADIS' => 'Sí, con carnet CONADIS',
+                        'SI_SIN_CONADIS' => 'Sí, sin carnet CONADIS',
+                        default => 'No',
+                    },
+
+                    'Presunción diagnóstica' => implode(' | ', $diagnosticos),
+                    'Otro diagnóstico' => $r->otro_diagnostico,
+
+                    'Problemas académicos' => implode(' | ', $problemas),
+                    'Otro problema académico' => $r->otro_problema_academico,
+
+                    'Observaciones' => $r->observaciones,
+                    'Tipo de atención' => $r->tipo_atencion,
+                    'Encuesta de satisfacción' => $r->satisfaccion,
+                    'Derivación' => $r->derivacion,
+
+                    'Requiere seguimiento' => $r->requiere_seguimiento ? 'Sí' : 'No',
+                    'Seguimiento' => $r->seguimiento,
+
+                    'Tiene evidencia' => !empty($r->evidencia_path) ? 'Sí' : 'No',
+                    'Nombre evidencia' => $r->evidencia_nombre,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'estado' => true,
+            'total' => $registros->count(),
+            'datos' => $registros,
+        ]);
+    }
+
+    /**
+     * Actualiza una atención desde el rol Supervisor.
+     * Los datos de identidad del estudiante NO se modifican aquí:
+     * código, DNI, nombres, facultad, escuela, edad, sexo, ciclo y N.º de sesión.
+     */
+    public function update(Request $request, int $id)
+    {
+        $registro = DB::table('psicopedagogico_atencion')
+            ->where('id', $id)
+            ->first();
+
+        if (!$registro) {
+            abort(404, 'La atención no existe.');
+        }
+
+        $data = $request->validate([
+            'id_profesional' => [
+                'required',
+                'integer',
+                'exists:psicopedagogico_profesional,id'
+            ],
+
+            'fecha_atencion' => [
+                'required',
+                'date'
+            ],
+
+            'semestre_academico' => [
+                'required',
+                'string',
+                'max:20'
+            ],
+
+            'celular' => [
+                'nullable',
+                'string',
+                'max:30'
+            ],
+
+            'condicion_academica' => [
+                'nullable',
+                'array'
+            ],
+
+            'condicion_academica.*' => [
+                'string',
+                'max:180'
+            ],
+
+            'discapacidad' => [
+                'required',
+                'in:NO,SI_CONADIS,SI_SIN_CONADIS'
+            ],
+
+            'presuncion_diagnostica' => [
+                'nullable',
+                'array'
+            ],
+
+            'presuncion_diagnostica.*' => [
+                'string',
+                'max:250'
+            ],
+
+            'otro_diagnostico' => [
+                'nullable',
+                'string',
+                'max:1000'
+            ],
+
+            'problemas_academicos' => [
+                'nullable',
+                'array'
+            ],
+
+            'problemas_academicos.*' => [
+                'string',
+                'max:250'
+            ],
+
+            'otro_problema_academico' => [
+                'nullable',
+                'string',
+                'max:1000'
+            ],
+
+            'observaciones' => [
+                'nullable',
+                'string',
+                'max:3000'
+            ],
+
+            'tipo_atencion' => [
+                'required',
+                'in:PRESENCIAL,VIRTUAL'
+            ],
+
+            'satisfaccion' => [
+                'nullable',
+                'string',
+                'max:100'
+            ],
+
+            'derivacion' => [
+                'nullable',
+                'string',
+                'max:2000'
+            ],
+
+            'seguimiento' => [
+                'nullable',
+                'string',
+                'max:2000'
+            ],
+
+            'requiere_seguimiento' => [
+                'nullable',
+                'boolean'
+            ],
+
+            'evidencia' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:8192'
+            ],
+
+            'eliminar_evidencia' => [
+                'nullable',
+                'boolean'
+            ],
+        ]);
+
+        $disk = Storage::disk('local');
+
+        $rutaAnterior = $registro->evidencia_path;
+        $rutaNueva = $rutaAnterior;
+        $nombreNuevo = $registro->evidencia_nombre;
+
+        $archivoNuevoGuardado = null;
+
+        try {
+            if ($request->hasFile('evidencia')) {
+                $archivo = $request->file('evidencia');
+
+                $archivoNuevoGuardado = $archivo->store(
+                    'psicopedagogico/evidencias',
+                    'local'
+                );
+
+                $rutaNueva = $archivoNuevoGuardado;
+                $nombreNuevo = $archivo->getClientOriginalName();
+            } elseif ($request->boolean('eliminar_evidencia')) {
+                $rutaNueva = null;
+                $nombreNuevo = null;
+            }
+
+            DB::table('psicopedagogico_atencion')
+                ->where('id', $id)
+                ->update([
+                    'id_profesional' => (int) $data['id_profesional'],
+                    'fecha_atencion' => $data['fecha_atencion'],
+                    'semestre_academico' => trim(
+                        (string) $data['semestre_academico']
+                    ),
+
+                    'celular' => trim(
+                        (string) ($data['celular'] ?? '')
+                    ),
+
+                    'condicion_academica' => json_encode(
+                        array_values(
+                            $data['condicion_academica'] ?? []
+                        ),
+                        JSON_UNESCAPED_UNICODE
+                    ),
+
+                    'discapacidad' => $data['discapacidad'],
+
+                    'presuncion_diagnostica' => json_encode(
+                        array_values(
+                            $data['presuncion_diagnostica'] ?? []
+                        ),
+                        JSON_UNESCAPED_UNICODE
+                    ),
+
+                    'otro_diagnostico' =>
+                        $data['otro_diagnostico'] ?? null,
+
+                    'problemas_academicos' => json_encode(
+                        array_values(
+                            $data['problemas_academicos'] ?? []
+                        ),
+                        JSON_UNESCAPED_UNICODE
+                    ),
+
+                    'otro_problema_academico' =>
+                        $data['otro_problema_academico'] ?? null,
+
+                    'observaciones' =>
+                        $data['observaciones'] ?? null,
+
+                    'tipo_atencion' =>
+                        $data['tipo_atencion'],
+
+                    'satisfaccion' =>
+                        $data['satisfaccion'] ?? null,
+
+                    'derivacion' =>
+                        $data['derivacion'] ?? null,
+
+                    'requiere_seguimiento' =>
+                        !empty($data['requiere_seguimiento'])
+                            ? 1
+                            : 0,
+
+                    'seguimiento' =>
+                        $data['seguimiento'] ?? null,
+
+                    'evidencia_path' => $rutaNueva,
+                    'evidencia_nombre' => $nombreNuevo,
+
+                    'updated_at' => now(),
+                ]);
+
+        } catch (\Throwable $e) {
+            // Si se almacenó un archivo nuevo pero la BD falló,
+            // retirarlo para no dejar archivos huérfanos.
+            if (
+                $archivoNuevoGuardado &&
+                $disk->exists($archivoNuevoGuardado)
+            ) {
+                $disk->delete($archivoNuevoGuardado);
+            }
+
+            throw $e;
+        }
+
+        // Si se reemplazó o eliminó una evidencia,
+        // retirar el archivo antiguo después de actualizar la BD.
+        if (
+            $rutaAnterior &&
+            $rutaAnterior !== $rutaNueva &&
+            $disk->exists($rutaAnterior)
+        ) {
+            $disk->delete($rutaAnterior);
+        }
+
+        return response()->json([
+            'estado' => true,
+            'mensaje' => 'La atención fue actualizada correctamente.',
+        ]);
+    }
+
+    /**
+     * Elimina definitivamente una atención.
+     * Si tiene evidencia, también elimina el archivo privado.
+     */
+    public function destroy(int $id)
+    {
+        $registro = DB::table('psicopedagogico_atencion')
+            ->where('id', $id)
+            ->select(
+                'id',
+                'evidencia_path'
+            )
+            ->first();
+
+        if (!$registro) {
+            abort(404, 'La atención no existe.');
+        }
+
+        DB::table('psicopedagogico_atencion')
+            ->where('id', $id)
+            ->delete();
+
+        if ($registro->evidencia_path) {
+            $disk = Storage::disk('local');
+
+            if ($disk->exists($registro->evidencia_path)) {
+                $disk->delete($registro->evidencia_path);
+            }
+        }
+
+        return response()->json([
+            'estado' => true,
+            'mensaje' => 'La atención fue eliminada correctamente.',
+        ]);
+    }
+
+    /**
      * Muestra la foto/PDF en el navegador.
      * La ruta debe permanecer dentro del grupo Supervisor.
      */
